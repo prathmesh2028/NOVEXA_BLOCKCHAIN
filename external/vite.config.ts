@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
-import siteConfiguration from './.figma/make/site.json'
+import siteConfiguration from '../.figma/make/site.json'
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -22,17 +22,23 @@ export default defineConfig(({ mode }) => {
       figmaSiteConfiguration(siteConfiguration),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
-      figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
+      figmaMakeKitPlugin({ storiesGlob: '../frontend/**/*.stories.{ts,tsx,js,jsx}' }),
+      frontendRoutePlugin(),
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(__dirname, '../frontend'),
+        '/frontend': path.resolve(__dirname, '../frontend'),
+        '/src': path.resolve(__dirname, '../frontend'),
       },
     },
     server: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      fs: {
+        allow: [path.resolve(__dirname, '..')],
+      },
       watch: {
         ignored: [
           '**/.figma/**',
@@ -45,6 +51,28 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
+function frontendRoutePlugin(): Plugin {
+  return {
+    name: 'frontend-route-plugin',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url) {
+          const cleanUrl = req.url.split('?')[0]
+          if (cleanUrl.startsWith('/frontend/') || cleanUrl.startsWith('/src/')) {
+            const rel = cleanUrl.startsWith('/frontend/')
+              ? cleanUrl.slice('/frontend/'.length)
+              : cleanUrl.slice('/src/'.length)
+            const full = path.resolve(__dirname, '../frontend', rel).replace(/\\/g, '/')
+            const search = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
+            req.url = `/@fs/${full}${search}`
+          }
+        }
+        next()
+      })
+    },
+  }
+}
 
 type FigmaSiteConfiguration = {
   title?: string

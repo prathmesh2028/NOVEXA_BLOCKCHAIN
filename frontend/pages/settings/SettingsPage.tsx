@@ -1,6 +1,6 @@
 import PageHeader from "../../components/ui/PageHeader";
 import { useAuth } from "../../context/AuthContext";
-import { RoleBadge } from "../../components/ui/RoleBadge";
+import RoleBadge from "../../components/ui/RoleBadge";
 
 export default function SettingsPage() {
   const { user, role } = useAuth();

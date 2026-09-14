@@ -8,9 +8,9 @@
 
 ## 2. Frontend
 **Current Implementation:** React 19 + Vite 8 + TypeScript + Tailwind CSS v4 + React Router.
-**Status:** Highly functional UI, but heavily dependent on mock data (`src/data/mockData.ts`).
+**Status:** Highly functional UI, but heavily dependent on mock data (`frontend/data/mockData.ts`).
 **Routing:** Client-side via React Router. Includes Admin, NFT Creator, Technician, and Auditor dashboards based on mock roles.
-**API Integration:** Partially wired to backend via `src/services/api.ts` (configured with dynamic host for LAN access), but many components still read directly from `mockData.ts`.
+**API Integration:** Partially wired to backend via `frontend/services/api.ts` (configured with dynamic host for LAN access), but many components still read directly from `mockData.ts`.
 
 ## 3. Current Backend (Legacy)
 **Implementation:** Python 3.12 + FastAPI.
