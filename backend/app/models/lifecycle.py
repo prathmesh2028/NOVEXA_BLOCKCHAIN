@@ -1,10 +1,15 @@
 """KavachTrust — Lifecycle event model."""
 
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.user import _uuid, _utcnow
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.asset import Asset
+    from app.models.user import Actor
 
 
 class LifecycleEvent(Base):
@@ -19,5 +24,5 @@ class LifecycleEvent(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
 
     # Relationships
-    asset: Mapped["app.models.asset.Asset"] = relationship("Asset", back_populates="lifecycle_events")
-    actor: Mapped["app.models.user.Actor"] = relationship("Actor", foreign_keys=[actor_id])
+    asset: Mapped["Asset"] = relationship("Asset", back_populates="lifecycle_events")
+    actor: Mapped["Actor"] = relationship("Actor", foreign_keys=[actor_id])

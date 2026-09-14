@@ -1,10 +1,15 @@
 """KavachTrust — Evidence model with versioning support."""
 
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.user import _uuid, _utcnow
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.asset import Asset
+    from app.models.user import Actor
 
 
 class Evidence(Base):
@@ -29,8 +34,8 @@ class Evidence(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     # Relationships
-    asset: Mapped["app.models.asset.Asset"] = relationship("Asset", back_populates="evidence_records")
-    uploaded_by: Mapped["app.models.user.Actor"] = relationship("Actor", foreign_keys=[uploaded_by_actor_id])
+    asset: Mapped["Asset"] = relationship("Asset", back_populates="evidence_records")
+    uploaded_by: Mapped["Actor"] = relationship("Actor", foreign_keys=[uploaded_by_actor_id])
     versions: Mapped[list["EvidenceVersion"]] = relationship("EvidenceVersion", back_populates="evidence")
 
 

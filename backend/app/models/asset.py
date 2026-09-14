@@ -1,10 +1,16 @@
 """KavachTrust — Asset and Batch models."""
 
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.user import _uuid, _utcnow
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user import Actor
+    from app.models.evidence import Evidence
+    from app.models.lifecycle import LifecycleEvent
 
 
 class Batch(Base):
@@ -44,6 +50,6 @@ class Asset(Base):
 
     # Relationships
     batch: Mapped["Batch"] = relationship("Batch", back_populates="assets")
-    registered_by: Mapped["app.models.user.Actor"] = relationship("Actor", foreign_keys=[registered_by_actor_id])
-    evidence_records: Mapped[list["app.models.evidence.Evidence"]] = relationship("Evidence", back_populates="asset")
-    lifecycle_events: Mapped[list["app.models.lifecycle.LifecycleEvent"]] = relationship("LifecycleEvent", back_populates="asset")
+    registered_by: Mapped["Actor"] = relationship("Actor", foreign_keys=[registered_by_actor_id])
+    evidence_records: Mapped[list["Evidence"]] = relationship("Evidence", back_populates="asset")
+    lifecycle_events: Mapped[list["LifecycleEvent"]] = relationship("LifecycleEvent", back_populates="asset")
