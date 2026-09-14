@@ -5,7 +5,7 @@ import StatusBadge from "../../components/ui/StatusBadge";
 import RoleBadge from "../../components/ui/RoleBadge";
 import AuditTimeline from "../../components/ui/AuditTimeline";
 import { useState, useEffect } from "react";
-import { AUDIT_EVENTS, CERTIFICATIONS, formatDateTime } from "../../data/mockData";
+import { ASSETS, AUDIT_EVENTS, CERTIFICATIONS, formatDateTime } from "../../data/mockData";
 import { dashboardService, DashboardSummary } from "../../services/dashboard";
 import { useAuth } from "../../context/AuthContext";
 

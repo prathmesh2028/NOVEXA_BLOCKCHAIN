@@ -19,3 +19,11 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Python & sqlite
+__pycache__/
+*.pyc
+*.sqlite
+.pytest_cache/
+venv/
+

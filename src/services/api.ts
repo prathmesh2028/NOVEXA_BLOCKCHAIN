@@ -1,7 +1,10 @@
 /**
  * KavachTrust — Base API Client
  */
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// Dynamically use the current hostname (e.g. localhost or 192.168.x.x) so it works on other devices across the LAN.
+const API_BASE_URL = typeof window !== 'undefined' 
+  ? `http://${window.location.hostname}:8000/api/v1` 
+  : 'http://localhost:8000/api/v1';
 
 export class ApiError extends Error {
   status: number;

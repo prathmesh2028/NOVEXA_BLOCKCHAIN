@@ -1,0 +1,77 @@
+{
+  "backend": {
+    "framework": "FastAPI",
+    "language": "Python 3.12",
+    "architecture": "Monolith (Controllers -> Services -> DB/Blockchain)",
+    "status": "IMPLEMENTED"
+  },
+  "database": {
+    "orm": "SQLAlchemy",
+    "engine": "SQLite (dev.db)",
+    "migrations": "Alembic (NOT PRESENT, tables created via Base.metadata.create_all)",
+    "status": "IMPLEMENTED"
+  },
+  "authentication": {
+    "type": "JWT / Password",
+    "status": "IMPLEMENTED",
+    "oidc": "NOT PRESENT",
+    "webauthn": "NOT PRESENT"
+  },
+  "authorization": {
+    "type": "Role-based (DB)",
+    "status": "PARTIAL",
+    "casbin": "NOT PRESENT",
+    "abac": "NOT PRESENT",
+    "rls": "NOT PRESENT"
+  },
+  "identity": {
+    "type": "DID (Database Mocked)",
+    "status": "PARTIAL",
+    "pki": "NOT PRESENT",
+    "vc": "NOT PRESENT"
+  },
+  "evidence": {
+    "storage": "MOCK",
+    "hash": "SHA-256 (IMPLEMENTED)",
+    "status": "PARTIAL"
+  },
+  "audit": {
+    "type": "Database Table (append-only mock)",
+    "merkle": "NOT PRESENT",
+    "status": "PARTIAL"
+  },
+  "outbox": {
+    "type": "Transactional Outbox",
+    "status": "NOT PRESENT"
+  },
+  "blockchain": {
+    "type": "Ethereum (Hardhat Local)",
+    "library": "web3.py",
+    "besu": "NOT PRESENT",
+    "status": "REAL + INTEGRATED"
+  },
+  "contracts": {
+    "type": "Solidity (KavachTrustSBT ERC-721)",
+    "status": "REAL + INTEGRATED"
+  },
+  "testing": {
+    "framework": "Pytest",
+    "coverage": "Auth, Assets",
+    "status": "IMPLEMENTED"
+  },
+  "deployment": {
+    "docker": "NOT PRESENT",
+    "github_actions": "NOT PRESENT",
+    "status": "LOCAL ONLY"
+  },
+  "frontendIntegration": {
+    "status": "BROKEN",
+    "notes": "Frontend mockData needs to be stripped to wire completely to FastAPI."
+  },
+  "knownIssues": [
+    "No async workers. Blockchain operations block API requests.",
+    "No real file storage for evidence. Files are discarded.",
+    "No Casbin/ABAC implementations for strict RBAC.",
+    "Hardcoded private keys in config.py"
+  ]
+}
