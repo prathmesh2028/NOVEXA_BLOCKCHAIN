@@ -1,0 +1,111 @@
+{
+  "project": {
+    "name": "BEL-DEFENCE-ASSET-TRUST",
+    "brand": "KavachTrust",
+    "context": "SIH 2026",
+    "status": "Synthetic POC"
+  },
+  "frontend": {
+    "framework": "React + Vite + TypeScript",
+    "status": "REAL",
+    "data_source": "MOCK"
+  },
+  "legacyBackend": {
+    "framework": "FastAPI",
+    "status": "REAL",
+    "fate": "REPLACE"
+  },
+  "contracts": {
+    "standard": "ERC-721 Soulbound",
+    "status": "REAL"
+  },
+  "database": {
+    "current": "SQLite",
+    "target": "PostgreSQL",
+    "status": "REAL"
+  },
+  "authentication": {
+    "current": "JWT (HS256)",
+    "target": "OIDC + WebAuthn",
+    "status": "PARTIAL"
+  },
+  "authorization": {
+    "current": "Missing / Stubbed",
+    "target": "Casbin RBAC + ABAC",
+    "status": "MISSING"
+  },
+  "identity": {
+    "current": "Synthetic String DID",
+    "target": "did:web + X.509",
+    "status": "MOCK"
+  },
+  "evidence": {
+    "current": "Hash computed, file discarded",
+    "target": "MinIO/S3",
+    "status": "MOCK"
+  },
+  "audit": {
+    "current": "Standard DB Logs",
+    "target": "Merkle / Hash-chained",
+    "status": "PARTIAL"
+  },
+  "merkle": {
+    "current": "None",
+    "status": "MISSING"
+  },
+  "outbox": {
+    "current": "None",
+    "status": "MISSING"
+  },
+  "blockchain": {
+    "current": "Hardhat + Web3.py",
+    "target": "Hyperledger Besu + viem",
+    "status": "REAL"
+  },
+  "certification": {
+    "current": "Synchronous SBT Mint",
+    "status": "PARTIAL"
+  },
+  "verification": {
+    "current": "Basic Contract Read",
+    "status": "PARTIAL"
+  },
+  "testing": {
+    "current": "Pytest (Backend)",
+    "status": "REAL"
+  },
+  "deployment": {
+    "current": "Local scripts",
+    "target": "Docker Compose + GitHub Actions",
+    "status": "MISSING"
+  },
+  "observability": {
+    "current": "None (Terminal output)",
+    "target": "Pino + Prometheus + Grafana + OTEL + Sentry",
+    "status": "MISSING"
+  },
+  "security": {
+    "current": "Hardcoded secrets, unencrypted SQLite",
+    "status": "BROKEN"
+  },
+  "targetArchitecture": {
+    "framework": "NestJS",
+    "database": "Prisma + PostgreSQL",
+    "blockchain": "Besu"
+  },
+  "migrationGaps": [
+    "Complete rewrite of Python to TypeScript",
+    "Integration of Casbin RBAC",
+    "Integration of MinIO for real evidence storage",
+    "Implementation of Transactional Outbox for blockchain tasks"
+  ],
+  "knownIssues": [
+    "Frontend is heavily coupled to mockData.ts",
+    "Blockchain API routes are synchronous and block the event loop",
+    "Secrets in app/core/config.py"
+  ],
+  "unknowns": [
+    "Whether an external OIDC provider is provisioned",
+    "Whether real DGQA integration exists"
+  ]
+}
