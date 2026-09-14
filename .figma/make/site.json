@@ -1,0 +1,10 @@
+{
+  "description": "Enables users to execute commands or tasks efficiently through a streamlined interface, enhancing productivity and workflow management.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
