@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { useRole, getRoleLabel, getRoleColor } from "../../context/RoleContext";
+import { getRoleLabel, getRoleColor } from "../../context/RoleContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Topbar() {
-  const { user } = useRole();
+  const { user, role } = useAuth();
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
@@ -15,8 +16,8 @@ export default function Topbar() {
     }
   }
 
-  if (!user) return null;
-  const roleColor = getRoleColor(user.role);
+  if (!user || !role) return null;
+  const roleColor = getRoleColor(role);
 
   return (
     <div
@@ -133,7 +134,7 @@ export default function Topbar() {
         <div>
           <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8" }}>{user.name}</div>
           <div style={{ fontSize: "0.625rem", color: roleColor, fontWeight: 600, lineHeight: 1 }}>
-            {getRoleLabel(user.role)}
+            {getRoleLabel(role)}
           </div>
         </div>
       </Link>

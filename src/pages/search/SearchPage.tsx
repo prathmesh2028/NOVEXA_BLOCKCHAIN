@@ -2,45 +2,52 @@ import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { ASSETS, CERTIFICATIONS, USERS_LIST, BLOCKCHAIN_TXS } from "../../data/mockData";
+import { searchService, SearchResult } from "../../services/search";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
-  const [submitted, setSubmitted] = useState(!!searchParams.get("q"));
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get("q");
-    if (q) { setQuery(q); setSubmitted(true); }
+    if (q) {
+      setQuery(q);
+      setSubmitted(true);
+      performSearch(q);
+    }
   }, [searchParams]);
+
+  const performSearch = async (q: string) => {
+    if (!q) return;
+    setLoading(true);
+    try {
+      const res = await searchService.search(q);
+      setResults(res.results);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (query.trim()) {
       setSearchParams({ q: query.trim() });
       setSubmitted(true);
+      // performSearch will be triggered by useEffect when searchParams change
     }
   }
 
-  const q = query.trim().toLowerCase();
+  const assetResults = results.filter(r => r.type === "asset");
+  const certResults = results.filter(r => r.type === "certification");
+  const txResults = results.filter(r => r.type === "blockchain_tx");
+  const userResults = results.filter(r => r.type === "user");
 
-  const assetResults = submitted && q
-    ? ASSETS.filter((a) => a.id.toLowerCase().includes(q) || a.batchId.toLowerCase().includes(q) || a.type.toLowerCase().includes(q))
-    : [];
-
-  const certResults = submitted && q
-    ? CERTIFICATIONS.filter((c) => c.id.toLowerCase().includes(q) || c.assetId.toLowerCase().includes(q) || c.tokenId.toLowerCase().includes(q))
-    : [];
-
-  const txResults = submitted && q
-    ? BLOCKCHAIN_TXS.filter((t) => t.hash.toLowerCase().includes(q) || (t.assetId ?? "").toLowerCase().includes(q))
-    : [];
-
-  const userResults = submitted && q
-    ? USERS_LIST.filter((u) => u.name.toLowerCase().includes(q) || u.did.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
-    : [];
-
-  const total = assetResults.length + certResults.length + txResults.length + userResults.length;
+  const total = results.length;
 
   return (
     <div className="page-fade">
@@ -67,7 +74,13 @@ export default function SearchPage() {
         </div>
       </form>
 
-      {submitted && (
+      {submitted && loading && (
+        <div style={{ marginBottom: 16, fontSize: "0.8125rem", color: "#64748b" }}>
+          Searching...
+        </div>
+      )}
+
+      {submitted && !loading && (
         <div style={{ marginBottom: 16, fontSize: "0.8125rem", color: "#64748b" }}>
           {total === 0
             ? `No results for "${searchParams.get("q")}"`
@@ -76,21 +89,21 @@ export default function SearchPage() {
       )}
 
       {/* Results */}
-      {assetResults.length > 0 && (
+      {!loading && assetResults.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <div className="section-label" style={{ marginBottom: 10 }}>ASSETS ({assetResults.length})</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {assetResults.map((a) => (
-              <Link key={a.id} to={`/app/assets/${a.id}`} style={{ textDecoration: "none" }}>
+              <Link key={a.id} to={a.url} style={{ textDecoration: "none" }}>
                 <div className="panel" style={{ padding: "14px 18px", transition: "border-color 0.15s", cursor: "pointer" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{a.id}</span>
-                      <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{a.type} · {a.batchId}</span>
+                      <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{a.title}</span>
+                      <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{a.subtitle}</span>
                     </div>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <StatusBadge status={a.lifecycle} size="sm" />
-                      <StatusBadge status={a.verification} size="sm" />
+                      {a.status && <StatusBadge status={a.status} size="sm" />}
+                      {a.badge && <StatusBadge status={a.badge} size="sm" />}
                     </div>
                   </div>
                 </div>
@@ -100,19 +113,19 @@ export default function SearchPage() {
         </div>
       )}
 
-      {certResults.length > 0 && (
+      {!loading && certResults.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <div className="section-label" style={{ marginBottom: 10 }}>CERTIFICATIONS ({certResults.length})</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {certResults.map((c) => (
-              <Link key={c.id} to={`/app/certifications/${c.id}`} style={{ textDecoration: "none" }}>
+              <Link key={c.id} to={c.url} style={{ textDecoration: "none" }}>
                 <div className="panel" style={{ padding: "14px 18px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{c.id}</span>
-                      <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>Token {c.tokenId} · {c.assetId}</span>
+                      <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{c.title}</span>
+                      <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{c.subtitle}</span>
                     </div>
-                    <StatusBadge status={c.status} size="sm" />
+                    {c.status && <StatusBadge status={c.status} size="sm" />}
                   </div>
                 </div>
               </Link>
@@ -121,18 +134,18 @@ export default function SearchPage() {
         </div>
       )}
 
-      {txResults.length > 0 && (
+      {!loading && txResults.length > 0 && (
         <div style={{ marginBottom: 24 }}>
           <div className="section-label" style={{ marginBottom: 10 }}>BLOCKCHAIN TRANSACTIONS ({txResults.length})</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {txResults.map((t) => (
-              <div key={t.hash} className="panel" style={{ padding: "14px 18px" }}>
+              <div key={t.id} className="panel" style={{ padding: "14px 18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{t.hash.slice(0, 20)}…</span>
-                    <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{t.action}</span>
+                    <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{t.title}</span>
+                    <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{t.subtitle}</span>
                   </div>
-                  <StatusBadge status={t.status} size="sm" />
+                  {t.status && <StatusBadge status={t.status} size="sm" />}
                 </div>
               </div>
             ))}
@@ -140,7 +153,26 @@ export default function SearchPage() {
         </div>
       )}
 
-      {submitted && total === 0 && (
+      {!loading && userResults.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <div className="section-label" style={{ marginBottom: 10 }}>USERS ({userResults.length})</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {userResults.map((u) => (
+              <div key={u.id} className="panel" style={{ padding: "14px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{u.title}</span>
+                    <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{u.subtitle}</span>
+                  </div>
+                  {u.status && <StatusBadge status={u.status} size="sm" />}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!loading && submitted && total === 0 && (
         <div className="panel" style={{ padding: 48, textAlign: "center" }}>
           <div style={{ fontSize: "2rem", marginBottom: 12, opacity: 0.3 }}>◎</div>
           <div className="font-display" style={{ fontSize: "1.1rem", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.04em" }}>

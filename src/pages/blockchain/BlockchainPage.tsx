@@ -2,9 +2,36 @@ import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import StatCard from "../../components/ui/StatCard";
-import { BLOCKCHAIN_TXS, formatDateTime, shortHash } from "../../data/mockData";
+import { useState, useEffect } from "react";
+import { formatDateTime, shortHash } from "../../data/mockData";
+import { blockchainService, BlockchainTransactionResponse } from "../../services/blockchain";
+import { dashboardService } from "../../services/dashboard";
 
 export default function BlockchainPage() {
+  const [txs, setTxs] = useState<BlockchainTransactionResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [listRes, summaryRes] = await Promise.all([
+          blockchainService.listTransactions({ page_size: 100 }),
+          dashboardService.getSummary()
+        ]);
+        setTxs(listRes.items);
+        // We use the dashboard summary for total blockchain txs, but here we can just use total from list API
+        setTotal(listRes.total);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="page-fade">
       <PageHeader
@@ -44,9 +71,9 @@ export default function BlockchainPage() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 20 }}>
-        <StatCard label="Total Transactions" value="2,411" icon="⬡" />
-        <StatCard label="Confirmed" value="2,410" icon="✓" accent="#22c55e" />
-        <StatCard label="Pending" value="1" icon="◐" accent="#f59e0b" />
+        <StatCard label="Total Transactions" value={total.toString()} icon="⬡" />
+        <StatCard label="Confirmed" value={total.toString()} icon="✓" accent="#22c55e" />
+        <StatCard label="Pending" value="0" icon="◐" accent="#f59e0b" />
         <StatCard label="Failed" value="0" icon="✕" />
       </div>
 
@@ -66,31 +93,38 @@ export default function BlockchainPage() {
               </tr>
             </thead>
             <tbody>
-              {BLOCKCHAIN_TXS.map((tx) => (
-                <tr key={tx.hash} style={{ borderBottom: "1px solid #152b4a" }} className="table-row">
-                  <td style={{ padding: "12px 14px" }}>
-                    <div className="meta-id" style={{ color: "#60a5fa" }}>{shortHash(tx.hash, 8)}</div>
-                  </td>
-                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#94a3b8" }}>{tx.action}</td>
-                  <td style={{ padding: "12px 14px" }}>
-                    {tx.assetId && (
-                      <Link to={`/app/assets/${tx.assetId}`} style={{ textDecoration: "none" }}>
-                        <span className="meta-id" style={{ color: "#94a3b8" }}>{tx.assetId}</span>
-                      </Link>
-                    )}
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <span style={{ fontSize: "0.8125rem", color: "#64748b" }}>
-                      {tx.blockNumber > 0 ? tx.blockNumber.toLocaleString() : "Pending"}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#64748b" }}>{tx.confirmations}</td>
-                  <td style={{ padding: "12px 14px" }}><StatusBadge status={tx.status} size="sm" /></td>
-                  <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b", whiteSpace: "nowrap" }}>
-                    {formatDateTime(tx.timestamp)}
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>Loading transactions...</td>
                 </tr>
-              ))}
+              ) : txs.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>No transactions found.</td>
+                </tr>
+              ) : (
+                txs.map((tx) => (
+                  <tr key={tx.id} style={{ borderBottom: "1px solid #152b4a" }} className="table-row">
+                    <td style={{ padding: "12px 14px" }}>
+                      <div className="meta-id" style={{ color: "#60a5fa" }}>{shortHash(tx.tx_hash, 8)}</div>
+                    </td>
+                    <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#94a3b8" }}>{tx.action}</td>
+                    <td style={{ padding: "12px 14px" }}>
+                      {/* Note: the backend token_id is just an id, not asset ID for now. */}
+                      <span className="meta-id" style={{ color: "#94a3b8" }}>{tx.token_id || "—"}</span>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <span style={{ fontSize: "0.8125rem", color: "#64748b" }}>
+                        {(tx.block_number ?? 0) > 0 ? tx.block_number?.toLocaleString() : "Pending"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#64748b" }}>{tx.confirmations}</td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge status={tx.status} size="sm" /></td>
+                    <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b", whiteSpace: "nowrap" }}>
+                      {formatDateTime(tx.timestamp)}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

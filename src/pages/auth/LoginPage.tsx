@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { useRole, type Role } from "../../context/RoleContext";
-
-const ROLES: { role: Role; label: string; icon: string; color: string; mental: string; did: string }[] = [
+import { useAuth } from "../../context/AuthContext";
+import type { Role } from "../../context/RoleContext";
+const ROLES: { role: Role; label: string; icon: string; color: string; mental: string; did: string; email: string; }[] = [
   {
     role: "admin",
     label: "Administrator",
     icon: "⊛",
     color: "#ef4444",
     mental: "Control, governance and system oversight",
-    did: "did:bel:actor:001",
+    did: "did:ethr:sepolia:0x1234abcd...",
+    email: "admin@kavachtrust.bel.in",
   },
   {
     role: "nft-creator",
@@ -17,7 +18,8 @@ const ROLES: { role: Role; label: string; icon: string; color: string; mental: s
     icon: "◆",
     color: "#8b5cf6",
     mental: "Review records and create trusted digital certification",
-    did: "did:bel:actor:002",
+    did: "did:ethr:sepolia:0x5678efgh...",
+    email: "nft@kavachtrust.bel.in",
   },
   {
     role: "technician",
@@ -25,7 +27,8 @@ const ROLES: { role: Role; label: string; icon: string; color: string; mental: s
     icon: "◈",
     color: "#f59e0b",
     mental: "Create and maintain accurate technical records",
-    did: "did:bel:actor:003",
+    did: "did:ethr:sepolia:0x9012ijkl...",
+    email: "tech@kavachtrust.bel.in",
   },
   {
     role: "auditor",
@@ -33,23 +36,32 @@ const ROLES: { role: Role; label: string; icon: string; color: string; mental: s
     icon: "◎",
     color: "#22c55e",
     mental: "Investigate and verify",
-    did: "did:bel:actor:004",
+    did: "did:ethr:sepolia:0x3456mnop...",
+    email: "audit@dod.gov.in",
   },
 ];
 
 export default function LoginPage() {
-  const { login } = useRole();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<Role | null>(null);
   const [loading, setLoading] = useState(false);
 
-  function handleSignIn() {
+  async function handleSignIn() {
     if (!selected) return;
     setLoading(true);
-    setTimeout(() => {
-      login(selected);
-      navigate("/app/dashboard");
-    }, 800);
+    try {
+      const selectedRole = ROLES.find(r => r.role === selected);
+      if (selectedRole) {
+        await login(selectedRole.email);
+        navigate("/app/dashboard");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to login");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

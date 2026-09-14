@@ -1,12 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import AuditTimeline from "../../components/ui/AuditTimeline";
-import { AUDIT_EVENTS } from "../../data/mockData";
+import { auditService, AuditEventResponse } from "../../services/audit";
+import { dashboardService } from "../../services/dashboard";
 
 export default function AuditPage() {
   const [filter, setFilter] = useState("ALL");
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const res = await auditService.listAuditEvents({ page_size: 100 });
+        setTotal(res.total);
+        // Map backend response to UI format
+        const mapped = res.items.map((e: AuditEventResponse) => ({
+          id: e.id,
+          timestamp: e.timestamp,
+          actor: e.actor_did,
+          role: e.actor_role,
+          action: e.action,
+          resource: `${e.resource_type}: ${e.resource_id}`,
+          result: e.result,
+          details: e.details,
+          txHash: e.blockchain_tx_hash
+        }));
+        setEvents(mapped);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
-  const filtered = filter === "ALL" ? AUDIT_EVENTS : AUDIT_EVENTS.filter((e) => e.result === filter);
+  const filtered = filter === "ALL" ? events : events.filter((e) => e.result === filter);
 
   return (
     <div className="page-fade">
@@ -34,10 +66,10 @@ export default function AuditPage() {
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         {[
-          { key: "ALL", label: "All Events", count: AUDIT_EVENTS.length },
-          { key: "SUCCESS", label: "Success", count: AUDIT_EVENTS.filter((e) => e.result === "SUCCESS").length },
-          { key: "WARNING", label: "Warning", count: AUDIT_EVENTS.filter((e) => e.result === "WARNING").length },
-          { key: "FAILED", label: "Failed", count: AUDIT_EVENTS.filter((e) => e.result === "FAILED").length },
+          { key: "ALL", label: "All Events" },
+          { key: "SUCCESS", label: "Success" },
+          { key: "WARNING", label: "Warning" },
+          { key: "FAILED", label: "Failed" },
         ].map((f) => (
           <button
             key={f.key}
@@ -55,12 +87,13 @@ export default function AuditPage() {
             }}
           >
             {f.label}
-            <span style={{ marginLeft: 6, fontSize: "0.75rem", opacity: 0.7 }}>({f.count})</span>
           </button>
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="panel" style={{ padding: 40, textAlign: "center", color: "#475569" }}>Loading audit events...</div>
+      ) : filtered.length === 0 ? (
         <div className="panel" style={{ padding: 40, textAlign: "center" }}>
           <div style={{ color: "#475569" }}>No audit events match this filter</div>
         </div>
@@ -69,7 +102,7 @@ export default function AuditPage() {
       )}
 
       <div style={{ marginTop: 20, fontSize: "0.75rem", color: "#475569" }}>
-        {filtered.length} events shown · Click any event to expand technical details
+        Showing {filtered.length} of {total} events (Powered by Backend API)
       </div>
     </div>
   );

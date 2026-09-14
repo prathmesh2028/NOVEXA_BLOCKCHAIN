@@ -1,9 +1,10 @@
 import PageHeader from "../../components/ui/PageHeader";
-import { useRole, getRoleLabel } from "../../context/RoleContext";
+import { useAuth } from "../../context/AuthContext";
+import { RoleBadge } from "../../components/ui/RoleBadge";
 
 export default function SettingsPage() {
-  const { user } = useRole();
-  if (!user) return null;
+  const { user, role } = useAuth();
+  if (!user || !role) return null;
 
   return (
     <div className="page-fade">
@@ -37,14 +38,14 @@ export default function SettingsPage() {
             </div>
             <div>
               <div style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0" }}>{user.name}</div>
-              <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{getRoleLabel(user.role)}</div>
+              <div style={{ fontSize: "0.8125rem", color: "#64748b", textTransform: "capitalize" }}>{role.replace('_', ' ')}</div>
             </div>
           </div>
           {[
             { label: "Name", value: user.name },
             { label: "Email", value: user.email },
-            { label: "Role", value: getRoleLabel(user.role) },
-            { label: "DID", value: user.did, mono: true },
+            { label: "Role", value: role.replace('_', ' ').toUpperCase() },
+            { label: "DID", value: user.actor?.did || "—", mono: true },
             { label: "Identity", value: "✓ Verified" },
           ].map((row) => (
             <div key={row.label} style={{ display: "flex", gap: 12, padding: "8px 0", borderBottom: "1px solid #152b4a" }}>
@@ -117,16 +118,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Wallet */}
-        {user.wallet && (
-          <div className="panel" style={{ padding: 24 }}>
-            <div className="section-label" style={{ marginBottom: 16 }}>WALLET</div>
-            <div style={{ padding: "12px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "5px", marginBottom: 14 }}>
-              <div style={{ fontSize: "0.75rem", color: "#22c55e", fontWeight: 600, marginBottom: 4 }}>● CONNECTED</div>
-              <div className="meta-id" style={{ color: "#94a3b8" }}>{user.wallet}</div>
-            </div>
-            <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>Network: BEL-TRUST-CHAIN (Synthetic Demo)</div>
+        <div className="panel" style={{ padding: 24 }}>
+          <div className="section-label" style={{ marginBottom: 16 }}>WALLET</div>
+          <div style={{ padding: "12px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "5px", marginBottom: 14 }}>
+            <div style={{ fontSize: "0.75rem", color: "#22c55e", fontWeight: 600, marginBottom: 4 }}>● CONNECTED</div>
+            <div className="meta-id" style={{ color: "#94a3b8" }}>0x1F2B...89A3</div>
           </div>
-        )}
+          <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>Network: BEL-TRUST-CHAIN (Synthetic Demo)</div>
+        </div>
       </div>
     </div>
   );

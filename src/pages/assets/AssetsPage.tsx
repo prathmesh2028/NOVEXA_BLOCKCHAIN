@@ -1,21 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { ASSETS, formatDateTime } from "../../data/mockData";
-import { useRole } from "../../context/RoleContext";
+import { formatDateTime } from "../../data/mockData";
+import { useAuth } from "../../context/AuthContext";
+import { assetService, AssetResponse } from "../../services/assets";
 
 export default function AssetsPage() {
-  const { user } = useRole();
+  const { user, role } = useAuth();
   const [search, setSearch] = useState("");
   const [filterLifecycle, setFilterLifecycle] = useState("ALL");
+  
+  const [assets, setAssets] = useState<AssetResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
-  const filtered = ASSETS.filter((a) => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || a.id.toLowerCase().includes(q) || a.batchId.toLowerCase().includes(q) || a.type.toLowerCase().includes(q);
-    const matchLifecycle = filterLifecycle === "ALL" || a.lifecycle === filterLifecycle;
-    return matchSearch && matchLifecycle;
-  });
+  useEffect(() => {
+    const fetchAssets = async () => {
+      setLoading(true);
+      try {
+        const res = await assetService.listAssets({
+          search: search || undefined,
+          lifecycle: filterLifecycle !== "ALL" ? filterLifecycle : undefined,
+          page_size: 100, // Load enough for demo
+        });
+        setAssets(res.items);
+        setTotal(res.total);
+      } catch (err) {
+        console.error("Failed to load assets", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const debounce = setTimeout(fetchAssets, 300);
+    return () => clearTimeout(debounce);
+  }, [search, filterLifecycle]);
 
   return (
     <div className="page-fade">
@@ -24,7 +44,7 @@ export default function AssetsPage() {
         subtitle="All registered defence asset records"
         breadcrumbs={[{ label: "Dashboard", to: "/app/dashboard" }, { label: "Assets" }]}
         actions={
-          user?.role === "technician" && (
+          role === "technician" && (
             <Link to="/app/register" className="btn-primary">
               + Register Asset
             </Link>
@@ -32,14 +52,14 @@ export default function AssetsPage() {
         }
       />
 
-      {/* Lifecycle summary cards */}
+      {/* Lifecycle summary cards (simplified since backend pagination hides exact counts, for now just show static categories) */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[
-          { key: "ALL", label: "All Assets", count: ASSETS.length, color: "#60a5fa" },
-          { key: "ACCEPTED_FOR_ASSEMBLY", label: "Accepted", count: ASSETS.filter((a) => a.lifecycle === "ACCEPTED_FOR_ASSEMBLY").length, color: "#22c55e" },
-          { key: "INSPECTION_RECORDED", label: "In Inspection", count: ASSETS.filter((a) => a.lifecycle === "INSPECTION_RECORDED").length, color: "#f59e0b" },
-          { key: "RECEIVED", label: "Received", count: ASSETS.filter((a) => a.lifecycle === "RECEIVED").length, color: "#60a5fa" },
-          { key: "REJECTED_QUARANTINED", label: "Rejected", count: ASSETS.filter((a) => a.lifecycle === "REJECTED_QUARANTINED").length, color: "#ef4444" },
+          { key: "ALL", label: "All Assets", color: "#60a5fa" },
+          { key: "ACCEPTED_FOR_ASSEMBLY", label: "Accepted", color: "#22c55e" },
+          { key: "INSPECTION_RECORDED", label: "In Inspection", color: "#f59e0b" },
+          { key: "RECEIVED", label: "Received", color: "#60a5fa" },
+          { key: "REJECTED_QUARANTINED", label: "Rejected", color: "#ef4444" },
         ].map((s) => (
           <button
             key={s.key}
@@ -54,10 +74,8 @@ export default function AssetsPage() {
               transition: "all 0.15s",
             }}
           >
-            <div className="font-display" style={{ fontSize: "1.375rem", fontWeight: 700, color: filterLifecycle === s.key ? s.color : "#94a3b8" }}>
-              {s.count}
-            </div>
-            <div style={{ fontSize: "0.6875rem", color: "#64748b", marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontSize: "0.8125rem", color: "#e2e8f0", fontWeight: 600 }}>{s.label}</div>
+            {filterLifecycle === s.key && <div style={{ height: 3, width: 20, background: s.color, marginTop: 4, borderRadius: 2 }} />}
           </button>
         ))}
       </div>
@@ -104,7 +122,11 @@ export default function AssetsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>Loading assets...</td>
+                </tr>
+              ) : assets.length === 0 ? (
                 <tr>
                   <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "#475569", fontSize: "0.875rem" }}>
                     <div style={{ marginBottom: 8, fontSize: "1.5rem", opacity: 0.4 }}>◈</div>
@@ -112,26 +134,26 @@ export default function AssetsPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((a) => (
+                assets.map((a) => (
                   <tr key={a.id} style={{ borderBottom: "1px solid #152b4a" }} className="table-row">
                     <td style={{ padding: "12px 14px" }}>
-                      <Link to={`/app/assets/${a.id}`} style={{ textDecoration: "none" }}>
-                        <span className="meta-id" style={{ color: "#60a5fa" }}>{a.id}</span>
+                      <Link to={`/app/assets/${a.asset_id}`} style={{ textDecoration: "none" }}>
+                        <span className="meta-id" style={{ color: "#60a5fa" }}>{a.asset_id}</span>
                       </Link>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <span className="meta-id">{a.batchId}</span>
+                      <span className="meta-id">{a.batch_id}</span>
                     </td>
                     <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#94a3b8" }}>{a.type}</td>
-                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.lifecycle} size="sm" /></td>
-                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.evidenceStatus} size="sm" /></td>
-                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.certStatus} size="sm" /></td>
-                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.verification} size="sm" /></td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.lifecycle_state} size="sm" /></td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.evidence_status} size="sm" /></td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.cert_status} size="sm" /></td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge status={a.verification_status} size="sm" /></td>
                     <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b", whiteSpace: "nowrap" }}>
-                      {formatDateTime(a.updatedAt)}
+                      {formatDateTime(a.updated_at)}
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <Link to={`/app/assets/${a.id}`} className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem" }}>
+                      <Link to={`/app/assets/${a.asset_id}`} className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem" }}>
                         View →
                       </Link>
                     </td>
@@ -142,7 +164,7 @@ export default function AssetsPage() {
           </table>
         </div>
         <div style={{ padding: "12px 14px", borderTop: "1px solid #152b4a", fontSize: "0.75rem", color: "#475569" }}>
-          Showing {filtered.length} of {ASSETS.length} assets · Synthetic demonstration data
+          Showing {assets.length} of {total} assets (Powered by Backend API)
         </div>
       </div>
     </div>

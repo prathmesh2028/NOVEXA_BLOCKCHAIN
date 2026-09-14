@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Outlet, Navigate } from "react-router";
-import { useRole } from "../../context/RoleContext";
+import { useAuth } from "../../context/AuthContext";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 export default function AppShell() {
-  const { isAuthenticated } = useRole();
+  const { isAuthenticated, isLoading } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+
+  if (isLoading) {
+    return <div style={{ minHeight: "100vh", background: "#070f1d", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}>Loading...</div>;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

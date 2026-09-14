@@ -4,9 +4,20 @@ import StatCard from "../../components/ui/StatCard";
 import StatusBadge from "../../components/ui/StatusBadge";
 import RoleBadge from "../../components/ui/RoleBadge";
 import AuditTimeline from "../../components/ui/AuditTimeline";
-import { AUDIT_EVENTS, ASSETS, CERTIFICATIONS, formatDateTime } from "../../data/mockData";
+import { useState, useEffect } from "react";
+import { AUDIT_EVENTS, CERTIFICATIONS, formatDateTime } from "../../data/mockData";
+import { dashboardService, DashboardSummary } from "../../services/dashboard";
+import { useAuth } from "../../context/AuthContext";
 
 function AdminDashboard() {
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  
+  useEffect(() => {
+    dashboardService.getSummary().then(setSummary).catch(console.error);
+  }, []);
+
+  if (!summary) return <div style={{ padding: 40, color: "#94a3b8" }}>Loading dashboard metrics...</div>;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* System health banner */}
@@ -31,12 +42,12 @@ function AdminDashboard() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
-        <StatCard label="Total Assets" value="847" icon="◈" sub="5 registered today" />
-        <StatCard label="Active Users" value="4" icon="◉" sub="1 pending" />
-        <StatCard label="Certifications" value="312" icon="◆" accent="#22c55e" sub="2 pending review" />
-        <StatCard label="Security Events" value="1" icon="⚠" accent="#f59e0b" sub="Evidence mismatch" />
-        <StatCard label="Blockchain TXs" value="2,411" icon="⬡" sub="Synced" />
-        <StatCard label="Audit Events" value="441" icon="≡" sub="Last 30 days" />
+        <StatCard label="Total Assets" value={summary.total_assets.toString()} icon="◈" />
+        <StatCard label="Active Users" value={summary.active_users.toString()} icon="◉" sub={`${summary.pending_users} pending`} />
+        <StatCard label="Certifications" value={summary.total_certifications.toString()} icon="◆" accent="#22c55e" sub={`${summary.pending_certifications} pending`} />
+        <StatCard label="Verification Issues" value={summary.failed_verifications.toString()} icon="⚠" accent="#f59e0b" />
+        <StatCard label="Blockchain TXs" value={summary.total_blockchain_txs.toString()} icon="⬡" />
+        <StatCard label="Audit Events" value={summary.total_audit_events.toString()} icon="≡" />
       </div>
 
       {/* Attention items */}
@@ -309,8 +320,8 @@ function AuditorDashboard() {
 }
 
 export default function DashboardPage() {
-  const { user } = useRole();
-  if (!user) return null;
+  const { user, role } = useAuth();
+  if (!user || !role) return null;
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -330,16 +341,16 @@ export default function DashboardPage() {
           {greeting}, {user.name.split(" ")[0]}
         </h1>
         <p style={{ fontSize: "0.875rem", color: "#64748b", margin: 0 }}>
-          Signed in as <RoleBadge role={user.role} size="sm" /> · Identity{" "}
+          Signed in as <RoleBadge role={role} size="sm" /> · Identity{" "}
           <span style={{ color: "#22c55e", fontWeight: 600 }}>✓ Verified</span> ·{" "}
-          <span className="meta-id">{user.did}</span>
+          <span className="meta-id">{user.actor?.did || "—"}</span>
         </p>
       </div>
 
-      {user.role === "admin" && <AdminDashboard />}
-      {user.role === "nft-creator" && <NFTCreatorDashboard />}
-      {user.role === "technician" && <TechnicianDashboard />}
-      {user.role === "auditor" && <AuditorDashboard />}
+      {role === "admin" && <AdminDashboard />}
+      {role === "nft-creator" && <NFTCreatorDashboard />}
+      {role === "technician" && <TechnicianDashboard />}
+      {role === "auditor" && <AuditorDashboard />}
     </div>
   );
 }

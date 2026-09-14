@@ -2,9 +2,39 @@ import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import StatCard from "../../components/ui/StatCard";
-import { CERTIFICATIONS, formatDateTime } from "../../data/mockData";
+import { useState, useEffect } from "react";
+import { formatDateTime } from "../../data/mockData";
+import { certificationService, CertificationResponse } from "../../services/certifications";
+import { dashboardService } from "../../services/dashboard";
 
 export default function CertificationsPage() {
+  const [certs, setCerts] = useState<CertificationResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [pending, setPending] = useState(0);
+  const [confirmed, setConfirmed] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [listRes, summaryRes] = await Promise.all([
+          certificationService.listCertifications({ page_size: 100 }),
+          dashboardService.getSummary()
+        ]);
+        setCerts(listRes.items);
+        setTotal(listRes.total);
+        setPending(summaryRes.pending_certifications);
+        setConfirmed(summaryRes.confirmed_certifications);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="page-fade">
       <PageHeader
@@ -14,9 +44,9 @@ export default function CertificationsPage() {
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
-        <StatCard label="Total Issued" value="312" icon="◆" accent="#22c55e" />
-        <StatCard label="Pending Confirmation" value="1" icon="◐" accent="#f59e0b" />
-        <StatCard label="Confirmed On-Chain" value="311" icon="⬡" accent="#22c55e" />
+        <StatCard label="Total Issued" value={total.toString()} icon="◆" accent="#22c55e" />
+        <StatCard label="Pending Confirmation" value={pending.toString()} icon="◐" accent="#f59e0b" />
+        <StatCard label="Confirmed On-Chain" value={confirmed.toString()} icon="⬡" accent="#22c55e" />
         <StatCard label="Failed / Revoked" value="0" icon="✕" />
       </div>
 
@@ -33,35 +63,45 @@ export default function CertificationsPage() {
               </tr>
             </thead>
             <tbody>
-              {CERTIFICATIONS.map((c) => (
-                <tr key={c.id} style={{ borderBottom: "1px solid #152b4a" }} className="table-row">
-                  <td style={{ padding: "12px 14px" }}>
-                    <Link to={`/app/certifications/${c.id}`} style={{ textDecoration: "none" }}>
-                      <span className="meta-id" style={{ color: "#60a5fa" }}>{c.id}</span>
-                    </Link>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <Link to={`/app/assets/${c.assetId}`} style={{ textDecoration: "none" }}>
-                      <span className="meta-id" style={{ color: "#94a3b8" }}>{c.assetId}</span>
-                    </Link>
-                  </td>
-                  <td style={{ padding: "12px 14px" }}><span className="meta-id">{c.batchId}</span></td>
-                  <td style={{ padding: "12px 14px" }}><span className="meta-id">{c.tokenId}</span></td>
-                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#94a3b8" }}>{c.issuedBy}</td>
-                  <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b", whiteSpace: "nowrap" }}>{formatDateTime(c.issuedAt)}</td>
-                  <td style={{ padding: "12px 14px" }}><StatusBadge status={c.status} size="sm" /></td>
-                  <td style={{ padding: "12px 14px" }}>
-                    <Link to={`/app/certifications/${c.id}`} className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem" }}>
-                      View →
-                    </Link>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>Loading certifications...</td>
                 </tr>
-              ))}
+              ) : certs.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>No certifications found.</td>
+                </tr>
+              ) : (
+                certs.map((c) => (
+                  <tr key={c.id} style={{ borderBottom: "1px solid #152b4a" }} className="table-row">
+                    <td style={{ padding: "12px 14px" }}>
+                      <Link to={`/app/certifications/${c.id}`} style={{ textDecoration: "none" }}>
+                        <span className="meta-id" style={{ color: "#60a5fa" }}>{c.cert_id}</span>
+                      </Link>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <Link to={`/app/assets/${c.asset_id}`} style={{ textDecoration: "none" }}>
+                        <span className="meta-id" style={{ color: "#94a3b8" }}>{c.asset_id}</span>
+                      </Link>
+                    </td>
+                    <td style={{ padding: "12px 14px" }}><span className="meta-id">{c.batch_id}</span></td>
+                    <td style={{ padding: "12px 14px" }}><span className="meta-id">{c.token_id || "—"}</span></td>
+                    <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "#94a3b8" }}>{c.issued_by || "—"}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b", whiteSpace: "nowrap" }}>{formatDateTime(c.issued_at)}</td>
+                    <td style={{ padding: "12px 14px" }}><StatusBadge status={c.status} size="sm" /></td>
+                    <td style={{ padding: "12px 14px" }}>
+                      <Link to={`/app/certifications/${c.id}`} className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem" }}>
+                        View →
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
         <div style={{ padding: "12px 14px", borderTop: "1px solid #152b4a", fontSize: "0.75rem", color: "#475569" }}>
-          {CERTIFICATIONS.length} certification records · Non-transferable · Synthetic demonstration data
+          Showing {certs.length} of {total} certification records (Powered by Backend API)
         </div>
       </div>
 

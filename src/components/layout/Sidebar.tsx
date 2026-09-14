@@ -1,5 +1,6 @@
 import { NavLink, Link } from "react-router";
-import { useRole, getRoleLabel, getRoleColor } from "../../context/RoleContext";
+import { getRoleLabel, getRoleColor } from "../../context/RoleContext";
+import { useAuth } from "../../context/AuthContext";
 import type { Role } from "../../context/RoleContext";
 
 const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: string; icon: string }[] }> = {
@@ -61,11 +62,11 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const { user, logout } = useRole();
-  if (!user) return null;
+  const { user, role, logout } = useAuth();
+  if (!user || !role) return null;
 
-  const nav = NAV_CONFIG[user.role];
-  const roleColor = getRoleColor(user.role);
+  const nav = NAV_CONFIG[role];
+  const roleColor = getRoleColor(role);
 
   return (
     <aside
@@ -224,12 +225,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     fontWeight: 600,
                   }}
                 >
-                  {getRoleLabel(user.role)}
+                  {getRoleLabel(role)}
                 </div>
               </div>
             </div>
             <div className="meta-id" style={{ marginBottom: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {user.did}
+              {user.actor?.did || "—"}
             </div>
             <button
               onClick={logout}
