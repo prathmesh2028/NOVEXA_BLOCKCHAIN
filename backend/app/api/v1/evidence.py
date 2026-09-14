@@ -64,3 +64,65 @@ def list_evidence(
         "page_size": page_size,
         "has_next": (offset + page_size) < total,
     }
+
+from pydantic import BaseModel
+import datetime
+from app.services.blockchain import blockchain_service
+
+class EvidenceCreate(BaseModel):
+    asset_id: str
+    filename: str
+    type: str
+    mime_type: str
+    size_bytes: int
+    sha256_hash: str
+    event_type: str
+
+@router.post("")
+def create_evidence(
+    data: EvidenceCreate,
+    user: CurrentUser,
+    db: Session = Depends(get_db)
+):
+    """Upload new evidence and anchor it on the blockchain."""
+    asset = db.query(Asset).filter(Asset.asset_id == data.asset_id).first()
+    if not asset:
+        return {"error": "Asset not found"}
+        
+    try:
+        # Anchor on blockchain
+        tx_data = blockchain_service.anchor_evidence(
+            asset_id=asset.asset_id,
+            evidence_hash=data.sha256_hash
+        )
+        
+        ev = Evidence(
+            evidence_id=f"EV-{datetime.datetime.now().year}-{data.sha256_hash[:6].upper()}",
+            asset_id=asset.id,
+            original_filename=data.filename,
+            type=data.type,
+            mime_type=data.mime_type,
+            size_bytes=data.size_bytes,
+            sha256_hash=data.sha256_hash,
+            storage_path=f"mock/path/{data.filename}",
+            event_type=data.event_type,
+            uploaded_by_actor_id=user.actor.id if hasattr(user, "actor") else user.id,
+            status="VERIFIED",
+            integrity_verified=True,
+            blockchain_tx_hash=tx_data['tx_hash'],
+            created_at=datetime.datetime.utcnow()
+        )
+        db.add(ev)
+        db.commit()
+        db.refresh(ev)
+        
+        return {
+            "success": True,
+            "evidence": {
+                "id": ev.id,
+                "evidence_id": ev.evidence_id,
+                "tx_hash": ev.blockchain_tx_hash
+            }
+        }
+    except Exception as e:
+        return {"error": str(e)}

@@ -59,3 +59,69 @@ def list_certifications(
         "page_size": page_size,
         "has_next": (offset + page_size) < total,
     }
+
+from pydantic import BaseModel
+import datetime
+from app.services.blockchain import blockchain_service
+
+class CertificationCreate(BaseModel):
+    asset_id: str
+    evidence_hash: str
+
+@router.post("")
+def create_certification(
+    data: CertificationCreate,
+    user: CurrentUser,
+    db: Session = Depends(get_db)
+):
+    """Mint a new certification on the blockchain."""
+    # Verify the asset
+    asset = db.query(Asset).filter(Asset.asset_id == data.asset_id).first()
+    if not asset:
+        return {"error": "Asset not found"}
+        
+    batch = db.query(Batch).filter(Batch.id == asset.batch_id).first()
+    batch_id_str = batch.batch_id if batch else "UNKNOWN"
+
+    try:
+        # 1. Call blockchain service to mint SBT
+        # user.actor.did should ideally be used for `to_did`, 
+        # but our service handles the mapping internally.
+        tx_data = blockchain_service.mint_certification(
+            to_did=user.actor.did if hasattr(user, "actor") else "did:mock",
+            asset_id=asset.asset_id,
+            batch_id=batch_id_str,
+            evidence_hash=data.evidence_hash
+        )
+        
+        # 2. Save record to DB
+        cert = Certification(
+            cert_id=f"CERT-{datetime.datetime.now().year}-{tx_data['token_id']:05d}",
+            asset_id=asset.id,
+            batch_id=batch.id if batch else asset.id, # Mocking batch id requirement
+            token_id=str(tx_data['token_id']),
+            contract_address="0xMockAddress", # Will be fetched dynamically normally
+            network="BEL-TRUST-CHAIN",
+            tx_hash=tx_data['tx_hash'],
+            block_number=tx_data['block_number'],
+            status="ACTIVE",
+            issued_by_actor_id=user.actor.id if hasattr(user, "actor") else user.id,
+            issued_at=datetime.datetime.utcnow(),
+            confirmed_at=datetime.datetime.utcnow(),
+            confirmations=1
+        )
+        db.add(cert)
+        db.commit()
+        db.refresh(cert)
+        
+        return {
+            "success": True,
+            "certification": {
+                "id": cert.id,
+                "cert_id": cert.cert_id,
+                "tx_hash": cert.tx_hash,
+                "token_id": cert.token_id
+            }
+        }
+    except Exception as e:
+        return {"error": str(e)}
