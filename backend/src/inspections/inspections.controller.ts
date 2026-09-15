@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
 
-@Controller('api/v1/inspections')
+@Controller('inspections')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class InspectionsController {
   constructor(private readonly inspectionsService: InspectionsService) {}

@@ -3,7 +3,7 @@ import { CertificationsService } from './certifications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
-@Controller('api/v1/certifications')
+@Controller('certifications')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class CertificationsController {
   constructor(private readonly certificationsService: CertificationsService) {}

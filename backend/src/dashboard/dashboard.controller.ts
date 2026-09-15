@@ -3,7 +3,7 @@ import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
-@Controller('api/v1/dashboard')
+@Controller('dashboard')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}

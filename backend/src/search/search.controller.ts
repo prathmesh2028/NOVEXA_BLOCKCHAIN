@@ -3,7 +3,7 @@ import { SearchService } from './search.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
-@Controller('api/v1/search')
+@Controller('search')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}

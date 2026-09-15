@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { Request } from 'express';
 
-@Controller('api/v1/assets')
+@Controller('assets')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}

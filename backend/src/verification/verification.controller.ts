@@ -3,7 +3,7 @@ import { VerificationService } from './verification.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
-@Controller('api/v1/verification')
+@Controller('verification')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}

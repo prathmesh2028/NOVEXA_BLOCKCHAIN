@@ -5,7 +5,7 @@ import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
 import { Request } from 'express';
 
-@Controller('api/v1/lifecycle')
+@Controller('lifecycle')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class LifecycleController {
   constructor(private readonly lifecycleService: LifecycleService) {}

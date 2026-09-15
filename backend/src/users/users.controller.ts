@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
-@Controller('api/v1/users')
+@Controller('users')
 @UseGuards(JwtAuthGuard, CasbinGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
