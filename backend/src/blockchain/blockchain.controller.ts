@@ -1,13 +1,14 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { BlockchainService } from './blockchain.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
 @Controller('blockchain')
 export class BlockchainController {
   constructor(private readonly blockchainService: BlockchainService) {}
 
   @Get('transactions')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CasbinGuard)
   async listTransactions(
     @Query('asset_id') assetId?: string,
     @Query('status') status?: string,
@@ -27,7 +28,7 @@ export class BlockchainController {
    * evidence anchors, and on-chain verification result.
    */
   @Get('proof/:assetId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CasbinGuard)
   async getAssetProof(@Param('assetId') assetId: string) {
     return this.blockchainService.getAssetProof(assetId);
   }

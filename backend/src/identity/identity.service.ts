@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as crypto from 'crypto';
 
 /**
  * Identity Service — DID management (did:web) and W3C VC 2.0 credential operations.
@@ -22,26 +23,55 @@ export class IdentityService {
     if (!actor) throw new Error(`Actor ${actorId} not found`);
 
     const did = `did:web:${domain}:actor:${actorId.slice(0, 8)}`;
+    const keys = this.generateEd25519KeyPair();
+    const keyId = `${did}#key-1`;
 
     await this.prisma.dIDDocument.create({
       data: {
         actorId,
         did,
         document: {
-          '@context': ['https://www.w3.org/ns/did/v1'],
+          '@context': [
+            'https://www.w3.org/ns/did/v1',
+            'https://w3id.org/security/suites/ed25519-2020/v1'
+          ],
           id: did,
-          verificationMethod: [],
-          authentication: [],
+          verificationMethod: [
+            {
+              id: keyId,
+              type: 'Ed25519VerificationKey2020',
+              controller: did,
+              publicKeyMultibase: keys.publicKey // Simplification, multibase encoding would be proper here
+            }
+          ],
+          authentication: [keyId],
+          assertionMethod: [keyId],
         },
       },
     });
 
     await this.prisma.actor.update({
       where: { id: actorId },
-      data: { did },
+      data: { 
+        did,
+        publicKey: keys.publicKey
+      },
     });
 
     return did;
+  }
+
+  /**
+   * Generate an Ed25519 KeyPair for a DID.
+   * Returns base64 encoded public and private keys.
+   */
+  generateEd25519KeyPair(): { publicKey: string; privateKey: string } {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
+    
+    return {
+      publicKey: publicKey.export({ type: 'spki', format: 'der' }).toString('base64'),
+      privateKey: privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64'),
+    };
   }
 
   /**

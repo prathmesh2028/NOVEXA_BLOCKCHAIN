@@ -32,6 +32,7 @@ export interface KavachTrustSBTInterface extends Interface {
       | "getApproved"
       | "getCertification"
       | "isApprovedForAll"
+      | "locked"
       | "mintCertification"
       | "name"
       | "owner"
@@ -52,8 +53,10 @@ export interface KavachTrustSBTInterface extends Interface {
       | "Approval"
       | "ApprovalForAll"
       | "CertificationMinted"
+      | "Locked"
       | "OwnershipTransferred"
       | "Transfer"
+      | "Unlocked"
   ): EventFragment;
 
   encodeFunctionData(
@@ -79,6 +82,10 @@ export interface KavachTrustSBTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "locked",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "mintCertification",
@@ -142,6 +149,7 @@ export interface KavachTrustSBTInterface extends Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "locked", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "mintCertification",
     data: BytesLike
@@ -249,6 +257,18 @@ export namespace CertificationMintedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace LockedEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace OwnershipTransferredEvent {
   export type InputTuple = [previousOwner: AddressLike, newOwner: AddressLike];
   export type OutputTuple = [previousOwner: string, newOwner: string];
@@ -272,6 +292,18 @@ export namespace TransferEvent {
   export interface OutputObject {
     from: string;
     to: string;
+    tokenId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace UnlockedEvent {
+  export type InputTuple = [tokenId: BigNumberish];
+  export type OutputTuple = [tokenId: bigint];
+  export interface OutputObject {
     tokenId: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -364,6 +396,8 @@ export interface KavachTrustSBT extends BaseContract {
     [boolean],
     "view"
   >;
+
+  locked: TypedContractMethod<[tokenId: BigNumberish], [boolean], "view">;
 
   mintCertification: TypedContractMethod<
     [to: AddressLike, assetId: string, batchId: string, evidenceHash: string],
@@ -477,6 +511,9 @@ export interface KavachTrustSBT extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "locked"
+  ): TypedContractMethod<[tokenId: BigNumberish], [boolean], "view">;
+  getFunction(
     nameOrSignature: "mintCertification"
   ): TypedContractMethod<
     [to: AddressLike, assetId: string, batchId: string, evidenceHash: string],
@@ -563,6 +600,13 @@ export interface KavachTrustSBT extends BaseContract {
     CertificationMintedEvent.OutputObject
   >;
   getEvent(
+    key: "Locked"
+  ): TypedContractEvent<
+    LockedEvent.InputTuple,
+    LockedEvent.OutputTuple,
+    LockedEvent.OutputObject
+  >;
+  getEvent(
     key: "OwnershipTransferred"
   ): TypedContractEvent<
     OwnershipTransferredEvent.InputTuple,
@@ -575,6 +619,13 @@ export interface KavachTrustSBT extends BaseContract {
     TransferEvent.InputTuple,
     TransferEvent.OutputTuple,
     TransferEvent.OutputObject
+  >;
+  getEvent(
+    key: "Unlocked"
+  ): TypedContractEvent<
+    UnlockedEvent.InputTuple,
+    UnlockedEvent.OutputTuple,
+    UnlockedEvent.OutputObject
   >;
 
   filters: {
@@ -611,6 +662,17 @@ export interface KavachTrustSBT extends BaseContract {
       CertificationMintedEvent.OutputObject
     >;
 
+    "Locked(uint256)": TypedContractEvent<
+      LockedEvent.InputTuple,
+      LockedEvent.OutputTuple,
+      LockedEvent.OutputObject
+    >;
+    Locked: TypedContractEvent<
+      LockedEvent.InputTuple,
+      LockedEvent.OutputTuple,
+      LockedEvent.OutputObject
+    >;
+
     "OwnershipTransferred(address,address)": TypedContractEvent<
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
@@ -631,6 +693,17 @@ export interface KavachTrustSBT extends BaseContract {
       TransferEvent.InputTuple,
       TransferEvent.OutputTuple,
       TransferEvent.OutputObject
+    >;
+
+    "Unlocked(uint256)": TypedContractEvent<
+      UnlockedEvent.InputTuple,
+      UnlockedEvent.OutputTuple,
+      UnlockedEvent.OutputObject
+    >;
+    Unlocked: TypedContractEvent<
+      UnlockedEvent.InputTuple,
+      UnlockedEvent.OutputTuple,
+      UnlockedEvent.OutputObject
     >;
   };
 }

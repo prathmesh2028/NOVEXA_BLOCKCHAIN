@@ -62,6 +62,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Strings__factory>;
     getContractFactory(
+      name: "IERC5192",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC5192__factory>;
+    getContractFactory(
       name: "KavachTrustSBT",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.KavachTrustSBT__factory>;
@@ -127,6 +131,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Strings>;
     getContractAt(
+      name: "IERC5192",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC5192>;
+    getContractAt(
       name: "KavachTrustSBT",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -181,6 +190,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
+      name: "IERC5192",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC5192>;
+    deployContract(
       name: "KavachTrustSBT",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.KavachTrustSBT>;
@@ -245,6 +258,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
+    deployContract(
+      name: "IERC5192",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IERC5192>;
     deployContract(
       name: "KavachTrustSBT",
       args: any[],
