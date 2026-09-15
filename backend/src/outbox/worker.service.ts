@@ -91,28 +91,54 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     const payload = event.payload;
     this.logger.log(`Mint request for certification ${payload.certId}: asset ${payload.assetId}`);
     
-    // Check for idempotency
-    const existingTx = await this.prisma.blockchainTransaction.findUnique({
-      where: { idempotencyKey: event.idempotencyKey },
-    });
-
-    if (existingTx) {
-      this.logger.warn(`Idempotency key ${event.idempotencyKey} already processed. Skipping mint.`);
-      return;
-    }
-
     const contractAddress = process.env.KAVACH_SBT_ADDRESS || '0x0000000000000000000000000000000000000000';
+
+    // 1. Acquire Logical Lock (Atomic Insert)
+    let txRecord;
+    try {
+      txRecord = await this.prisma.blockchainTransaction.create({
+        data: {
+          network: 'BEL-TRUST-CHAIN',
+          status: 'CREATED',
+          action: 'MINT_CERTIFICATION',
+          fromAddress: 'system-wallet',
+          contractAddress,
+          assetId: payload.assetId,
+          certId: payload.certificationId,
+          idempotencyKey: event.idempotencyKey,
+        },
+      });
+    } catch (e: any) {
+      if (e.code === 'P2002') { // Unique constraint failed
+        const existingTx = await this.prisma.blockchainTransaction.findUnique({
+          where: { idempotencyKey: event.idempotencyKey },
+        });
+        if (existingTx) {
+          if (['CREATED', 'SUBMITTED', 'PENDING', 'CONFIRMED'].includes(existingTx.status)) {
+            this.logger.warn(`Idempotency key ${event.idempotencyKey} is already being processed/confirmed (Status: ${existingTx.status}). Skipping mint to prevent double-mint.`);
+            return;
+          }
+          throw new Error(`Transaction in ambiguous state: ${existingTx.status}. Needs manual reconciliation.`);
+        }
+      }
+      throw e;
+    }
     
-    // Attempt submission
+    // 2. Attempt submission
     const result = await this.blockchainAdapter.submitTransaction({
       to: contractAddress,
       data: '0x', // Fake ABI encoded data for mintCertification
     });
 
     if (result.status === 'FAILED') {
+      await this.prisma.blockchainTransaction.update({
+        where: { id: txRecord.id },
+        data: { status: 'FAILED' },
+      });
       throw new Error('Blockchain transaction submission failed');
     }
 
+    // 3. Update DB after submission
     await this.prisma.$transaction(async (tx) => {
       // Update certification with txHash
       const cert = await tx.certification.update({
@@ -123,17 +149,12 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         },
       });
 
-      // Also create the blockchain transaction record
-      await tx.blockchainTransaction.create({
+      // Update the blockchain transaction record
+      await tx.blockchainTransaction.update({
+        where: { id: txRecord.id },
         data: {
           txHash: result.txHash,
-          network: 'BEL-TRUST-CHAIN',
           status: result.status === 'SIMULATED' ? 'CONFIRMED' : 'SUBMITTED',
-          action: 'MINT_CERTIFICATION',
-          fromAddress: 'system-wallet',
-          contractAddress,
-          assetId: payload.assetId,
-          idempotencyKey: event.idempotencyKey,
         },
       });
 

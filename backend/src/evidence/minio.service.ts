@@ -13,8 +13,8 @@ export class MinioService implements OnModuleInit {
       endPoint: process.env.MINIO_ENDPOINT || 'localhost',
       port: parseInt(process.env.MINIO_PORT || '9000', 10),
       useSSL: process.env.MINIO_USE_SSL === 'true',
-      accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-      secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+      accessKey: process.env.MINIO_ACCESS_KEY as string,
+      secretKey: process.env.MINIO_SECRET_KEY as string,
     });
   }
 
@@ -35,8 +35,11 @@ export class MinioService implements OnModuleInit {
 
   async uploadFile(objectName: string, buffer: Buffer, mimeType: string = 'application/octet-stream'): Promise<string> {
     if (!this.isOnline) {
-      this.logger.debug(`[Offline Mode] Simulating upload for ${objectName}`);
-      return `offline-mock-url/${this.bucketName}/${objectName}`;
+      if (process.env.APP_ENV === 'demo') {
+        this.logger.debug(`[Offline Mode] DEMO Simulating upload for ${objectName}`);
+        return `offline-mock-url/${this.bucketName}/${objectName}`;
+      }
+      throw new Error('MinIO storage is unavailable');
     }
 
     try {
@@ -52,8 +55,11 @@ export class MinioService implements OnModuleInit {
 
   async downloadFile(objectName: string): Promise<Buffer> {
     if (!this.isOnline) {
-      this.logger.debug(`[Offline Mode] Simulating download for ${objectName}`);
-      return Buffer.from('Mock file content for ' + objectName);
+      if (process.env.APP_ENV === 'demo') {
+        this.logger.debug(`[Offline Mode] DEMO Simulating download for ${objectName}`);
+        return Buffer.from('Mock file content for ' + objectName);
+      }
+      throw new Error('MinIO storage is unavailable');
     }
 
     try {
@@ -67,6 +73,16 @@ export class MinioService implements OnModuleInit {
     } catch (error: any) {
       this.logger.error(`Failed to download object ${objectName} from MinIO`, error);
       throw error;
+    }
+  }
+
+  async deleteFile(objectName: string): Promise<void> {
+    if (!this.isOnline) return;
+    try {
+      await this.minioClient.removeObject(this.bucketName, objectName);
+      this.logger.log(`Deleted object ${objectName} from MinIO`);
+    } catch (error: any) {
+      this.logger.error(`Failed to delete object ${objectName} from MinIO`, error);
     }
   }
 }

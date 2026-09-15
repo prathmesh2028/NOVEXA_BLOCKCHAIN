@@ -25,7 +25,7 @@ export class BlockchainAdapter {
   private async initConnection() {
     try {
       const rpcUrl = this.config.blockchainRpcUrl;
-      const privateKey = process.env.BLOCKCHAIN_PRIVATE_KEY || '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'; // Hardhat #0
+      const privateKey = this.config.blockchainPrivateKey;
 
       if (rpcUrl) {
         this.publicClient = createPublicClient({
@@ -81,8 +81,12 @@ export class BlockchainAdapter {
     value?: bigint;
   }): Promise<{ txHash: string; status: string }> {
     if (!this.connected) {
-      this.logger.warn('Blockchain not connected — simulating transaction submission');
-      return { txHash: `0xmocktx${Date.now()}`, status: 'SIMULATED' };
+      if (process.env.APP_ENV === 'demo') {
+        this.logger.warn('Blockchain not connected — DEMO mode simulating transaction submission');
+        return { txHash: `0xDEMO-mocktx${Date.now()}`, status: 'SIMULATED' };
+      }
+      this.logger.error('Blockchain not connected — failing transaction submission');
+      return { txHash: '', status: 'FAILED' };
     }
     
     try {
