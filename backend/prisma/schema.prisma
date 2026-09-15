@@ -1,0 +1,512 @@
+// ─────────────────────────────────────────────────────
+// KavachTrust Backend V2 — Prisma Schema
+// Domain: Defence Asset Trust & Certification
+// ─────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════
+// IDENTITY & AUTH DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  PENDING
+}
+
+enum IdentityStatus {
+  VERIFIED
+  PENDING
+  REVOKED
+}
+
+enum AppRole {
+  ADMIN
+  NFT_CREATOR
+  TECHNICIAN
+  AUDITOR
+}
+
+enum DataClassification {
+  PUBLIC
+  INTERNAL
+  SENSITIVE
+  RESTRICTED
+}
+
+model User {
+  id              String       @id @default(uuid())
+  email           String       @unique
+  name            String
+  passwordHash    String       @map("password_hash")
+  status          UserStatus   @default(PENDING)
+  lastActive      DateTime?    @map("last_active")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  roles           UserRole[]
+  actor           Actor?
+  auditEvents     AuditEvent[] @relation("AuditActor")
+
+  @@map("users")
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  role      AppRole
+  grantedAt DateTime @default(now()) @map("granted_at")
+  grantedBy String?  @map("granted_by")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+model Actor {
+  id               String         @id @default(uuid())
+  userId           String         @unique @map("user_id")
+  did              String         @unique
+  walletAddress    String?        @map("wallet_address")
+  credentialStatus IdentityStatus @default(PENDING) @map("credential_status")
+  identityStatus   IdentityStatus @default(PENDING) @map("identity_status")
+  publicKey        String?        @map("public_key")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id])
+  credentials   Credential[]
+  dids          DIDDocument[]
+
+  @@map("actors")
+}
+
+model DIDDocument {
+  id          String   @id @default(uuid())
+  actorId     String   @map("actor_id")
+  did         String   @unique
+  document    Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  actor Actor @relation(fields: [actorId], references: [id])
+
+  @@map("did_documents")
+}
+
+model Credential {
+  id                String         @id @default(uuid())
+  actorId           String         @map("actor_id")
+  type              String
+  issuer            String
+  subject           String
+  validFrom         DateTime       @map("valid_from")
+  validUntil        DateTime?      @map("valid_until")
+  credentialSubject Json           @map("credential_subject")
+  credentialStatus  IdentityStatus @default(PENDING) @map("credential_status")
+  proof             Json?
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  actor Actor @relation(fields: [actorId], references: [id])
+
+  @@map("credentials")
+}
+
+// ═══════════════════════════════════════════════════════
+// ASSET & TRACEABILITY DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum LifecycleState {
+  UNREGISTERED
+  SUPPLIER_DECLARED
+  RECEIVED
+  INSPECTION_RECORDED
+  ACCEPTED_FOR_ASSEMBLY
+  REJECTED_QUARANTINED
+  INSPECTION_OVERDUE
+}
+
+enum VerificationStatus {
+  VERIFIED
+  REVIEW_REQUIRED
+  FAILED
+  UNAVAILABLE
+  PENDING
+}
+
+enum EvidenceStatus {
+  COMPLETE
+  PROCESSING
+  HASHING
+  FAILED
+  INVALID
+  DUPLICATE
+  UPLOADING
+}
+
+enum CertStatus {
+  CONFIRMED
+  PENDING
+  FAILED
+  REVOKED
+  NOT_CERTIFIED
+}
+
+model Batch {
+  id              String   @id @default(uuid())
+  batchId         String   @unique @map("batch_id") // Display ID e.g. "EF-BATCH-2026-017"
+  description     String?
+  supplier        String?
+  receivedAt      DateTime? @map("received_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  assets          Asset[]
+  certifications  Certification[]
+
+  @@map("batches")
+}
+
+model Asset {
+  id                 String             @id @default(uuid())
+  assetId            String             @unique @map("asset_id") // Display ID e.g. "EF-2026-00421"
+  batchRefId         String             @map("batch_ref_id")
+  type               String
+  model              String
+  serialNumber       String             @unique @map("serial_number")
+  description        String?
+  supplier           String?
+  lifecycleState     LifecycleState     @default(UNREGISTERED) @map("lifecycle_state")
+  verificationStatus VerificationStatus @default(PENDING) @map("verification_status")
+  evidenceCount      Int                @default(0) @map("evidence_count")
+  evidenceStatus     EvidenceStatus     @default(PROCESSING) @map("evidence_status")
+  certStatus         CertStatus         @default(NOT_CERTIFIED) @map("cert_status")
+  certId             String?            @map("cert_id")
+  registeredById     String?            @map("registered_by_id")
+  registeredByName   String?            @map("registered_by_name")
+  classification     DataClassification @default(INTERNAL)
+  version            Int                @default(1)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  batch              Batch              @relation(fields: [batchRefId], references: [id])
+  evidence           Evidence[]
+  inspections        Inspection[]
+  lifecycleEvents    LifecycleEvent[]
+  certifications     Certification[]
+  technicalRecords   TechnicalRecord[]
+  physicalBindings   PhysicalBinding[]
+  blockchainTxs      BlockchainTransaction[]
+
+  @@map("assets")
+}
+
+model PhysicalBinding {
+  id        String   @id @default(uuid())
+  assetId   String   @map("asset_id")
+  bindingType String @map("binding_type")
+  identifier String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@map("physical_bindings")
+}
+
+model TechnicalRecord {
+  id        String             @id @default(uuid())
+  assetId   String             @map("asset_id")
+  recordType String            @map("record_type")
+  data      Json
+  classification DataClassification @default(INTERNAL)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@map("technical_records")
+}
+
+// ═══════════════════════════════════════════════════════
+// EVIDENCE DOMAIN
+// ═══════════════════════════════════════════════════════
+
+model Evidence {
+  id                String             @id @default(uuid())
+  evidenceId        String             @unique @map("evidence_id") // Display ID e.g. "EVD-2026-001"
+  assetId           String             @map("asset_id")
+  filename          String
+  type              String             // "Inspection Report", "Supplier Declaration", etc.
+  mimeType          String             @map("mime_type")
+  sizeKb            Float              @map("size_kb")
+  status            EvidenceStatus     @default(PROCESSING)
+  hash              String             // SHA-256
+  objectKey         String?            @map("object_key") // MinIO key
+  event             String             // Lifecycle event this evidence relates to
+  integrityVerified Boolean            @default(false) @map("integrity_verified")
+  blockchainTx      String?            @map("blockchain_tx")
+  uploadedById      String?            @map("uploaded_by_id")
+  uploadedByName    String?            @map("uploaded_by_name")
+  uploadedByRole    String?            @map("uploaded_by_role")
+  classification    DataClassification @default(INTERNAL)
+  encryptedKey      String?            @map("encrypted_key") // AES key for SENSITIVE/RESTRICTED
+  currentVersion    Int                @default(1) @map("current_version")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  asset    Asset             @relation(fields: [assetId], references: [id])
+  versions EvidenceVersion[]
+
+  @@map("evidence")
+}
+
+model EvidenceVersion {
+  id            String   @id @default(uuid())
+  evidenceId    String   @map("evidence_id")
+  version       Int
+  hash          String   // SHA-256 of this version
+  objectKey     String   @map("object_key")
+  actorId       String?  @map("actor_id")
+  actorDid      String?  @map("actor_did")
+  previousHash  String?  @map("previous_hash")
+  status        EvidenceStatus @default(PROCESSING)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  evidence Evidence @relation(fields: [evidenceId], references: [id])
+
+  @@unique([evidenceId, version])
+  @@map("evidence_versions")
+}
+
+// ═══════════════════════════════════════════════════════
+// INSPECTION & LIFECYCLE DOMAIN
+// ═══════════════════════════════════════════════════════
+
+model Inspection {
+  id          String   @id @default(uuid())
+  assetId     String   @map("asset_id")
+  inspectorId String?  @map("inspector_id")
+  inspectorDid String? @map("inspector_did")
+  result      String   // PASS, FAIL, CONDITIONAL
+  notes       String?
+  evidenceIds String[] @map("evidence_ids")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@map("inspections")
+}
+
+model LifecycleEvent {
+  id              String         @id @default(uuid())
+  assetId         String         @map("asset_id")
+  fromState       LifecycleState @map("from_state")
+  toState         LifecycleState @map("to_state")
+  actorId         String?        @map("actor_id")
+  actorDid        String?        @map("actor_did")
+  actorRole       String?        @map("actor_role")
+  reason          String?
+  evidenceIds     String[]       @map("evidence_ids")
+  idempotencyKey  String?        @unique @map("idempotency_key")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@map("lifecycle_events")
+}
+
+model ExpectedTransition {
+  id            String         @id @default(uuid())
+  fromState     LifecycleState @map("from_state")
+  toState       LifecycleState @map("to_state")
+  allowedRole   AppRole        @map("allowed_role")
+  permission    String
+  requiresEvidence   Boolean   @default(false) @map("requires_evidence")
+  requiresInspection Boolean   @default(false) @map("requires_inspection")
+  requiresCredential Boolean   @default(false) @map("requires_credential")
+  description   String?
+
+  @@unique([fromState, toState, allowedRole])
+  @@map("expected_transitions")
+}
+
+// ═══════════════════════════════════════════════════════
+// CERTIFICATION & PASSPORT DOMAIN
+// ═══════════════════════════════════════════════════════
+
+model Certification {
+  id              String     @id @default(uuid())
+  certId          String     @unique @map("cert_id") // Display ID e.g. "CERT-2026-00089"
+  assetId         String     @map("asset_id")
+  batchRefId      String     @map("batch_ref_id")
+  tokenId         String?    @map("token_id")
+  contractAddress String?    @map("contract_address")
+  network         String?
+  txHash          String?    @map("tx_hash")
+  blockNumber     Int?       @map("block_number")
+  status          CertStatus @default(PENDING)
+  issuedById      String?    @map("issued_by_id")
+  issuedByName    String?    @map("issued_by_name")
+  issuedByDid     String?    @map("issued_by_did")
+  issuedAt        DateTime   @default(now()) @map("issued_at")
+  confirmedAt     DateTime?  @map("confirmed_at")
+  confirmations   Int        @default(0)
+  mintRequestId   String?    @unique @map("mint_request_id") // Idempotency: 1 cert → 1 mint
+  revokedAt       DateTime?  @map("revoked_at")
+  revokedBy       String?    @map("revoked_by")
+  revokeReason    String?    @map("revoke_reason")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+  batch Batch @relation(fields: [batchRefId], references: [id])
+
+  @@map("certifications")
+}
+
+// ═══════════════════════════════════════════════════════
+// BLOCKCHAIN DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum TxStatus {
+  CREATED
+  SUBMITTED
+  PENDING
+  MINED
+  VERIFIED
+  FAILED
+  REVERTED
+  MISMATCH
+  CONFIRMED
+  REJECTED
+}
+
+model BlockchainTransaction {
+  id              String   @id @default(uuid())
+  txHash          String?  @unique @map("tx_hash")
+  network         String
+  blockNumber     Int?     @map("block_number")
+  status          TxStatus @default(CREATED)
+  action          String   // "Certification Mint", "Evidence Anchor", etc.
+  assetId         String?  @map("asset_id")
+  certId          String?  @map("cert_id")
+  confirmations   Int      @default(0)
+  gasUsed         Int?     @map("gas_used")
+  fromAddress     String?  @map("from_address")
+  contractAddress String?  @map("contract_address")
+  tokenId         String?  @map("token_id")
+  inputData       String?  @map("input_data")
+  errorMessage    String?  @map("error_message")
+  idempotencyKey  String?  @unique @map("idempotency_key")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  asset           Asset?   @relation(fields: [assetId], references: [id])
+
+  @@map("blockchain_transactions")
+}
+
+model BlockchainVerification {
+  id              String   @id @default(uuid())
+  txHash          String   @map("tx_hash")
+  chainId         Int      @map("chain_id")
+  contractAddress String   @map("contract_address")
+  tokenId         String?  @map("token_id")
+  expectedStatus  String   @map("expected_status")
+  actualStatus    String   @map("actual_status")
+  isMatch         Boolean  @map("is_match")
+  details         Json?
+  verifiedAt      DateTime @default(now()) @map("verified_at")
+
+  @@map("blockchain_verifications")
+}
+
+// ═══════════════════════════════════════════════════════
+// AUDIT & INTEGRITY DOMAIN
+// ═══════════════════════════════════════════════════════
+
+model AuditEvent {
+  id              String   @id @default(uuid())
+  eventType       String   @map("event_type")
+  actorId         String?  @map("actor_id")
+  actorDid        String?  @map("actor_did")
+  actorRole       String?  @map("actor_role")
+  actorName       String?  @map("actor_name")
+  action          String
+  resourceType    String?  @map("resource_type")
+  resourceId      String?  @map("resource_id")
+  result          String   @default("SUCCESS") // SUCCESS, WARNING, FAILED
+  details         String?
+  payload         Json?
+  payloadHash     String?  @map("payload_hash") // SHA-256 of canonical payload
+  previousHash    String?  @map("previous_hash") // Hash chain
+  requestId       String?  @map("request_id")
+  blockchainTxHash String? @map("blockchain_tx_hash")
+  classification  DataClassification @default(INTERNAL)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  actorUser User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([eventType])
+  @@index([actorDid])
+  @@index([resourceId])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+model Checkpoint {
+  id          String   @id @default(uuid())
+  rangeStart  DateTime @map("range_start")
+  rangeEnd    DateTime @map("range_end")
+  eventCount  Int      @map("event_count")
+  merkleRoot  String   @map("merkle_root")
+  policy      String   @default("PROPOSED") // PROPOSED, SIMULATED, WITNESSED
+  witnessMetadata Json? @map("witness_metadata")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("checkpoints")
+}
+
+// ═══════════════════════════════════════════════════════
+// OUTBOX & WORKER DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum OutboxStatus {
+  PENDING
+  CLAIMED
+  PROCESSING
+  COMPLETED
+  FAILED
+  TERMINAL
+}
+
+model OutboxEvent {
+  id              String       @id @default(uuid())
+  eventType       String       @map("event_type")
+  payload         Json
+  status          OutboxStatus @default(PENDING)
+  idempotencyKey  String       @unique @map("idempotency_key")
+  attemptCount    Int          @default(0) @map("attempt_count")
+  maxAttempts     Int          @default(5) @map("max_attempts")
+  nextAttemptAt   DateTime?    @map("next_attempt_at")
+  lastError       String?      @map("last_error")
+  claimedBy       String?      @map("claimed_by")
+  claimedAt       DateTime?    @map("claimed_at")
+  completedAt     DateTime?    @map("completed_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@index([status, nextAttemptAt])
+  @@map("outbox_events")
+}
