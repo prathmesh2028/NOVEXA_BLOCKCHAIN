@@ -1,15 +1,15 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
-@Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('api/v1/users')
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @RequireRoles('ADMIN')
+  @CasbinPolicy('/api/v1/users', 'GET')
   async listUsers(
     @Query('search') search?: string,
     @Query('status') status?: string,

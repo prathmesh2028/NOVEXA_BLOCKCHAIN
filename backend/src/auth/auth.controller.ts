@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Req, UseGuards, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from './guards/casbin.guard';
 import { Request } from 'express';
 
 @Controller('auth')
@@ -14,7 +15,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CasbinGuard)
   async getMe(@Req() req: Request) {
     const userId = (req as any).user.sub;
     return this.authService.getMe(userId);

@@ -1,11 +1,12 @@
 import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { LifecycleService } from './lifecycle.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
 import { Request } from 'express';
 
-@Controller('lifecycle')
-@UseGuards(JwtAuthGuard)
+@Controller('api/v1/lifecycle')
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class LifecycleController {
   constructor(private readonly lifecycleService: LifecycleService) {}
 

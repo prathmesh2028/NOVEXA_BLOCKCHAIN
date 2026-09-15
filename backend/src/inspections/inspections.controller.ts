@@ -1,10 +1,11 @@
 import { Controller, Post, Get, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { InspectionsService } from './inspections.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
 
-@Controller('inspections')
-@UseGuards(JwtAuthGuard)
+@Controller('api/v1/inspections')
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class InspectionsController {
   constructor(private readonly inspectionsService: InspectionsService) {}
 

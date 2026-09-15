@@ -1,0 +1,60 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { KavachTrustSBT } from "../typechain-types";
+
+describe("KavachTrustSBT", function () {
+  let sbt: KavachTrustSBT;
+  let owner: any;
+  let user: any;
+  let otherAccount: any;
+
+  beforeEach(async function () {
+    [owner, user, otherAccount] = await ethers.getSigners();
+    const SBT = await ethers.getContractFactory("KavachTrustSBT");
+    sbt = await SBT.deploy();
+  });
+
+  it("Should set the right owner", async function () {
+    expect(await sbt.owner()).to.equal(owner.address);
+  });
+
+  it("Should mint a certification and emit Locked (ERC-5192) and CertificationMinted", async function () {
+    const assetId = "AST-2026-001";
+    const batchId = "BCH-2026-X1";
+    const evidenceHash = "hash123";
+
+    await expect(sbt.mintCertification(user.address, assetId, batchId, evidenceHash))
+      .to.emit(sbt, "Locked")
+      .withArgs(1)
+      .and.to.emit(sbt, "CertificationMinted")
+      .withArgs(1, assetId, batchId, evidenceHash, (anyValue: any) => true);
+
+    expect(await sbt.ownerOf(1)).to.equal(user.address);
+  });
+
+  it("Should prevent transferring a minted certification (Soulbound)", async function () {
+    await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash");
+    
+    await expect(
+      sbt.connect(user).transferFrom(user.address, otherAccount.address, 1)
+    ).to.be.revertedWith("KavachTrust: Certifications are non-transferable Soulbound Tokens");
+  });
+
+  it("Should allow the owner to mint multiple certifications", async function () {
+    await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash1");
+    await sbt.mintCertification(otherAccount.address, "AST-2", "BCH-1", "hash2");
+
+    expect(await sbt.ownerOf(1)).to.equal(user.address);
+    expect(await sbt.ownerOf(2)).to.equal(otherAccount.address);
+  });
+
+  it("Should return true for locked() (ERC-5192)", async function () {
+    await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash");
+    expect(await sbt.locked(1)).to.be.true;
+  });
+
+  it("Should support IERC5192 interface", async function () {
+    // IERC5192 interface ID is 0xb45a3c0e
+    expect(await sbt.supportsInterface("0xb45a3c0e")).to.be.true;
+  });
+});

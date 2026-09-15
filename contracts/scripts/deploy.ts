@@ -2,12 +2,13 @@ import { ethers } from "hardhat";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  console.log("Deploying contracts with the account:", deployer.address);
+  console.log("Deploying KavachTrustSBT with account:", deployer.address);
 
-  const contract = await ethers.deployContract("KavachTrustSBT");
-  await contract.waitForDeployment();
+  const SBT = await ethers.getContractFactory("KavachTrustSBT");
+  const sbt = await SBT.deploy();
 
-  console.log("KavachTrustSBT deployed to:", await contract.getAddress());
+  await sbt.waitForDeployment();
+  console.log("KavachTrustSBT deployed to:", await sbt.getAddress());
 }
 
 main().catch((error) => {

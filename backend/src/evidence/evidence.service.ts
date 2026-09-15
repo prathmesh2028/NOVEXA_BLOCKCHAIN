@@ -1,12 +1,16 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MinioService } from './minio.service';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class EvidenceService {
   private readonly logger = new Logger(EvidenceService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly minio: MinioService,
+  ) {}
 
   private mapEvidence(e: any) {
     // Map DB enum to frontend Title Case
@@ -178,6 +182,10 @@ export class EvidenceService {
         where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
       });
       if (!asset) throw new NotFoundException(`Asset ${data.assetId} not found`);
+
+      // Upload to MinIO
+      const objectName = `${asset.assetId}/${evidenceId}-${data.filename}`;
+      const fileUrl = await this.minio.uploadFile(objectName, data.content, data.mimeType);
 
       return await this.prisma.$transaction(async (tx) => {
         const evidence = await tx.evidence.create({

@@ -17,12 +17,14 @@ import { SearchModule } from './search/search.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
 import { IdentityModule } from './identity/identity.module';
+import { CasbinModule } from './common/casbin/casbin.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 
 @Module({
   imports: [
     ConfigModule,
     PrismaModule,
+    CasbinModule,
     AuthModule,
     UsersModule,
     AssetsModule,

@@ -1,0 +1,54 @@
+# ──────────────────────────────────────────────────────────────
+# KavachTrust — Docker Compose (Development)
+# ──────────────────────────────────────────────────────────────
+# Usage:
+#   docker compose up -d        # Start all services
+#   docker compose down         # Stop all services
+#   docker compose down -v      # Stop + remove volumes (full reset)
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: kavachtrust-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kavachtrust
+      POSTGRES_USER: kavach
+      POSTGRES_PASSWORD: kavach_dev_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kavach -d kavachtrust"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── MinIO (S3-compatible object storage) ────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: kavachtrust-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: kavach_minio_dev
+      MINIO_ROOT_PASSWORD: kavach_minio_secret_dev
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    volumes:
+      - miniodata:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local
+  miniodata:
+    driver: local
