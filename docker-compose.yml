@@ -14,15 +14,15 @@ services:
     container_name: kavachtrust-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: kavachtrust
-      POSTGRES_USER: kavach
-      POSTGRES_PASSWORD: kavach_dev_2026
+      POSTGRES_DB: ${POSTGRES_DB:-kavachtrust}
+      POSTGRES_USER: ${POSTGRES_USER:-kavach}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kavach_dev_2026}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kavach -d kavachtrust"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kavach} -d ${POSTGRES_DB:-kavachtrust}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -33,8 +33,8 @@ services:
     container_name: kavachtrust-minio
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: kavach_minio_dev
-      MINIO_ROOT_PASSWORD: kavach_minio_secret_dev
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-kavach_minio_dev}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-kavach_minio_secret_dev}
     ports:
       - "9000:9000"   # API
       - "9001:9001"   # Console

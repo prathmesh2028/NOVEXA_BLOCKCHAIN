@@ -49,30 +49,33 @@ export class CertificationsService {
       certs = dbCerts;
       total = dbTotal;
     } catch (e: any) {
-      const fallback = (await import('../common/fallback-data')).FALLBACK_CERTIFICATIONS;
-      return {
-        items: fallback.map(c => ({
-          id: c.id,
-          cert_id: c.id,
-          asset_id: c.assetId,
-          batch_id: c.batchId,
-          token_id: c.tokenId,
-          contract_address: c.contractAddress,
-          network: c.network,
-          tx_hash: c.txHash,
-          block_number: c.blockNumber,
-          status: c.status,
-          issued_by: c.issuedBy,
-          issued_by_did: c.issuedByDid,
-          issued_at: c.issuedAt,
-          confirmed_at: c.confirmedAt || null,
-          confirmations: c.confirmations,
-        })),
-        total: fallback.length,
-        page,
-        page_size: pageSize,
-        has_next: false,
-      };
+      if (process.env.APP_ENV === 'demo') {
+        const fallback = (await import('../common/fallback-data')).FALLBACK_CERTIFICATIONS;
+        return {
+          items: fallback.map(c => ({
+            id: c.id,
+            cert_id: c.id,
+            asset_id: c.assetId,
+            batch_id: c.batchId,
+            token_id: c.tokenId,
+            contract_address: c.contractAddress,
+            network: c.network,
+            tx_hash: c.txHash,
+            block_number: c.blockNumber,
+            status: c.status,
+            issued_by: c.issuedBy,
+            issued_by_did: c.issuedByDid,
+            issued_at: c.issuedAt,
+            confirmed_at: c.confirmedAt || null,
+            confirmations: c.confirmations,
+          })),
+          total: fallback.length,
+          page,
+          page_size: pageSize,
+          has_next: false,
+        };
+      }
+      throw e;
     }
 
     return {
@@ -171,26 +174,29 @@ export class CertificationsService {
       });
     } catch (e: any) {
       if (e instanceof BadRequestException || e instanceof ConflictException) throw e;
-      this.logger.warn(`Database offline, returning mock certification: ${e.message}`);
-      
-      const certId = `CERT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
-      return {
-        id: `mock-cert-${Date.now()}`,
-        cert_id: certId,
-        asset_id: data.assetId,
-        batch_id: 'mock-batch',
-        token_id: null,
-        contract_address: null,
-        network: 'BEL-TRUST-CHAIN',
-        tx_hash: null,
-        block_number: null,
-        status: 'PENDING',
-        issued_by: data.issuedByName || data.issuedByDid,
-        issued_by_did: data.issuedByDid,
-        issued_at: new Date().toISOString(),
-        confirmed_at: null,
-        confirmations: 0,
-      };
+      if (process.env.APP_ENV === 'demo') {
+        this.logger.warn(`Database offline, returning mock certification: ${e.message}`);
+        
+        const certId = `CERT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
+        return {
+          id: `mock-cert-${Date.now()}`,
+          cert_id: certId,
+          asset_id: data.assetId,
+          batch_id: 'mock-batch',
+          token_id: null,
+          contract_address: null,
+          network: 'BEL-TRUST-CHAIN',
+          tx_hash: null,
+          block_number: null,
+          status: 'PENDING',
+          issued_by: data.issuedByName || data.issuedByDid,
+          issued_by_did: data.issuedByDid,
+          issued_at: new Date().toISOString(),
+          confirmed_at: null,
+          confirmations: 0,
+        };
+      }
+      throw e;
     }
   }
 
@@ -255,36 +261,38 @@ export class CertificationsService {
         eligible_for_mint_count: queueItems.filter((i: any) => i.eligible_for_mint).length,
       };
     } catch (e: any) {
-      // Fallback from in-memory data
-      const { FALLBACK_ASSETS, FALLBACK_CERTIFICATIONS } = await import('../common/fallback-data');
-      const eligible = FALLBACK_ASSETS.filter((a) => a.lifecycle === 'ACCEPTED_FOR_ASSEMBLY');
-      const items = eligible.map((a) => {
-        const cert = FALLBACK_CERTIFICATIONS.find((c) => c.assetId === a.id);
+      if (process.env.APP_ENV === 'demo') {
+        const { FALLBACK_ASSETS, FALLBACK_CERTIFICATIONS } = await import('../common/fallback-data');
+        const eligible = FALLBACK_ASSETS.filter((a) => a.lifecycle === 'ACCEPTED_FOR_ASSEMBLY');
+        const items = eligible.map((a) => {
+          const cert = FALLBACK_CERTIFICATIONS.find((c) => c.assetId === a.id);
+          return {
+            asset_id: a.id,
+            asset_db_id: a.id,
+            type: a.type,
+            model: a.model,
+            serial_number: a.serialNumber,
+            supplier: a.supplier,
+            lifecycle_state: a.lifecycle,
+            verified_evidence_count: a.evidenceCount,
+            total_evidence_count: a.evidenceCount,
+            cert_status: cert?.status || 'NOT_CERTIFIED',
+            cert_id: cert?.id || null,
+            eligible_for_mint: !cert || cert.status === 'NOT_CERTIFIED',
+            created_at: a.registeredAt,
+            updated_at: a.updatedAt,
+          };
+        });
         return {
-          asset_id: a.id,
-          asset_db_id: a.id,
-          type: a.type,
-          model: a.model,
-          serial_number: a.serialNumber,
-          supplier: a.supplier,
-          lifecycle_state: a.lifecycle,
-          verified_evidence_count: a.evidenceCount,
-          total_evidence_count: a.evidenceCount,
-          cert_status: cert?.status || 'NOT_CERTIFIED',
-          cert_id: cert?.id || null,
-          eligible_for_mint: !cert || cert.status === 'NOT_CERTIFIED',
-          created_at: a.registeredAt,
-          updated_at: a.updatedAt,
+          items,
+          total: items.length,
+          page,
+          page_size: pageSize,
+          has_next: false,
+          eligible_for_mint_count: items.filter((i) => i.eligible_for_mint).length,
         };
-      });
-      return {
-        items,
-        total: items.length,
-        page,
-        page_size: pageSize,
-        has_next: false,
-        eligible_for_mint_count: items.filter((i) => i.eligible_for_mint).length,
-      };
+      }
+      throw e;
     }
   }
 }
