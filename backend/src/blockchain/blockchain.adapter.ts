@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
+import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseEther, encodeFunctionData, decodeEventLog } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 /**
  * BlockchainAdapter — ALL blockchain calls go through this adapter.
@@ -12,6 +14,9 @@ import { ConfigService } from '../config/config.service';
 export class BlockchainAdapter {
   private readonly logger = new Logger(BlockchainAdapter.name);
   private connected = false;
+  private publicClient: any;
+  private walletClient: any;
+  private account: any;
 
   constructor(private readonly config: ConfigService) {
     this.initConnection();
@@ -19,15 +24,29 @@ export class BlockchainAdapter {
 
   private async initConnection() {
     try {
-      // Attempt to connect to blockchain RPC
       const rpcUrl = this.config.blockchainRpcUrl;
+      const privateKey = process.env.BLOCKCHAIN_PRIVATE_KEY || '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'; // Hardhat #0
+
       if (rpcUrl) {
-        // In a full implementation, this would use viem createPublicClient
+        this.publicClient = createPublicClient({
+          transport: fallback([http(rpcUrl)]),
+        });
+
+        this.account = privateKeyToAccount(privateKey as `0x${string}`);
+        
+        this.walletClient = createWalletClient({
+          account: this.account,
+          transport: fallback([http(rpcUrl)]),
+        });
+
+        // Test connection by fetching block number
+        await this.publicClient.getBlockNumber();
+
         this.logger.log(`Blockchain adapter configured for ${rpcUrl}`);
-        this.connected = false; // Will be true when Besu is actually running
+        this.connected = true;
       }
-    } catch (e) {
-      this.logger.warn('Blockchain RPC not available — adapter in offline mode');
+    } catch (e: any) {
+      this.logger.warn(`Blockchain RPC not available — adapter in offline mode. Reason: ${e.message}`);
       this.connected = false;
     }
   }
@@ -38,13 +57,22 @@ export class BlockchainAdapter {
 
   async getBlockNumber(): Promise<number | null> {
     if (!this.connected) return null;
-    // viem: publicClient.getBlockNumber()
-    return null;
+    try {
+      const block = await this.publicClient.getBlockNumber();
+      return Number(block);
+    } catch {
+      return null;
+    }
   }
 
   async getChainId(): Promise<number | null> {
     if (!this.connected) return null;
-    return this.config.blockchainChainId;
+    try {
+      const chainId = await this.publicClient.getChainId();
+      return Number(chainId);
+    } catch {
+      return this.config.blockchainChainId;
+    }
   }
 
   async submitTransaction(params: {
@@ -53,16 +81,58 @@ export class BlockchainAdapter {
     value?: bigint;
   }): Promise<{ txHash: string; status: string }> {
     if (!this.connected) {
-      this.logger.warn('Blockchain not connected — transaction not submitted');
+      this.logger.warn('Blockchain not connected — simulating transaction submission');
+      return { txHash: `0xmocktx${Date.now()}`, status: 'SIMULATED' };
+    }
+    
+    try {
+      const hash = await this.walletClient.sendTransaction({
+        account: this.account,
+        to: params.to as `0x${string}`,
+        data: params.data as `0x${string}`,
+        value: params.value || 0n,
+      });
+      return { txHash: hash, status: 'SUBMITTED' };
+    } catch (e: any) {
+      this.logger.error(`Transaction submission failed: ${e.message}`);
       return { txHash: '', status: 'FAILED' };
     }
-    // viem: walletClient.sendTransaction(...)
-    return { txHash: '', status: 'SUBMITTED' };
   }
 
   async getTransactionReceipt(txHash: string): Promise<any | null> {
     if (!this.connected) return null;
-    // viem: publicClient.getTransactionReceipt({ hash })
+    try {
+      return await this.publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
+    } catch {
+      return null;
+    }
+  }
+
+  decodeCertificationMintedEvent(receipt: any): any {
+    if (!receipt || !receipt.logs) return null;
+    try {
+      // Dummy ABI for decoding just the CertificationMinted event
+      const abi = parseAbi([
+        'event CertificationMinted(uint256 indexed tokenId, string assetId, string batchId, string evidenceHash, uint256 issuedAt)'
+      ]);
+      
+      for (const log of receipt.logs) {
+        try {
+          const decoded = decodeEventLog({
+            abi,
+            data: log.data,
+            topics: log.topics,
+          });
+          if (decoded.eventName === 'CertificationMinted') {
+            return decoded.args;
+          }
+        } catch {
+          // ignore logs that don't match
+        }
+      }
+    } catch (e: any) {
+      this.logger.error(`Failed to decode event: ${e.message}`);
+    }
     return null;
   }
 
@@ -74,7 +144,20 @@ export class BlockchainAdapter {
     if (!this.connected) {
       return { verified: false, status: 'BLOCKCHAIN_UNAVAILABLE' };
     }
-    return { verified: false, status: 'NOT_IMPLEMENTED' };
+    try {
+      const receipt = await this.publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
+      if (receipt && receipt.status === 'success') {
+        return {
+          verified: true,
+          blockNumber: Number(receipt.blockNumber),
+          status: 'MINED',
+        };
+      }
+      return { verified: false, status: 'FAILED_OR_PENDING' };
+    } catch (e: any) {
+      this.logger.error(`Transaction verification failed: ${e.message}`);
+      return { verified: false, status: 'ERROR' };
+    }
   }
 
   getNetworkInfo() {

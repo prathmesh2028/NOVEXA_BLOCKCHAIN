@@ -1,9 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
 @Controller('audit')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 

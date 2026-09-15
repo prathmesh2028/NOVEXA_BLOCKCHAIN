@@ -134,3 +134,5 @@ Role hierarchy:
 | `GET` | `/api/search` | Unified search across assets, batches, evidence |
 | `GET` | `/api/dashboard/summary` | Real-time counts and compliance ratios |
 | `GET` | `/health` | Liveness & database readiness check |
+
+

@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Param, Query, Body, UseGuards, Req } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { Request } from 'express';
 
 @Controller('assets')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
@@ -30,8 +30,7 @@ export class AssetsController {
    * and are not already certified. This is the pool for NFT_CREATOR certification.
    */
   @Get('eligible')
-  @UseGuards(RolesGuard)
-  @RequireRoles('NFT_CREATOR', 'ADMIN', 'AUDITOR')
+  @CasbinPolicy('/api/v1/assets/eligible', 'GET')
   async getEligibleAssets(
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
@@ -48,8 +47,7 @@ export class AssetsController {
   }
 
   @Post()
-  @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @CasbinPolicy('/api/v1/assets', 'POST')
   async createAsset(@Body() body: any, @Req() req: Request) {
     const user = (req as any).user;
     return this.assetsService.createAsset({
