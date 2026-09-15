@@ -85,6 +85,7 @@ export class AssetsService {
       assets = dbAssets;
       total = dbTotal;
     } catch (e: any) {
+      if (process.env.APP_ENV !== 'demo') throw e;
       const fallback = (await import('../common/fallback-data')).FALLBACK_ASSETS;
       return {
         items: fallback.map(a => ({
@@ -143,6 +144,7 @@ export class AssetsService {
       return this.mapAsset(asset);
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
+      if (process.env.APP_ENV !== 'demo') throw e;
       const fallback = (await import('../common/fallback-data')).FALLBACK_ASSETS.find(a => a.id === id);
       if (fallback) {
         return {

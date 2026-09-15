@@ -19,12 +19,12 @@ const envSchema = z.object({
   MINIO_ENDPOINT: z.string().default('localhost'),
   MINIO_PORT: z.coerce.number().default(9000),
   MINIO_USE_SSL: z.coerce.boolean().default(false),
-  MINIO_ACCESS_KEY: z.string().default('kavach_minio_dev'),
-  MINIO_SECRET_KEY: z.string().default('kavach_minio_secret_dev'),
+  MINIO_ACCESS_KEY: z.string().min(1),
+  MINIO_SECRET_KEY: z.string().min(1),
   MINIO_BUCKET: z.string().default('kavachtrust-evidence'),
   BLOCKCHAIN_RPC_URL: z.string().default('http://localhost:8545'),
   BLOCKCHAIN_CHAIN_ID: z.coerce.number().default(1337),
-  BLOCKCHAIN_PRIVATE_KEY: z.string().default(''),
+  BLOCKCHAIN_PRIVATE_KEY: z.string().min(1),
   CONTRACT_ADDRESS: z.string().default(''),
   BLOCKCHAIN_NETWORK_NAME: z.string().default('BEL-TRUST-CHAIN'),
   AES_KEY: z.string().default(''),
@@ -45,16 +45,8 @@ export function getEnvConfig(): EnvConfig {
     if (!result.success) {
       console.error('❌ Invalid environment configuration:');
       console.error(result.error.format());
-      // In production, fail closed
-      if (process.env.NODE_ENV === 'production') {
-        process.exit(1);
-      }
-      // In dev, use defaults
-      _config = envSchema.parse({
-        ...process.env,
-        DATABASE_URL: process.env.DATABASE_URL || 'postgresql://kavach:kavach_dev_2026@localhost:5432/kavachtrust',
-        JWT_SECRET: process.env.JWT_SECRET || 'kavachtrust-dev-secret-change-in-production-2026',
-      });
+      // Always fail closed if environment variables are missing
+      process.exit(1);
     } else {
       _config = result.data;
     }

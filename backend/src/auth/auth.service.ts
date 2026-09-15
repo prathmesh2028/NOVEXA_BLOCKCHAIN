@@ -55,7 +55,8 @@ export class AuthService {
         },
       });
     } catch (e: any) {
-      this.logger.warn('Database offline, checking fallback users');
+      if (process.env.APP_ENV !== 'demo') throw e;
+      this.logger.warn('Database offline, checking fallback users (DEMO mode)');
       const fallback = (await import('../common/fallback-data')).FALLBACK_USERS.find(u => u.email === email);
       if (fallback) {
         user = {
@@ -70,7 +71,7 @@ export class AuthService {
       }
     }
 
-    if (!user) {
+    if (!user && process.env.APP_ENV === 'demo') {
       const fallback = (await import('../common/fallback-data')).FALLBACK_USERS.find(u => u.email === email);
       if (fallback) {
         user = {

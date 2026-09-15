@@ -15,7 +15,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard, CasbinGuard)
+  @UseGuards(JwtAuthGuard)
   async getMe(@Req() req: Request) {
     const userId = (req as any).user.sub;
     return this.authService.getMe(userId);

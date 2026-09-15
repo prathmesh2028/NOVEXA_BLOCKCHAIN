@@ -192,49 +192,57 @@ export class EvidenceService {
       const objectName = `${asset.assetId}/${evidenceId}-${data.filename}`;
       const fileUrl = await this.minio.uploadFile(objectName, data.content, data.mimeType);
 
-      return await this.prisma.$transaction(async (tx) => {
-        const evidence = await tx.evidence.create({
-          data: {
-            evidenceId,
-            assetId: asset.id,
-            filename: data.filename,
-            type: data.type,
-            mimeType: data.mimeType,
-            sizeKb: data.sizeKb,
-            hash,
-            event: data.event,
-            status: 'COMPLETE',
-            integrityVerified: true,
-            uploadedById: data.uploadedById,
-            uploadedByName: data.uploadedByName,
-            uploadedByRole: data.uploadedByRole,
-          },
-        });
+      let transactionResult;
+      try {
+        transactionResult = await this.prisma.$transaction(async (tx) => {
+          const evidence = await tx.evidence.create({
+            data: {
+              evidenceId,
+              assetId: asset.id,
+              filename: data.filename,
+              type: data.type,
+              mimeType: data.mimeType,
+              sizeKb: data.sizeKb,
+              hash,
+              event: data.event,
+              status: 'COMPLETE',
+              integrityVerified: true,
+              uploadedById: data.uploadedById,
+              uploadedByName: data.uploadedByName,
+              uploadedByRole: data.uploadedByRole,
+            },
+          });
 
-        // Update asset evidence count
-        await tx.asset.update({
-          where: { id: asset.id },
-          data: { evidenceCount: { increment: 1 } },
-        });
+          // Update asset evidence count
+          await tx.asset.update({
+            where: { id: asset.id },
+            data: { evidenceCount: { increment: 1 } },
+          });
 
-        // Audit event
-        await tx.auditEvent.create({
-          data: {
-            eventType: 'EVIDENCE_UPLOADED',
-            actorId: data.uploadedById,
-            actorDid: data.uploadedByDid,
-            actorName: data.uploadedByName,
-            action: `Evidence uploaded — ${data.filename}`,
-            resourceType: 'Evidence',
-            resourceId: evidence.id,
-            result: 'SUCCESS',
-            details: `SHA-256: ${hash.substring(0, 16)}... | Asset: ${asset.assetId}`,
-          },
-        });
+          // Audit event
+          await tx.auditEvent.create({
+            data: {
+              eventType: 'EVIDENCE_UPLOADED',
+              actorId: data.uploadedById,
+              actorDid: data.uploadedByDid,
+              actorName: data.uploadedByName,
+              action: `Evidence uploaded — ${data.filename}`,
+              resourceType: 'Evidence',
+              resourceId: evidence.id,
+              result: 'SUCCESS',
+              details: `SHA-256: ${hash.substring(0, 16)}... | Asset: ${asset.assetId}`,
+            },
+          });
 
-        this.logger.log(`Evidence ${evidence.id} uploaded for asset ${asset.assetId} — hash: ${hash.substring(0, 16)}...`);
-        return this.mapEvidence(evidence);
-      });
+          this.logger.log(`Evidence ${evidence.id} uploaded for asset ${asset.assetId} — hash: ${hash.substring(0, 16)}...`);
+          return this.mapEvidence(evidence);
+        });
+      } catch (txError: any) {
+        this.logger.error(`Database transaction failed after MinIO upload. Compensating by deleting ${objectName}`);
+        await this.minio.deleteFile(objectName);
+        throw txError;
+      }
+      return transactionResult;
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
       
