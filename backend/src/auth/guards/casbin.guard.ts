@@ -34,11 +34,6 @@ export class CasbinGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!resource || !action) {
-      // If no CasbinPolicy is defined, we allow the request (fallback to other guards)
-      return true;
-    }
-
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
