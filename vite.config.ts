@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
-import siteConfiguration from '../.figma/make/site.json'
+import siteConfiguration from './.figma/make/site.json'
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -22,14 +22,14 @@ export default defineConfig(({ mode }) => {
       figmaSiteConfiguration(siteConfiguration),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
-      figmaMakeKitPlugin({ storiesGlob: '../frontend/**/*.stories.{ts,tsx,js,jsx}' }),
+      figmaMakeKitPlugin({ storiesGlob: './frontend/**/*.stories.{ts,tsx,js,jsx}' }),
       frontendRoutePlugin(),
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '../frontend'),
-        '/frontend': path.resolve(__dirname, '../frontend'),
-        '/src': path.resolve(__dirname, '../frontend'),
+        '@': path.resolve(__dirname, 'frontend'),
+        '/frontend': path.resolve(__dirname, 'frontend'),
+        '/src': path.resolve(__dirname, 'frontend'),
       },
     },
     server: {
@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
       fs: {
-        allow: [path.resolve(__dirname, '..')],
+        allow: [path.resolve(__dirname, '.')],
       },
       watch: {
         ignored: [
@@ -63,7 +63,7 @@ function frontendRoutePlugin(): Plugin {
             const rel = cleanUrl.startsWith('/frontend/')
               ? cleanUrl.slice('/frontend/'.length)
               : cleanUrl.slice('/src/'.length)
-            const full = path.resolve(__dirname, '../frontend', rel).replace(/\\/g, '/')
+            const full = path.resolve(__dirname, 'frontend', rel).replace(/\\/g, '/')
             const search = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
             req.url = `/@fs/${full}${search}`
           }
