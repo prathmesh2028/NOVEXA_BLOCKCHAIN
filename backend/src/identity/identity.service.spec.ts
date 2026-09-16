@@ -41,7 +41,10 @@ describe('IdentityService', () => {
       });
       expect(mockPrisma.actor.update).toHaveBeenCalledWith({
         where: { id: '12345678-abcd-ef00-1122-334455667788' },
-        data: { did: 'did:web:kavachtrust.bel.in:actor:12345678' },
+        data: { 
+          did: 'did:web:kavachtrust.bel.in:actor:12345678',
+          publicKey: expect.any(String),
+        },
       });
     });
 

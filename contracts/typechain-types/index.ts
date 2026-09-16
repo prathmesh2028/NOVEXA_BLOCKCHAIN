@@ -30,5 +30,7 @@ export type { SafeCast } from "./@openzeppelin/contracts/utils/math/SafeCast";
 export { SafeCast__factory } from "./factories/@openzeppelin/contracts/utils/math/SafeCast__factory";
 export type { Strings } from "./@openzeppelin/contracts/utils/Strings";
 export { Strings__factory } from "./factories/@openzeppelin/contracts/utils/Strings__factory";
+export type { IERC5192 } from "./contracts/IERC5192";
+export { IERC5192__factory } from "./factories/contracts/IERC5192__factory";
 export type { KavachTrustSBT } from "./contracts/KavachTrustSBT";
 export { KavachTrustSBT__factory } from "./factories/contracts/KavachTrustSBT__factory";

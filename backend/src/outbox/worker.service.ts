@@ -1,5 +1,7 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { OutboxService } from './outbox.service';
+import { BlockchainAdapter } from '../blockchain/blockchain.adapter';
+import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -16,7 +18,11 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
   private intervalHandle: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
-  constructor(private readonly outboxService: OutboxService) {}
+  constructor(
+    private readonly outboxService: OutboxService,
+    private readonly blockchainAdapter: BlockchainAdapter,
+    private readonly prisma: PrismaService,
+  ) {}
 
   onModuleInit() {
     // Start polling in development mode
@@ -71,28 +77,103 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
   private async handleEvent(event: any) {
     switch (event.eventType) {
       case 'PASSPORT_MINT_REQUESTED':
-        await this.handleMintRequest(event.payload);
+        await this.handleMintRequest(event);
         break;
       case 'EVIDENCE_ANCHOR_REQUESTED':
-        await this.handleEvidenceAnchor(event.payload);
+        await this.handleEvidenceAnchor(event);
         break;
       default:
         this.logger.warn(`Unknown event type: ${event.eventType}`);
     }
   }
 
-  private async handleMintRequest(payload: any) {
-    // In production: call blockchain adapter to mint SBT
-    // For now, log the intent — real blockchain requires running Besu
+  private async handleMintRequest(event: any) {
+    const payload = event.payload;
     this.logger.log(`Mint request for certification ${payload.certId}: asset ${payload.assetId}`);
-    // The actual implementation would:
-    // 1. Call blockchainAdapter.mintCertification(...)
-    // 2. Wait for transaction hash
-    // 3. Update certification with txHash
-    // 4. Record audit event
+    
+    const contractAddress = process.env.KAVACH_SBT_ADDRESS || '0x0000000000000000000000000000000000000000';
+
+    // 1. Acquire Logical Lock (Atomic Insert)
+    let txRecord;
+    try {
+      txRecord = await this.prisma.blockchainTransaction.create({
+        data: {
+          network: 'BEL-TRUST-CHAIN',
+          status: 'CREATED',
+          action: 'MINT_CERTIFICATION',
+          fromAddress: 'system-wallet',
+          contractAddress,
+          assetId: payload.assetId,
+          certId: payload.certificationId,
+          idempotencyKey: event.idempotencyKey,
+        },
+      });
+    } catch (e: any) {
+      if (e.code === 'P2002') { // Unique constraint failed
+        const existingTx = await this.prisma.blockchainTransaction.findUnique({
+          where: { idempotencyKey: event.idempotencyKey },
+        });
+        if (existingTx) {
+          if (['CREATED', 'SUBMITTED', 'PENDING', 'CONFIRMED'].includes(existingTx.status)) {
+            this.logger.warn(`Idempotency key ${event.idempotencyKey} is already being processed/confirmed (Status: ${existingTx.status}). Skipping mint to prevent double-mint.`);
+            return;
+          }
+          throw new Error(`Transaction in ambiguous state: ${existingTx.status}. Needs manual reconciliation.`);
+        }
+      }
+      throw e;
+    }
+    
+    // 2. Attempt submission
+    const result = await this.blockchainAdapter.submitTransaction({
+      to: contractAddress,
+      data: '0x', // Fake ABI encoded data for mintCertification
+    });
+
+    if (result.status === 'FAILED') {
+      await this.prisma.blockchainTransaction.update({
+        where: { id: txRecord.id },
+        data: { status: 'FAILED' },
+      });
+      throw new Error('Blockchain transaction submission failed');
+    }
+
+    // 3. Update DB after submission
+    await this.prisma.$transaction(async (tx) => {
+      // Update certification with txHash
+      const cert = await tx.certification.update({
+        where: { id: payload.certificationId },
+        data: {
+          txHash: result.txHash,
+          status: result.status === 'SIMULATED' ? 'CONFIRMED' : 'PENDING',
+        },
+      });
+
+      // Update the blockchain transaction record
+      await tx.blockchainTransaction.update({
+        where: { id: txRecord.id },
+        data: {
+          txHash: result.txHash,
+          status: result.status === 'SIMULATED' ? 'CONFIRMED' : 'SUBMITTED',
+        },
+      });
+
+      // Audit
+      await tx.auditEvent.create({
+        data: {
+          eventType: 'PASSPORT_MINT_SUBMITTED',
+          action: `SBT Mint Transaction Submitted`,
+          resourceType: 'Certification',
+          resourceId: cert.id,
+          result: 'SUCCESS',
+          blockchainTxHash: result.txHash,
+          details: `TxHash: ${result.txHash} | Network: BEL-TRUST-CHAIN`,
+        },
+      });
+    });
   }
 
-  private async handleEvidenceAnchor(payload: any) {
-    this.logger.log(`Evidence anchor request for ${payload.evidenceId}`);
+  private async handleEvidenceAnchor(event: any) {
+    this.logger.log(`Evidence anchor request for ${event.payload.evidenceId}`);
   }
 }

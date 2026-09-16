@@ -4,12 +4,13 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./IERC5192.sol";
 
 /**
  * @title KavachTrustSBT
  * @dev Soulbound Token (Non-transferable ERC721) for Defence Asset Certification
  */
-contract KavachTrustSBT is ERC721, Ownable {
+contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
     using Strings for uint256;
 
     uint256 private _nextTokenId;
@@ -61,6 +62,7 @@ contract KavachTrustSBT is ERC721, Ownable {
 
         _safeMint(to, tokenId);
 
+        emit Locked(tokenId);
         emit CertificationMinted(tokenId, assetId, batchId, evidenceHash, block.timestamp);
 
         return tokenId;
@@ -98,5 +100,20 @@ contract KavachTrustSBT is ERC721, Ownable {
         _requireOwned(tokenId);
         CertificationData memory cert = certifications[tokenId];
         return (cert.assetId, cert.batchId, cert.evidenceHash, cert.issuedAt);
+    }
+
+    /**
+     * @inheritdoc IERC5192
+     */
+    function locked(uint256 tokenId) external view override returns (bool) {
+        _requireOwned(tokenId);
+        return true;
+    }
+    
+    /**
+     * @dev supportsInterface override to declare IERC5192 support
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC5192).interfaceId || super.supportsInterface(interfaceId);
     }
 }

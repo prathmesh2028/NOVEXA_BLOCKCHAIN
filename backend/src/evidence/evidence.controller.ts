@@ -11,10 +11,11 @@ import {
 } from '@nestjs/common';
 import { EvidenceService } from './evidence.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
 
 @Controller('evidence')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class EvidenceController {
   constructor(private readonly evidenceService: EvidenceService) {}
 

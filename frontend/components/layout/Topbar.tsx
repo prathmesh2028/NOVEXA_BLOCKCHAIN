@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { getRoleLabel, getRoleColor } from "../../context/RoleContext";
 import { useAuth } from "../../context/AuthContext";
+import { ConnectWalletButton } from "../../features/wallet/components/ConnectWalletButton";
 
 export default function Topbar() {
   const { user, role } = useAuth();
@@ -78,6 +79,9 @@ export default function Topbar() {
       >
         SYNTHETIC DEMO
       </div>
+
+      {/* Connect Wallet */}
+      <ConnectWalletButton expectedChainId={import.meta.env.VITE_BLOCKCHAIN_CHAIN_ID ? parseInt(import.meta.env.VITE_BLOCKCHAIN_CHAIN_ID) : undefined} />
 
       {/* Notifications */}
       <button

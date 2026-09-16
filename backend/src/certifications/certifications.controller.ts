@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { CertificationsService } from './certifications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard, RequireRoles } from '../auth/guards/roles.guard';
+import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
 
 @Controller('certifications')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, CasbinGuard)
 export class CertificationsController {
   constructor(private readonly certificationsService: CertificationsService) {}
 
@@ -28,8 +28,7 @@ export class CertificationsController {
    * NFT_CREATOR and ADMIN only.
    */
   @Get('queue')
-  @UseGuards(RolesGuard)
-  @RequireRoles('NFT_CREATOR', 'ADMIN')
+  @CasbinPolicy('/api/v1/certifications/queue', 'GET')
   async getCertificationQueue(
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
@@ -41,8 +40,7 @@ export class CertificationsController {
   }
 
   @Post()
-  @UseGuards(RolesGuard)
-  @RequireRoles('NFT_CREATOR', 'ADMIN')
+  @CasbinPolicy('/api/v1/certifications', 'POST')
   async createCertification(@Body() body: any, @Req() req: any) {
     return this.certificationsService.createCertification({
       assetId: body.asset_id,
