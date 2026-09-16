@@ -1,7 +1,7 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { VerificationService } from './verification.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
+import { JwtAuthGuard } from '../identity/auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../identity/auth/guards/casbin.guard';
 
 @Controller('verification')
 @UseGuards(JwtAuthGuard, CasbinGuard)

@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
+import { JwtAuthGuard } from '../identity/auth/guards/jwt-auth.guard';
+import { CasbinGuard, CasbinPolicy } from '../identity/auth/guards/casbin.guard';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, CasbinGuard)
