@@ -56,6 +56,8 @@ model User {
   roles           UserRole[]
   actor           Actor?
   auditEvents     AuditEvent[] @relation("AuditActor")
+  walletBindings  WalletBinding[]
+  walletChallenges WalletChallenge[]
 
   @@map("users")
 }
@@ -509,4 +511,34 @@ model OutboxEvent {
 
   @@index([status, nextAttemptAt])
   @@map("outbox_events")
+}
+
+model WalletBinding {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  address    String
+  chainId    Int?      @map("chain_id")
+  verified   Boolean   @default(false)
+  verifiedAt DateTime? @map("verified_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, address])
+  @@map("wallet_bindings")
+}
+
+model WalletChallenge {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  address    String
+  nonce      String   @unique
+  expiresAt  DateTime @map("expires_at")
+  consumed   Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallet_challenges")
 }

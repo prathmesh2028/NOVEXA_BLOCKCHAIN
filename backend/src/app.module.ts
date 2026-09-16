@@ -17,6 +17,7 @@ import { SearchModule } from './search/search.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
 import { IdentityModule } from './identity/identity.module';
+import { WalletModule } from './wallet/wallet.module';
 import { CasbinModule } from './common/casbin/casbin.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 
@@ -41,6 +42,7 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
     DashboardModule,
     HealthModule,
     IdentityModule,
+    WalletModule,
   ],
 })
 export class AppModule implements NestModule {
