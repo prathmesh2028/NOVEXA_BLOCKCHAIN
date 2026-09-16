@@ -1,25 +1,25 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { ConfigModule } from './config/config.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { AssetsModule } from './assets/assets.module';
-import { EvidenceModule } from './evidence/evidence.module';
-import { LifecycleModule } from './lifecycle/lifecycle.module';
-import { InspectionsModule } from './inspections/inspections.module';
-import { CertificationsModule } from './certifications/certifications.module';
-import { BlockchainModule } from './blockchain/blockchain.module';
-import { AuditModule } from './audit/audit.module';
-import { MerkleModule } from './merkle/merkle.module';
-import { OutboxModule } from './outbox/outbox.module';
+import { ConfigModule } from './core/config/config.module';
+import { PrismaModule } from './core/database/prisma.module';
+import { AuthModule } from './identity/auth/auth.module';
+import { UsersModule } from './identity/users/users.module';
+import { AssetsModule } from './asset-management/assets/assets.module';
+import { EvidenceModule } from './asset-management/evidence/evidence.module';
+import { LifecycleModule } from './asset-management/lifecycle/lifecycle.module';
+import { InspectionsModule } from './asset-management/inspections/inspections.module';
+import { CertificationsModule } from './certification/certifications/certifications.module';
+import { BlockchainModule } from './trust/blockchain/blockchain.module';
+import { AuditModule } from './asset-management/audit/audit.module';
+import { MerkleModule } from './asset-management/merkle/merkle.module';
+import { OutboxModule } from './trust/outbox/outbox.module';
 import { VerificationModule } from './verification/verification.module';
 import { SearchModule } from './search/search.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
 import { IdentityModule } from './identity/identity.module';
-import { WalletModule } from './wallet/wallet.module';
-import { CasbinModule } from './common/casbin/casbin.module';
-import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { WalletModule } from './identity/wallet/wallet.module';
+import { CasbinModule } from './core/casbin/casbin.module';
+import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
 
 @Module({
   imports: [

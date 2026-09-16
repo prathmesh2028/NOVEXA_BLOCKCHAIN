@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../core/database/prisma.service';
 
 @Injectable()
 export class SearchService {
@@ -72,7 +72,7 @@ export class SearchService {
       }
     } catch (e: any) {
       const q = query.toLowerCase();
-      const { FALLBACK_ASSETS, FALLBACK_USERS, FALLBACK_CERTIFICATIONS, FALLBACK_TRANSACTIONS } = await import('../common/fallback-data');
+      const { FALLBACK_ASSETS, FALLBACK_USERS, FALLBACK_CERTIFICATIONS, FALLBACK_TRANSACTIONS } = await import('../core/common/fallback-data');
 
       const matchedAssets = FALLBACK_ASSETS.filter(a =>
         a.id.toLowerCase().includes(q) ||
