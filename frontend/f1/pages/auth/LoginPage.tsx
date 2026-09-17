@@ -74,9 +74,16 @@ export default function LoginPage() {
         <div className="login-scanline" />
       </div>
 
-      {/* ─── LEFT: Visual Side ─── */}
+      {/* ─── LEFT: Visual Side — Advanced Defence System Coming Online ─── */}
       <div className="login-visual-side">
-        {/* Radar */}
+        {/* Satellite Grid — orbital reference rings */}
+        <div className="satellite-grid">
+          <div className="satellite-orbit satellite-orbit-1" />
+          <div className="satellite-orbit satellite-orbit-2" />
+          <div className="satellite-orbit satellite-orbit-3" />
+        </div>
+
+        {/* Defence Radar Monitoring System */}
         <div className="radar-container">
           <div className="radar-ring radar-ring-1" />
           <div className="radar-ring radar-ring-2" />
@@ -84,32 +91,121 @@ export default function LoginPage() {
           <div className="radar-ring radar-ring-4" />
           <div className="radar-cross" />
           <div className="radar-sweep" />
+          <div className="radar-sweep radar-sweep-2" />
           <div className="radar-center" />
           <div className="radar-glow" />
-          <div className="radar-point radar-point-1" />
-          <div className="radar-point radar-point-2" />
-          <div className="radar-point radar-point-3" />
-          <div className="radar-point radar-point-4" />
+          {/* 4 Detection points synchronized to sweep angles */}
+          <div className="radar-point radar-point-1" title="Node Alpha" />
+          <div className="radar-point radar-point-2" title="Asset EF-2026" />
+          <div className="radar-point radar-point-3" title="Telemetry Relay" />
+          <div className="radar-point radar-point-4" title="Audit Sentinel" />
         </div>
 
-        {/* Abstract aircraft silhouette */}
+        {/* Stealth Defence Asset Visual (Slow Horizontal/Vertical Drift) */}
         <div className="aircraft-visual">
-          <div className="aircraft-body">
-            <div className="aircraft-wing" />
-            <div className="aircraft-tail" />
+          <svg className="aircraft-svg" viewBox="0 0 70 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M 66 20 L 16 7 L 22 17 L 3 18 L 3 22 L 22 23 L 16 33 Z"
+              fill="rgba(74, 106, 138, 0.35)"
+              stroke="rgba(96, 165, 250, 0.4)"
+              strokeWidth="1"
+            />
+            <line x1="22" y1="20" x2="62" y2="20" stroke="rgba(96, 165, 250, 0.6)" strokeWidth="1" />
+            <circle cx="64" cy="20" r="1.5" fill="#60a5fa" />
+          </svg>
+          <div className="aircraft-contrail" />
+        </div>
+
+        {/* Blockchain Network (NODE → NODE flow with travelling data pulse) */}
+        <div className="blockchain-flow">
+          <svg className="blockchain-flow-svg" viewBox="0 0 250 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Background connection paths */}
+            <path className="bc-line bc-line-h1" d="M 30 25 L 125 25 L 220 25" />
+            <path className="bc-line bc-line-v1" d="M 30 25 L 30 70 L 125 70" />
+            <path className="bc-line bc-line-v2" d="M 125 25 L 125 70 L 220 70" />
+            
+            {/* Animated data pulse lines */}
+            <path className="bc-pulse-line bc-pulse-1" d="M 30 25 L 125 25 L 220 25" />
+            <path className="bc-pulse-line bc-pulse-2" d="M 30 25 L 30 70 L 125 70" />
+            <path className="bc-pulse-line bc-pulse-3" d="M 125 25 L 125 70 L 220 70" />
+
+            {/* Network Nodes */}
+            <g className="bc-node-group">
+              <circle cx="30" cy="25" r="3.5" className="bc-node-dot" />
+              <circle cx="30" cy="25" r="7" className="bc-node-halo" />
+              <text x="30" y="14" textAnchor="middle" className="bc-node-text">ASSET</text>
+            </g>
+            <g className="bc-node-group">
+              <circle cx="125" cy="25" r="3.5" className="bc-node-dot" />
+              <circle cx="125" cy="25" r="7" className="bc-node-halo" />
+              <text x="125" y="14" textAnchor="middle" className="bc-node-text">VERIFY</text>
+            </g>
+            <g className="bc-node-group">
+              <circle cx="220" cy="25" r="3.5" className="bc-node-dot" />
+              <circle cx="220" cy="25" r="7" className="bc-node-halo" />
+              <text x="220" y="14" textAnchor="middle" className="bc-node-text">BLOCKCHAIN</text>
+            </g>
+            <g className="bc-node-group">
+              <circle cx="30" cy="70" r="3.5" className="bc-node-dot" />
+              <circle cx="30" cy="70" r="7" className="bc-node-halo" />
+              <text x="30" y="84" textAnchor="middle" className="bc-node-text">EVIDENCE</text>
+            </g>
+            <g className="bc-node-group">
+              <circle cx="220" cy="70" r="3.5" className="bc-node-dot" />
+              <circle cx="220" cy="70" r="7" className="bc-node-halo" />
+              <text x="220" y="84" textAnchor="middle" className="bc-node-text">TRUST</text>
+            </g>
+          </svg>
+        </div>
+
+        {/* Asset Verification Visual Component (Dynamic Lifecycle Cycling) */}
+        <div className="asset-verif-badge">
+          <div className="verif-badge-top">
+            <span className="verif-badge-icon">⬡</span>
+            <span className="verif-badge-title">ASSET VERIFICATION</span>
+          </div>
+          <div className="verif-badge-id">EF-2026-001</div>
+          <div className="verif-badge-cycle">
+            <span className="verif-step verif-step-1">HASH CHECKING...</span>
+            <span className="verif-step verif-step-2">VERIFYING...</span>
+            <span className="verif-step verif-step-3">✓ VERIFIED</span>
           </div>
         </div>
 
-        {/* Technical data labels */}
-        <div className="tech-labels">
-          <div className="tech-label tech-label-1">SECURE NETWORK</div>
-          <div className="tech-label tech-label-2">ASSET VERIFICATION</div>
-          <div className="tech-label tech-label-3">BLOCKCHAIN VERIFIED</div>
-          <div className="tech-label tech-label-4 tech-label-pulse">SYSTEM STATUS: OPERATIONAL</div>
-          <div className="tech-label tech-label-5">NODE: NOVEXA-01</div>
+        {/* Signal / Data Flow Paths */}
+        <div className="signal-paths">
+          <div className="signal-path signal-path-1" />
+          <div className="signal-path signal-path-2" />
+          <div className="signal-path signal-path-3" />
+          <div className="signal-path signal-path-4" />
         </div>
 
-        {/* Visual side title */}
+        {/* Defence Asset Scan Line */}
+        <div className="defence-scan-line" />
+
+        {/* Communication Signal Arcs */}
+        <div className="signal-arc signal-arc-1" />
+        <div className="signal-arc signal-arc-2" />
+
+        {/* Technical Data Labels */}
+        <div className="tech-labels">
+          <div className="tech-label tech-label-secure">
+            <span className="tech-secure-scan" />
+            <span>SECURE NETWORK</span>
+          </div>
+          <div className="tech-label tech-label-verified">
+            <span className="tech-verified-dot" />
+            <span>BLOCKCHAIN VERIFIED</span>
+          </div>
+          <div className="tech-label tech-label-status">
+            <span className="tech-status-dot" />
+            <span>SYSTEM STATUS: OPERATIONAL</span>
+          </div>
+          <div className="tech-label tech-label-node">NODE: NOVEXA-01</div>
+          <div className="tech-label tech-label-trust">DEFENCE ASSET TRUST</div>
+        </div>
+
+        {/* Defence Title */}
         <div className="defence-title">
           <div className="defence-title-main">NOVEXA SECURE DEFENCE ACCESS</div>
           <div className="defence-title-sub">ENCRYPTED · BLOCKCHAIN VERIFIED · MISSION-CRITICAL</div>
@@ -145,7 +241,7 @@ export default function LoginPage() {
               {ROLES.map((r, idx) => (
                 <button
                   key={r.role}
-                  className={`login-role-btn login-stagger-${Math.min(idx + 2, 5)}`}
+                  className={`login-role-btn login-stagger-role-${idx + 1}`}
                   data-selected={selected === r.role}
                   onClick={() => setSelected(r.role)}
                 >
@@ -208,15 +304,18 @@ export default function LoginPage() {
                   <span>Authenticating…</span>
                 </>
               ) : (
-                <span>SIGN IN →</span>
+                <span className="login-btn-content">
+                  <span>SIGN IN</span>
+                  <span className="login-btn-arrow">→</span>
+                </span>
               )}
             </button>
           </div>
 
           {/* Security Status Indicator */}
           <div className="login-security-status">
-            <div className="login-security-dot" />
-            <span className="login-security-text">Secure Connection</span>
+            <span className="login-security-dot" />
+            <span className="login-security-text">SECURE CONNECTION</span>
           </div>
 
           {/* Footer */}

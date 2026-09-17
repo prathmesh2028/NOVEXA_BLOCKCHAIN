@@ -11,8 +11,8 @@ export default function PublicFooter() {
           }}
         >
           <div>
-            <div className="font-display" style={{ fontSize: "1.1rem", fontWeight: 700, color: "#e2e8f0", letterSpacing: "0.05em", marginBottom: 8 }}>
-              BEL-DEFENCE-ASSET-TRUST
+            <div className="font-display" style={{ fontSize: "1.15rem", fontWeight: 700, color: "#e2e8f0", letterSpacing: "0.05em", marginBottom: 8 }}>
+              NOVEXA DEFENCE TRUST
             </div>
             <div style={{ fontSize: "0.8125rem", color: "#64748b", lineHeight: 1.6, maxWidth: 240 }}>
               Blockchain-based secure platform for identity, access control, and digital asset management.
@@ -78,7 +78,7 @@ export default function PublicFooter() {
           }}
         >
           <div style={{ fontSize: "0.75rem", color: "#475569" }}>
-            © 2026 BEL-Defence-Asset-Trust. Synthetic demonstration prototype. Non-classified.
+            © 2026 NOVEXA Defence Trust. Synthetic demonstration prototype. Non-classified.
           </div>
           <div style={{ fontSize: "0.75rem", color: "#475569" }}>
             SIH 2026 · PS 26125 · Blockchain-Based Secure Platform
