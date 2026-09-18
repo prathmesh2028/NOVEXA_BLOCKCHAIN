@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { LifecycleService } from './lifecycle.service';
-import { LifecycleController } from './lifecycle.controller';
+import { ApprovalsService } from './approvals.service';
+import { ApprovalsController } from './approvals.controller';
 import { PrismaModule } from '../../core/database/prisma.module';
 import { NotificationsModule } from '../../notifications/notifications.module';
 import { CasbinModule } from '../../core/casbin/casbin.module';
@@ -8,8 +8,8 @@ import { AuthModule } from '../../identity/auth/auth.module';
 
 @Module({
   imports: [PrismaModule, NotificationsModule, CasbinModule, AuthModule],
-  controllers: [LifecycleController],
-  providers: [LifecycleService],
-  exports: [LifecycleService],
+  controllers: [ApprovalsController],
+  providers: [ApprovalsService],
+  exports: [ApprovalsService],
 })
-export class LifecycleModule {}
+export class ApprovalsModule {}

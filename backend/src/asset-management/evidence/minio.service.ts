@@ -1,5 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as Minio from 'minio';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class MinioService implements OnModuleInit {
@@ -7,14 +9,15 @@ export class MinioService implements OnModuleInit {
   private minioClient: Minio.Client;
   private readonly bucketName = process.env.MINIO_BUCKET || 'kavachtrust-evidence';
   private isOnline = false;
+  private readonly localStorageDir = path.resolve(process.cwd(), 'storage/evidence');
 
   constructor() {
     this.minioClient = new Minio.Client({
       endPoint: process.env.MINIO_ENDPOINT || 'localhost',
       port: parseInt(process.env.MINIO_PORT || '9000', 10),
       useSSL: process.env.MINIO_USE_SSL === 'true',
-      accessKey: process.env.MINIO_ACCESS_KEY as string,
-      secretKey: process.env.MINIO_SECRET_KEY as string,
+      accessKey: (process.env.MINIO_ACCESS_KEY || 'minioadmin') as string,
+      secretKey: (process.env.MINIO_SECRET_KEY || 'minioadmin') as string,
     });
   }
 
@@ -28,18 +31,28 @@ export class MinioService implements OnModuleInit {
       this.isOnline = true;
       this.logger.log('MinIO connection established');
     } catch (error: any) {
-      this.logger.warn(`MinIO connection failed, operating in offline/fallback mode. Reason: ${error.message}`);
+      this.logger.warn(`MinIO connection unavailable, using real local filesystem storage (${this.localStorageDir}). Reason: ${error.message}`);
       this.isOnline = false;
+      if (!fs.existsSync(this.localStorageDir)) {
+        fs.mkdirSync(this.localStorageDir, { recursive: true });
+      }
+    }
+  }
+
+  private ensureLocalStorageDir(filePath: string) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
   }
 
   async uploadFile(objectName: string, buffer: Buffer, mimeType: string = 'application/octet-stream'): Promise<string> {
     if (!this.isOnline) {
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.debug(`[Offline Mode] DEMO Simulating upload for ${objectName}`);
-        return `offline-mock-url/${this.bucketName}/${objectName}`;
-      }
-      throw new Error('MinIO storage is unavailable');
+      const localFilePath = path.join(this.localStorageDir, objectName);
+      this.ensureLocalStorageDir(localFilePath);
+      await fs.promises.writeFile(localFilePath, buffer);
+      this.logger.log(`[Disk Storage] Stored real evidence file (${buffer.length} bytes): ${localFilePath}`);
+      return `file://${localFilePath.replace(/\\/g, '/')}`;
     }
 
     try {
@@ -55,11 +68,11 @@ export class MinioService implements OnModuleInit {
 
   async downloadFile(objectName: string): Promise<Buffer> {
     if (!this.isOnline) {
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.debug(`[Offline Mode] DEMO Simulating download for ${objectName}`);
-        return Buffer.from('Mock file content for ' + objectName);
+      const localFilePath = path.join(this.localStorageDir, objectName);
+      if (fs.existsSync(localFilePath)) {
+        return await fs.promises.readFile(localFilePath);
       }
-      throw new Error('MinIO storage is unavailable');
+      throw new Error(`Evidence file ${objectName} not found on disk`);
     }
 
     try {
@@ -77,7 +90,14 @@ export class MinioService implements OnModuleInit {
   }
 
   async deleteFile(objectName: string): Promise<void> {
-    if (!this.isOnline) return;
+    if (!this.isOnline) {
+      const localFilePath = path.join(this.localStorageDir, objectName);
+      if (fs.existsSync(localFilePath)) {
+        await fs.promises.unlink(localFilePath);
+        this.logger.log(`Deleted local evidence file: ${localFilePath}`);
+      }
+      return;
+    }
     try {
       await this.minioClient.removeObject(this.bucketName, objectName);
       this.logger.log(`Deleted object ${objectName} from MinIO`);

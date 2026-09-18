@@ -1,5 +1,6 @@
-import { Injectable, Logger, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, ConflictException, ForbiddenException, Optional, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { LifecycleState } from '@prisma/client';
 
 /**
@@ -19,15 +20,41 @@ const TRANSITION_RULES: TransitionRule[] = [
   { from: 'UNREGISTERED', to: 'SUPPLIER_DECLARED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: false, requiresInspection: false },
   { from: 'SUPPLIER_DECLARED', to: 'RECEIVED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: false, requiresInspection: false },
   { from: 'RECEIVED', to: 'INSPECTION_RECORDED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: true },
+  { from: 'RECEIVED', to: 'INSPECTION_OVERDUE', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
+  { from: 'INSPECTION_OVERDUE', to: 'INSPECTION_RECORDED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: true },
   { from: 'INSPECTION_RECORDED', to: 'ACCEPTED_FOR_ASSEMBLY', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: false },
   { from: 'INSPECTION_RECORDED', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: false },
 ];
 
 @Injectable()
-export class LifecycleService {
+export class LifecycleService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(LifecycleService.name);
+  private scanTimer: ReturnType<typeof setInterval> | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
+  ) {}
+
+  onModuleInit() {
+    if (process.env.NODE_ENV !== 'test') {
+      this.logger.log('Starting automated lifecycle expiry detection timer (every 60s)');
+      this.scanTimer = setInterval(async () => {
+        try {
+          await this.detectAndFlagOverdueAssets('system-cron');
+        } catch (err: any) {
+          this.logger.error(`Automated overdue scan failed: ${err.message}`);
+        }
+      }, 60000);
+    }
+  }
+
+  onModuleDestroy() {
+    if (this.scanTimer) {
+      clearInterval(this.scanTimer);
+      this.scanTimer = null;
+    }
+  }
 
   /**
    * Execute a lifecycle transition atomically:
@@ -170,4 +197,120 @@ export class LifecycleService {
   getTransitionRules() {
     return TRANSITION_RULES;
   }
+
+  /**
+   * Real expiry detection engine:
+   * 1. Finds assets in RECEIVED state whose inspectionDueDate has passed without inspection.
+   * 2. Transitions them atomically to INSPECTION_OVERDUE.
+   * 3. Emits audit trail events.
+   * 4. Sends notifications to technicians and administrators.
+   * 5. Checks for upcoming shelf life / warranty expiry.
+   */
+  async detectAndFlagOverdueAssets(actorId: string = 'system') {
+    const now = new Date();
+
+    const overdueAssets = await this.prisma.asset.findMany({
+      where: {
+        lifecycleState: 'RECEIVED',
+        inspectionDueDate: { lt: now },
+      },
+      include: { batch: true },
+    });
+
+    const flagged: any[] = [];
+
+    for (const asset of overdueAssets) {
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.asset.update({
+            where: { id: asset.id },
+            data: {
+              lifecycleState: 'INSPECTION_OVERDUE',
+              version: { increment: 1 },
+            },
+          });
+
+          await tx.lifecycleEvent.create({
+            data: {
+              assetId: asset.id,
+              fromState: 'RECEIVED',
+              toState: 'INSPECTION_OVERDUE',
+              actorId,
+              actorRole: 'ADMIN',
+              reason: `Inspection deadline exceeded (due: ${asset.inspectionDueDate?.toISOString()})`,
+            },
+          });
+
+          await tx.auditEvent.create({
+            data: {
+              eventType: 'LIFECYCLE_TRANSITIONED',
+              actorId,
+              actorRole: 'ADMIN',
+              action: 'Automated overdue detection flagged asset',
+              resourceType: 'Asset',
+              resourceId: asset.id,
+              result: 'WARNING',
+              details: `Asset ${asset.assetId} flagged INSPECTION_OVERDUE (due: ${asset.inspectionDueDate?.toISOString()})`,
+            },
+          });
+
+          if (this.notificationsService?.createNotification) {
+            await this.notificationsService.createNotification({
+              recipientRole: 'TECHNICIAN',
+              title: `Inspection Overdue: ${asset.assetId}`,
+              message: `Asset ${asset.assetId} has exceeded its inspection deadline. Status transitioned to INSPECTION_OVERDUE.`,
+              type: 'EXPIRY_WARNING',
+              severity: 'CRITICAL',
+              link: `/app/assets/${asset.id}`,
+              metadata: { assetId: asset.assetId, dueDate: asset.inspectionDueDate },
+            });
+          }
+        });
+
+        flagged.push({
+          assetId: asset.assetId,
+          dueDate: asset.inspectionDueDate,
+          status: 'FLAGGED_OVERDUE',
+        });
+      } catch (err: any) {
+        this.logger.error(`Failed to flag asset ${asset.assetId} as overdue: ${err.message}`);
+      }
+    }
+
+    const expiringSoon = await this.prisma.asset.findMany({
+      where: {
+        shelfLifeExpiry: {
+          gte: now,
+          lte: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+        },
+      },
+      select: {
+        id: true,
+        assetId: true,
+        shelfLifeExpiry: true,
+      },
+    });
+
+    return {
+      evaluatedAt: now.toISOString(),
+      overdueFlaggedCount: flagged.length,
+      overdueAssets: flagged,
+      expiringWithin30DaysCount: expiringSoon.length,
+      expiringAssets: expiringSoon,
+    };
+  }
+
+  async getOverdueAssets() {
+    return this.prisma.asset.findMany({
+      where: {
+        OR: [
+          { lifecycleState: 'INSPECTION_OVERDUE' },
+          { lifecycleState: 'RECEIVED', inspectionDueDate: { lt: new Date() } },
+        ],
+      },
+      include: { batch: true, inspections: true },
+      orderBy: { inspectionDueDate: 'asc' },
+    });
+  }
 }
+

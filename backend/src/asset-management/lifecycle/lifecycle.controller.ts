@@ -34,6 +34,28 @@ export class LifecycleController {
   }
 
   /**
+   * POST /lifecycle/detect-overdue
+   * Triggers the real expiry and inspection overdue detection engine.
+   * Auto-transitions overdue assets to INSPECTION_OVERDUE, generates notifications & audit events.
+   */
+  @Post('detect-overdue')
+  @UseGuards(RolesGuard)
+  @RequireRoles('ADMIN', 'TECHNICIAN')
+  async detectOverdue(@Req() req: Request) {
+    const user = (req as any).user;
+    return this.lifecycleService.detectAndFlagOverdueAssets(user.sub);
+  }
+
+  /**
+   * GET /lifecycle/overdue
+   * Returns all currently overdue defence assets.
+   */
+  @Get('overdue')
+  async getOverdue() {
+    return this.lifecycleService.getOverdueAssets();
+  }
+
+  /**
    * GET /lifecycle/rules
    * Returns the full transition rule table.
    * Available to all authenticated users.
@@ -43,9 +65,9 @@ export class LifecycleController {
     return {
       rules: this.lifecycleService.getTransitionRules(),
       state_machine: {
-        states: ['UNREGISTERED', 'SUPPLIER_DECLARED', 'RECEIVED', 'INSPECTION_RECORDED', 'ACCEPTED_FOR_ASSEMBLY', 'REJECTED_QUARANTINED'],
+        states: ['UNREGISTERED', 'SUPPLIER_DECLARED', 'RECEIVED', 'INSPECTION_RECORDED', 'INSPECTION_OVERDUE', 'ACCEPTED_FOR_ASSEMBLY', 'REJECTED_QUARANTINED'],
         terminal_states: ['ACCEPTED_FOR_ASSEMBLY', 'REJECTED_QUARANTINED'],
-        description: 'Linear progression with two terminal states. INSPECTION_RECORDED can branch to either terminal state.',
+        description: 'Linear progression with terminal states and INSPECTION_OVERDUE exception recovery.',
       },
     };
   }

@@ -12,13 +12,17 @@ export class CasbinService implements OnModuleInit {
     try {
       const candidateModelPaths = [
         path.resolve(__dirname, 'model.conf'),
-        path.resolve(process.cwd(), 'src/common/casbin/model.conf'),
-        path.resolve(process.cwd(), 'backend/src/common/casbin/model.conf')
+        path.resolve(process.cwd(), 'src/core/casbin/model.conf'),
+        path.resolve(process.cwd(), 'backend/src/core/casbin/model.conf'),
+        path.resolve(__dirname, '../../src/core/casbin/model.conf'),
+        path.resolve(__dirname, '../../../src/core/casbin/model.conf'),
       ];
       const candidatePolicyPaths = [
         path.resolve(__dirname, 'policy.csv'),
-        path.resolve(process.cwd(), 'src/common/casbin/policy.csv'),
-        path.resolve(process.cwd(), 'backend/src/common/casbin/policy.csv')
+        path.resolve(process.cwd(), 'src/core/casbin/policy.csv'),
+        path.resolve(process.cwd(), 'backend/src/core/casbin/policy.csv'),
+        path.resolve(__dirname, '../../src/core/casbin/policy.csv'),
+        path.resolve(__dirname, '../../../src/core/casbin/policy.csv'),
       ];
 
       const modelFile = candidateModelPaths.find(p => fs.existsSync(p));
