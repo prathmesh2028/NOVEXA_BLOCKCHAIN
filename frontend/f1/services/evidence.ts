@@ -33,5 +33,21 @@ export const evidenceService = {
     if (params.page_size) query.append('page_size', params.page_size.toString());
     
     return api.get<EvidenceListResponse>(`/evidence?${query.toString()}`);
+  },
+
+  getEvidence: async (id: string) => {
+    return api.get<EvidenceResponse>(`/evidence/${id}`);
+  },
+
+  uploadEvidence: async (data: {
+    asset_id: string;
+    filename: string;
+    type?: string;
+    mime_type?: string;
+    size_kb?: number;
+    content_base64: string;
+    event?: string;
+  }) => {
+    return api.post<EvidenceResponse>('/evidence', data);
   }
 };

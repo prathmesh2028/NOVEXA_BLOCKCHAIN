@@ -7,6 +7,7 @@ import { AssetsModule } from './asset-management/assets/assets.module';
 import { EvidenceModule } from './asset-management/evidence/evidence.module';
 import { LifecycleModule } from './asset-management/lifecycle/lifecycle.module';
 import { InspectionsModule } from './asset-management/inspections/inspections.module';
+import { TechnicalRecordsModule } from './asset-management/technical-records/technical-records.module';
 import { CertificationsModule } from './certification/certifications/certifications.module';
 import { BlockchainModule } from './trust/blockchain/blockchain.module';
 import { AuditModule } from './asset-management/audit/audit.module';
@@ -35,6 +36,7 @@ import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
     EvidenceModule,
     LifecycleModule,
     InspectionsModule,
+    TechnicalRecordsModule,
     CertificationsModule,
     BlockchainModule,
     AuditModule,

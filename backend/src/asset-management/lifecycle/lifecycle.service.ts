@@ -48,7 +48,11 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
         try {
           await this.detectAndFlagOverdueAssets('system-cron');
         } catch (err: any) {
-          this.logger.error(`Automated overdue scan failed: ${err.message}`);
+          if (process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo') {
+            this.logger.debug(`[DEMO MODE] Automated overdue scan skipped (database offline)`);
+          } else {
+            this.logger.error(`Automated overdue scan failed: ${err.message}`);
+          }
         }
       }, 60000);
     }

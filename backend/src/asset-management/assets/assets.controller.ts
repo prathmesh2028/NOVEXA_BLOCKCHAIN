@@ -58,6 +58,15 @@ export class AssetsController {
     return this.verificationService.verifyAsset(id);
   }
 
+  /**
+   * GET /assets/:id/qr
+   * Generates a verification QR code and canonical payload for physical asset verification.
+   */
+  @Get(':id/qr')
+  async getAssetQr(@Param('id') id: string) {
+    return this.assetsService.getAssetQr(id);
+  }
+
   @Get(':id')
   async getAsset(@Param('id') id: string) {
     return this.assetsService.getAsset(id);

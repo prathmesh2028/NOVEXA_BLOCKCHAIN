@@ -1,11 +1,38 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { EVIDENCE_LIST, ASSETS, formatDateTime } from "../../data/mockData";
+import { evidenceService } from "../../services/evidence";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const evidence = EVIDENCE_LIST.find((e) => e.id === id);
+  const [backendEvidence, setBackendEvidence] = useState<any>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    evidenceService.getEvidence(id)
+      .then(res => setBackendEvidence(res))
+      .catch(err => console.warn("Could not fetch evidence from backend:", err));
+  }, [id]);
+
+  const mockFallback = EVIDENCE_LIST.find((e) => e.id === id);
+  const evidence = backendEvidence ? {
+    ...mockFallback,
+    ...backendEvidence,
+    id: backendEvidence.evidence_id || backendEvidence.id,
+    assetId: backendEvidence.asset_id || mockFallback?.assetId,
+    filename: backendEvidence.filename || mockFallback?.filename,
+    type: backendEvidence.type || mockFallback?.type,
+    mimeType: backendEvidence.mime_type || mockFallback?.mimeType,
+    sizeKb: backendEvidence.size_kb || mockFallback?.sizeKb,
+    status: backendEvidence.status || mockFallback?.status,
+    hash: backendEvidence.hash || mockFallback?.hash,
+    event: backendEvidence.event || mockFallback?.event,
+    integrityVerified: backendEvidence.integrity_verified ?? mockFallback?.integrityVerified ?? true,
+    blockchainTx: backendEvidence.blockchain_tx || mockFallback?.blockchainTx,
+    createdAt: backendEvidence.created_at || mockFallback?.createdAt,
+  } : mockFallback;
 
   if (!evidence) {
     return (
@@ -29,7 +56,20 @@ export default function EvidenceDetailPage() {
           { label: evidence.id },
         ]}
         badge={<StatusBadge status={evidence.status} />}
-        actions={<Link to="/app/evidence" className="btn-ghost">← Back</Link>}
+        actions={
+          <div style={{ display: "flex", gap: 8 }}>
+            <a
+              href={`http://localhost:8000/api/v1/evidence/${evidence.id}/download`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-secondary"
+              style={{ fontSize: "0.75rem", textDecoration: "none" }}
+            >
+              Download File ⤓
+            </a>
+            <Link to="/app/evidence" className="btn-ghost">← Back</Link>
+          </div>
+        }
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>

@@ -12,6 +12,7 @@ p, TECHNICIAN, /api/v1/evidence*, (GET)|(POST)
 p, TECHNICIAN, /api/v1/physical-bindings*, (GET)|(POST)|(PATCH)|(DELETE)
 p, TECHNICIAN, /api/v1/inspections*, (GET)|(POST)
 p, TECHNICIAN, /api/v1/lifecycle*, (GET)|(POST)
+p, TECHNICIAN, /api/v1/technical-records*, (GET)|(POST)
 p, TECHNICIAN, /api/v1/approvals*, (GET)|(POST)
 p, TECHNICIAN, /api/v1/notifications*, (GET)|(POST)|(PATCH)
 p, TECHNICIAN, /api/v1/blockchain*, GET

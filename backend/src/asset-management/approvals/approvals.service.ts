@@ -36,10 +36,26 @@ export class ApprovalsService {
   ) {}
 
   async requestApproval(data: RequestApprovalDto) {
+    const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+
     // 1. Validate asset exists
-    const asset = await this.prisma.asset.findFirst({
-      where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
-    });
+    let asset: any = null;
+    try {
+      asset = await this.prisma.asset.findFirst({
+        where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
+      });
+    } catch (e: any) {
+      if (!isDemoMode) throw e;
+    }
+
+    if (!asset && isDemoMode) {
+      const { FALLBACK_ASSETS } = await import('../../core/common/fallback-data');
+      const found = FALLBACK_ASSETS.find(a => a.id === data.assetId || (a as any).assetId === data.assetId);
+      if (found) {
+        asset = { id: found.id, assetId: found.id, lifecycleState: found.lifecycle, model: found.model };
+      }
+    }
+
     if (!asset) {
       throw new NotFoundException(`Asset ${data.assetId} not found`);
     }
@@ -49,86 +65,152 @@ export class ApprovalsService {
     const entityId = data.entityId || asset.id;
 
     // 2. Check for duplicate pending approval on the same entity and stage
-    const existingPending = await this.prisma.approval.findFirst({
-      where: {
-        assetId: asset.id,
-        entityId,
-        stage,
-        status: 'PENDING',
-      },
-    });
+    let existingPending: any = null;
+    try {
+      existingPending = await this.prisma.approval.findFirst({
+        where: {
+          assetId: asset.id,
+          entityId,
+          stage,
+          status: 'PENDING',
+        },
+      });
+    } catch (e: any) {
+      if (!isDemoMode) throw e;
+      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
+      existingPending = FALLBACK_APPROVALS_ITEMS.find(
+        a => (a.assetId === asset.id || a.asset?.assetId === asset.id) && a.stage === stage && a.status === 'PENDING',
+      );
+    }
+
     if (existingPending) {
       throw new ConflictException(
         `A pending approval request (${existingPending.approvalId}) already exists for this asset at stage ${stage}`,
       );
     }
 
-    const count = await this.prisma.approval.count();
+    let count = 0;
+    try {
+      count = await this.prisma.approval.count();
+    } catch (e) {
+      if (!isDemoMode) throw e;
+      count = 6;
+    }
     const approvalId = `APR-${new Date().getFullYear()}-${String(count + 1).padStart(5, '0')}`;
 
-    return this.prisma.$transaction(async (tx) => {
-      const approval = await tx.approval.create({
-        data: {
-          approvalId,
-          assetId: asset.id,
-          entityType,
-          entityId,
-          stage,
-          status: 'PENDING',
-          requestedById: data.requestedById,
-          requestedByName: data.requestedByName,
-          requestedByRole: data.requestedByRole,
-          comments: data.comments,
-        },
-      });
-
-      // Audit trail
-      if (this.auditService?.recordEvent) {
-        await this.auditService.recordEvent(
-          {
-            eventType: 'APPROVAL_REQUESTED',
-            actorId: data.requestedById,
-            actorName: data.requestedByName,
-            actorRole: data.requestedByRole || 'TECHNICIAN',
-            action: `Approval requested: ${approvalId} (${stage})`,
-            resourceType: 'Approval',
-            resourceId: approval.id,
-            result: 'SUCCESS',
-            details: `Stage: ${stage} | Asset: ${asset.assetId}${data.comments ? ` | Note: ${data.comments}` : ''}`,
-            payload: { approvalId, assetId: asset.assetId, stage, comments: data.comments },
-          },
-          tx,
-        );
-      } else {
-        await tx.auditEvent.create({
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const approval = await tx.approval.create({
           data: {
-            eventType: 'APPROVAL_REQUESTED',
-            actorId: data.requestedById,
-            actorName: data.requestedByName,
-            actorRole: data.requestedByRole || 'TECHNICIAN',
-            action: `Approval requested: ${approvalId} (${stage})`,
-            resourceType: 'Approval',
-            resourceId: approval.id,
-            result: 'SUCCESS',
-            details: `Stage: ${stage} | Asset: ${asset.assetId}${data.comments ? ` | Note: ${data.comments}` : ''}`,
+            approvalId,
+            assetId: asset.id,
+            entityType,
+            entityId,
+            stage,
+            status: 'PENDING',
+            requestedById: data.requestedById,
+            requestedByName: data.requestedByName,
+            requestedByRole: data.requestedByRole,
+            comments: data.comments,
           },
         });
+
+        // Audit trail
+        if (this.auditService?.recordEvent) {
+          await this.auditService.recordEvent(
+            {
+              eventType: 'APPROVAL_REQUESTED',
+              actorId: data.requestedById,
+              actorName: data.requestedByName,
+              actorRole: data.requestedByRole || 'TECHNICIAN',
+              action: `Approval requested: ${approvalId} (${stage})`,
+              resourceType: 'Approval',
+              resourceId: approval.id,
+              result: 'SUCCESS',
+              details: `Stage: ${stage} | Asset: ${asset.assetId}${data.comments ? ` | Note: ${data.comments}` : ''}`,
+              payload: { approvalId, assetId: asset.assetId, stage, comments: data.comments },
+            },
+            tx,
+          );
+        } else {
+          await tx.auditEvent.create({
+            data: {
+              eventType: 'APPROVAL_REQUESTED',
+              actorId: data.requestedById,
+              actorName: data.requestedByName,
+              actorRole: data.requestedByRole || 'TECHNICIAN',
+              action: `Approval requested: ${approvalId} (${stage})`,
+              resourceType: 'Approval',
+              resourceId: approval.id,
+              result: 'SUCCESS',
+              details: `Stage: ${stage} | Asset: ${asset.assetId}${data.comments ? ` | Note: ${data.comments}` : ''}`,
+            },
+          });
+        }
+
+        // Emit real notification to NFT_CREATOR and ADMIN roles
+        await this.notificationsService.createNotification({
+          recipientRole: 'NFT_CREATOR',
+          title: `Approval Required: ${approvalId}`,
+          message: `Asset ${asset.assetId} submitted for ${stage} by ${data.requestedByName || 'Technician'}.`,
+          type: 'APPROVAL_REQUIRED',
+          severity: 'WARNING',
+          link: `/app/approvals/${approval.id}`,
+          metadata: { approvalId, assetId: asset.assetId, stage },
+        });
+
+        this.logger.log(`Approval ${approvalId} requested for asset ${asset.assetId} at stage ${stage}`);
+        return approval;
+      });
+    } catch (e: any) {
+      if (!isDemoMode) {
+        this.logger.error(`Database failure in requestApproval: ${e.message}`, e.stack);
+        throw e;
       }
 
-      // Emit real notification to NFT_CREATOR and ADMIN roles
-      await this.notificationsService.createNotification({
-        recipientRole: 'NFT_CREATOR',
-        title: `Approval Required: ${approvalId}`,
-        message: `Asset ${asset.assetId} submitted for ${stage} by ${data.requestedByName || 'Technician'}.`,
-        type: 'APPROVAL_REQUIRED',
-        severity: 'WARNING',
-        link: `/app/approvals/${approval.id}`,
-        metadata: { approvalId, assetId: asset.assetId, stage },
-      });
+      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
+      const fallbackApproval: any = {
+        id: `apr-fallback-${Date.now()}`,
+        approvalId,
+        assetId: asset.id,
+        entityType,
+        entityId,
+        stage,
+        status: 'PENDING',
+        requestedById: data.requestedById,
+        requestedByName: data.requestedByName || 'Technician',
+        requestedByRole: data.requestedByRole || 'TECHNICIAN',
+        comments: data.comments || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        asset: {
+          id: asset.id,
+          assetId: asset.assetId,
+          serialNumber: asset.serialNumber || 'SN-DEMO',
+          lifecycleState: asset.lifecycleState || 'QUALITY_INSPECTION_PENDING',
+          model: asset.model || 'Defence Standard',
+        },
+      };
 
-      this.logger.log(`Approval ${approvalId} requested for asset ${asset.assetId} at stage ${stage}`);
-      return approval;
-    });
+      FALLBACK_APPROVALS_ITEMS.unshift(fallbackApproval);
+
+      try {
+        await this.notificationsService.createNotification({
+          recipientRole: 'NFT_CREATOR',
+          title: `Approval Required: ${approvalId}`,
+          message: `Asset ${asset.assetId} submitted for ${stage} by ${data.requestedByName || 'Technician'}.`,
+          type: 'APPROVAL_REQUIRED',
+          severity: 'WARNING',
+          link: `/app/approvals/${fallbackApproval.id}`,
+          metadata: { approvalId, assetId: asset.assetId, stage },
+        });
+      } catch (notifErr) {
+        // Safe swallow
+      }
+
+      this.logger.log(`[DEMO MODE] Approval ${approvalId} created in-memory for asset ${asset.assetId}`);
+      return fallbackApproval;
+    }
   }
 
   async listApprovals(params: {
@@ -362,6 +444,22 @@ export class ApprovalsService {
       approval.approverRole = decision.approverRole;
       approval.comments = decision.comments;
       approval.decidedAt = new Date();
+
+      try {
+        await this.notificationsService.createNotification({
+          recipientId: approval.requestedById || 'USR-003',
+          title: `Approval ${decision.status}: ${approval.approvalId}`,
+          message: `Your approval request for ${approval.asset?.assetId || approval.assetId || 'Asset'} was ${decision.status.toLowerCase()} by ${decision.approverName || decision.approverRole}.`,
+          type: 'APPROVAL_DECIDED',
+          severity: decision.status === 'APPROVED' ? 'INFO' : 'CRITICAL',
+          link: `/app/approvals/${approval.id}`,
+          metadata: { approvalId: approval.approvalId, status: decision.status },
+        });
+      } catch (notifErr) {
+        // Safe swallow
+      }
+
+      this.logger.log(`[DEMO MODE] Approval ${approval.approvalId} decided: ${decision.status} by ${decision.approverId}`);
       return approval;
     }
   }

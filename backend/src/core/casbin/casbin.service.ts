@@ -48,7 +48,11 @@ export class CasbinService implements OnModuleInit {
    * Check if the user with the given roles is allowed to access the resource with the action
    */
   async checkPermission(roles: string[], obj: string, act: string): Promise<boolean> {
-    if (!this.enforcer) return true;
+    // CRITICAL: Fail closed, not open. No enforcer = deny by default.
+    if (!this.enforcer) {
+      this.logger.error('Casbin enforcer not initialized — denying access (fail closed)');
+      return false;
+    }
     for (const role of roles) {
       const allowed = await this.enforcer.enforce(role, obj, act);
       if (allowed) {

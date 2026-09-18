@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { ConfigService } from '../../core/config/config.service';
 import * as bcrypt from 'bcryptjs';
@@ -207,5 +207,55 @@ export class AuthService {
         wallet_address: user.actor.walletAddress || user.actor.wallet_address,
       } : null,
     };
+  }
+
+  async changePassword(userId: string, currentPassword?: string, newPassword?: string): Promise<{ message: string }> {
+    if (!currentPassword || !newPassword) {
+      throw new BadRequestException('current_password and new_password are required');
+    }
+    if (newPassword.length < 8) {
+      throw new BadRequestException('new_password must be at least 8 characters long');
+    }
+
+    let user: any = null;
+    try {
+      user = await this.prisma.user.findUnique({ where: { id: userId } });
+    } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) throw e;
+    }
+
+    const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+    if (!user && isDemoMode) {
+      const { FALLBACK_USERS } = await import('../../core/common/fallback-data');
+      const fallback = FALLBACK_USERS.find(u => u.id === userId || u.email === userId);
+      if (fallback) {
+        const valid = currentPassword === 'password' || (fallback as any).customPassword === currentPassword;
+        if (!valid) {
+          throw new UnauthorizedException('Current password is incorrect');
+        }
+        (fallback as any).customPassword = newPassword;
+        this.logger.log(`[DEMO MODE] Password updated for user ${fallback.email}`);
+        return { message: 'Password updated successfully' };
+      }
+    }
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isCurrentValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash },
+    });
+
+    this.logger.log(`Password updated for user ${user.email}`);
+    return { message: 'Password updated successfully' };
   }
 }
