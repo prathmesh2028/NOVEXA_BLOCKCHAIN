@@ -1,0 +1,1642 @@
+/* ============================================================
+   NOVEXA SECURE DEFENCE ACCESS — Login Page Styles
+   Synthetic Demonstration Platform — SIH 2026
+   Visual Theme: Advanced Defence Trust System Coming Online
+   ============================================================ */
+
+/* ----- CSS Custom Properties ----- */
+:root {
+  --login-navy: #060d1a;
+  --login-surface: #0a1628;
+  --login-elevated: #0e1e36;
+  --login-border: #1a3152;
+  --login-border-subtle: #132844;
+  --login-primary: #2563eb;
+  --login-primary-hover: #1d4ed8;
+  --login-accent: #3b82f6;
+  --login-accent-glow: rgba(37, 99, 235, 0.25);
+  --login-ink: #e2e8f0;
+  --login-ink-2: #94a3b8;
+  --login-ink-3: #64748b;
+  --login-ink-4: #475569;
+  --login-steel: #4a6a8a;
+  --login-card-bg: rgba(10, 22, 40, 0.88);
+  --login-emerald: #22c55e;
+}
+
+/* ----- Page Container ----- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  background: var(--login-navy);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--login-ink);
+}
+
+/* =========================================================
+   CINEMATIC BACKGROUND — Staged 0ms
+   ========================================================= */
+.login-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Atmospheric gradient motion */
+.login-bg::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 30% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+              radial-gradient(ellipse at 50% 80%, rgba(30, 58, 96, 0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 15% 15%, rgba(37, 99, 235, 0.04) 0%, transparent 55%);
+  animation: bgDrift 24s ease-in-out infinite alternate;
+}
+
+/* Soft ambient light sweep */
+.login-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.025), transparent);
+  animation: lightSweep 16s ease-in-out infinite;
+}
+
+@keyframes bgDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-2%, 2%) scale(1.02); }
+  100% { transform: translate(2%, -1%) scale(1.01); }
+}
+
+@keyframes lightSweep {
+  0% { left: -60%; }
+  100% { left: 120%; }
+}
+
+/* Technical grid overlay */
+.login-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.025) 1px, transparent 1px);
+  background-size: 55px 55px;
+  opacity: 0;
+  animation: gridFadeIn 1s ease-out 0.1s forwards, gridShift 45s linear infinite;
+}
+
+@keyframes gridFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gridShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 55px 55px; }
+}
+
+/* Faint CRT-style technical scanline */
+.login-scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(37, 99, 235, 0.009) 3px,
+    rgba(37, 99, 235, 0.009) 4px
+  );
+  pointer-events: none;
+  animation: scanlineMove 6s linear infinite;
+}
+
+@keyframes scanlineMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* =========================================================
+   SPLIT LAYOUT
+   ========================================================= */
+.login-visual-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  padding: 40px;
+  min-height: 100vh;
+}
+
+.login-form-side {
+  flex: 0 0 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  padding: 40px 48px;
+  min-height: 100vh;
+}
+
+/* Decorative dividing line */
+.login-form-side::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--login-border), rgba(37, 99, 235, 0.15), var(--login-border), transparent);
+}
+
+/* =========================================================
+   LEFT-SIDE VISUAL — Defence System Coming Online
+   ========================================================= */
+
+/* ----- SATELLITE GRID (ORBITAL RINGS) — Staged 350ms ----- */
+.satellite-grid {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  height: 480px;
+  pointer-events: none;
+  opacity: 0;
+  animation: satFadeIn 1s ease-out 0.35s forwards;
+}
+
+@keyframes satFadeIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.satellite-orbit {
+  position: absolute;
+  border: 1px solid rgba(37, 99, 235, 0.05);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+}
+
+.satellite-orbit-1 {
+  width: 115%;
+  height: 75%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+}
+
+.satellite-orbit-2 {
+  width: 130%;
+  height: 55%;
+  transform: translate(-50%, -50%) rotate(25deg);
+  border-style: dashed;
+  border-color: rgba(37, 99, 235, 0.035);
+}
+
+.satellite-orbit-3 {
+  width: 95%;
+  height: 95%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-color: rgba(37, 99, 235, 0.045);
+}
+
+/* ----- RADAR ANIMATION — Staged 450ms ----- */
+.radar-container {
+  position: relative;
+  width: 350px;
+  height: 350px;
+  opacity: 0;
+  animation: radarFadeIn 1s ease-out 0.45s forwards;
+}
+
+@keyframes radarFadeIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.radar-ring {
+  position: absolute;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radar-ring-1 {
+  width: 100%;
+  height: 100%;
+  border-width: 1.5px;
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.radar-ring-2 {
+  width: 72%;
+  height: 72%;
+}
+
+.radar-ring-3 {
+  width: 44%;
+  height: 44%;
+}
+
+.radar-ring-4 {
+  width: 18%;
+  height: 18%;
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Crosshair axes */
+.radar-cross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+}
+
+.radar-cross::before,
+.radar-cross::after {
+  content: '';
+  position: absolute;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.radar-cross::before {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  left: 0;
+}
+
+.radar-cross::after {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+}
+
+/* Central point */
+.radar-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  background: var(--login-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.6), 0 0 20px rgba(37, 99, 235, 0.25);
+  z-index: 3;
+}
+
+/* Radar central ambient pulse */
+.radar-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 75%;
+  height: 75%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 40%, transparent 70%);
+  pointer-events: none;
+  animation: glowPulse 5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Primary Radar Sweep (360° rotation in 6s, linear, infinite) */
+.radar-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+  transform-origin: 0 0;
+  animation: radarSpin 6s linear infinite;
+  will-change: transform;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.radar-sweep::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(37, 99, 235, 0.22) 6deg,
+    rgba(37, 99, 235, 0.08) 26deg,
+    transparent 50deg
+  );
+  border-radius: 0 100% 0 0;
+}
+
+/* Secondary depth sweep */
+.radar-sweep-2 {
+  animation-delay: -2s;
+}
+
+.radar-sweep-2::before {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(37, 99, 235, 0.08) 4deg,
+    rgba(37, 99, 235, 0.02) 18deg,
+    transparent 35deg
+  );
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 4 Synchronized Detection Points */
+.radar-point {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #60a5fa;
+  border-radius: 50%;
+  z-index: 4;
+}
+
+.radar-point::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 50%;
+}
+
+/* Point 1: top-right (angle ~45°). Hit at ~0.75s in 6s cycle */
+.radar-point-1 {
+  top: 26%;
+  left: 68%;
+  animation: pointPulse1 6s ease-in-out infinite;
+}
+.radar-point-1::after {
+  animation: pointRing1 6s ease-out infinite;
+}
+
+/* Point 2: bottom-right (angle ~135°). Hit at ~2.25s in 6s cycle */
+.radar-point-2 {
+  top: 70%;
+  left: 66%;
+  animation: pointPulse2 6s ease-in-out infinite;
+}
+.radar-point-2::after {
+  animation: pointRing2 6s ease-out infinite;
+}
+
+/* Point 3: bottom-left (angle ~225°). Hit at ~3.75s in 6s cycle */
+.radar-point-3 {
+  top: 72%;
+  left: 32%;
+  animation: pointPulse3 6s ease-in-out infinite;
+}
+.radar-point-3::after {
+  animation: pointRing3 6s ease-out infinite;
+}
+
+/* Point 4: top-left (angle ~315°). Hit at ~5.25s in 6s cycle */
+.radar-point-4 {
+  top: 28%;
+  left: 30%;
+  animation: pointPulse4 6s ease-in-out infinite;
+}
+.radar-point-4::after {
+  animation: pointRing4 6s ease-out infinite;
+}
+
+/* Radar-synchronized point brightness and expanding rings */
+@keyframes pointPulse1 {
+  0%, 25%, 100% { opacity: 0.25; transform: scale(0.9); }
+  12.5% { opacity: 1; transform: scale(1.3); }
+}
+@keyframes pointRing1 {
+  0%, 25%, 100% { transform: scale(1); opacity: 0; }
+  12.5% { transform: scale(2.4); opacity: 0.6; }
+}
+
+@keyframes pointPulse2 {
+  0%, 15%, 50%, 100% { opacity: 0.25; transform: scale(0.9); }
+  37.5% { opacity: 1; transform: scale(1.3); }
+}
+@keyframes pointRing2 {
+  0%, 15%, 50%, 100% { transform: scale(1); opacity: 0; }
+  37.5% { transform: scale(2.4); opacity: 0.6; }
+}
+
+@keyframes pointPulse3 {
+  0%, 40%, 75%, 100% { opacity: 0.25; transform: scale(0.9); }
+  62.5% { opacity: 1; transform: scale(1.3); }
+}
+@keyframes pointRing3 {
+  0%, 40%, 75%, 100% { transform: scale(1); opacity: 0; }
+  62.5% { transform: scale(2.4); opacity: 0.6; }
+}
+
+@keyframes pointPulse4 {
+  0%, 65%, 100% { opacity: 0.25; transform: scale(0.9); }
+  87.5% { opacity: 1; transform: scale(1.3); }
+}
+@keyframes pointRing4 {
+  0%, 65%, 100% { transform: scale(1); opacity: 0; }
+  87.5% { transform: scale(2.4); opacity: 0.6; }
+}
+
+/* ----- DEFENCE ASSET MOTION (STEALTH AIRCRAFT) — Staged 350ms ----- */
+.aircraft-visual {
+  position: absolute;
+  top: 15%;
+  left: 8%;
+  width: 90px;
+  opacity: 0;
+  pointer-events: none;
+  animation: aircraftEntry 1s ease-out 0.35s forwards, aircraftDrift 18s ease-in-out 1.35s infinite alternate;
+}
+
+@keyframes aircraftEntry {
+  from { opacity: 0; transform: translate(-20px, 12px); }
+  to { opacity: 0.45; transform: translate(0, 0); }
+}
+
+@keyframes aircraftDrift {
+  0% { transform: translate(-10px, 0px) rotate(-1.5deg); opacity: 0.4; }
+  33% { transform: translate(16px, -10px) rotate(0.5deg); opacity: 0.55; }
+  66% { transform: translate(6px, 8px) rotate(-1deg); opacity: 0.45; }
+  100% { transform: translate(-12px, 3px) rotate(-2deg); opacity: 0.35; }
+}
+
+.aircraft-svg {
+  width: 70px;
+  height: 40px;
+  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.25));
+}
+
+.aircraft-contrail {
+  position: absolute;
+  top: 20px;
+  right: 68px;
+  width: 45px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2));
+  transform: translateY(-50%);
+}
+
+/* ----- BLOCKCHAIN NETWORK (3-5 NODES FLOW) — Staged 550ms ----- */
+.blockchain-flow {
+  position: absolute;
+  bottom: 8%;
+  left: 6%;
+  width: 250px;
+  opacity: 0;
+  pointer-events: none;
+  animation: bcFlowFadeIn 0.8s ease-out 0.55s forwards;
+}
+
+@keyframes bcFlowFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.blockchain-flow-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.bc-line {
+  stroke: rgba(37, 99, 235, 0.18);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+/* Travelling data pulses along connecting lines */
+.bc-pulse-line {
+  stroke: #60a5fa;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 20 180;
+  animation: bcPulseTravel 4s linear infinite;
+}
+
+.bc-pulse-1 { animation-delay: 0s; }
+.bc-pulse-2 { animation-delay: 1.3s; }
+.bc-pulse-3 { animation-delay: 2.6s; }
+
+@keyframes bcPulseTravel {
+  0% { stroke-dashoffset: 200; opacity: 0; }
+  15% { opacity: 0.85; }
+  85% { opacity: 0.85; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+.bc-node-dot {
+  fill: #3b82f6;
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6));
+}
+
+.bc-node-halo {
+  fill: none;
+  stroke: rgba(59, 130, 246, 0.2);
+  stroke-width: 1;
+  animation: bcHaloPulse 3s ease-in-out infinite;
+}
+
+@keyframes bcHaloPulse {
+  0%, 100% { transform-origin: center; transform: scale(1); opacity: 0.3; }
+  50% { transform-origin: center; transform: scale(1.3); opacity: 0.8; }
+}
+
+.bc-node-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  fill: rgba(148, 163, 184, 0.5);
+  font-weight: 600;
+}
+
+/* ----- ASSET VERIFICATION VISUAL BADGE — Staged 550ms ----- */
+.asset-verif-badge {
+  position: absolute;
+  top: 18%;
+  right: 6%;
+  background: rgba(10, 22, 40, 0.75);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 6px;
+  padding: 10px 14px;
+  min-width: 160px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  animation: badgeFadeIn 0.8s ease-out 0.55s forwards;
+}
+
+@keyframes badgeFadeIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.verif-badge-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.verif-badge-icon {
+  color: #3b82f6;
+  font-size: 0.8rem;
+}
+
+.verif-badge-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--login-ink-2);
+}
+
+.verif-badge-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #60a5fa;
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+}
+
+/* 3-State Dynamic Verification Cycle */
+.verif-badge-cycle {
+  position: relative;
+  height: 16px;
+  overflow: hidden;
+}
+
+.verif-step {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.verif-step-1 {
+  color: #f59e0b;
+  animation: verifStep1 6s infinite;
+}
+
+.verif-step-2 {
+  color: #3b82f6;
+  animation: verifStep2 6s infinite;
+}
+
+.verif-step-3 {
+  color: #22c55e;
+  animation: verifStep3 6s infinite;
+}
+
+@keyframes verifStep1 {
+  0%, 28% { opacity: 1; transform: translateY(0); }
+  33%, 100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes verifStep2 {
+  0%, 30% { opacity: 0; transform: translateY(8px); }
+  35%, 62% { opacity: 1; transform: translateY(0); }
+  67%, 100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes verifStep3 {
+  0%, 64% { opacity: 0; transform: translateY(8px); }
+  69%, 95% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* ----- SIGNAL / DATA FLOW PATHS — Staged 350ms ----- */
+.signal-paths {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: signalFadeIn 0.8s ease-out 0.35s forwards;
+}
+
+@keyframes signalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.signal-path {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.08), transparent);
+}
+
+.signal-path::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 12px;
+  height: 5px;
+  background: radial-gradient(ellipse, rgba(96, 165, 250, 0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: signalTravel 4s linear infinite;
+}
+
+.signal-path-1 { top: 35%; left: 12%; width: 34%; transform: rotate(-4deg); }
+.signal-path-1::before { animation-delay: 0s; animation-duration: 4s; }
+
+.signal-path-2 { top: 58%; left: 22%; width: 36%; transform: rotate(3deg); }
+.signal-path-2::before { animation-delay: 1.2s; animation-duration: 3.5s; }
+
+.signal-path-3 { top: 76%; left: 10%; width: 42%; transform: rotate(-2deg); }
+.signal-path-3::before { animation-delay: 2.4s; animation-duration: 5s; }
+
+.signal-path-4 { top: 46%; left: 16%; width: 28%; transform: rotate(6deg); }
+.signal-path-4::before { animation-delay: 0.6s; animation-duration: 3s; }
+
+@keyframes signalTravel {
+  0% { left: -2%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 98%; opacity: 0; }
+}
+
+/* ----- DEFENCE ASSET SCAN LINE ----- */
+.defence-scan-line {
+  position: absolute;
+  top: -2px;
+  left: 6%;
+  right: 6%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(37, 99, 235, 0.05),
+    rgba(96, 165, 250, 0.12),
+    rgba(37, 99, 235, 0.05),
+    transparent
+  );
+  pointer-events: none;
+  animation: scanDown 8s ease-in-out infinite;
+}
+
+.defence-scan-line::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 0;
+  right: 0;
+  height: 25px;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.025), transparent);
+  pointer-events: none;
+}
+
+@keyframes scanDown {
+  0% { transform: translateY(-10px); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { transform: translateY(calc(100vh - 10px)); opacity: 0; }
+}
+
+/* ----- COMMUNICATION SIGNAL ARCS ----- */
+.signal-arc {
+  position: absolute;
+  border: 1px solid rgba(37, 99, 235, 0.06);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  animation: arcFadeIn 1s ease-out 0.4s forwards;
+}
+
+.signal-arc-1 {
+  top: 20%;
+  left: 3%;
+  width: 190px;
+  height: 190px;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(-30deg);
+}
+
+.signal-arc-2 {
+  bottom: 20%;
+  right: 6%;
+  width: 150px;
+  height: 150px;
+  border-left-color: transparent;
+  border-top-color: transparent;
+  transform: rotate(20deg);
+}
+
+@keyframes arcFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ----- TECHNICAL DATA LABELS — Staged 550ms ----- */
+.tech-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tech-label {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: rgba(96, 165, 250, 0.35);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  animation: techFadeIn 0.8s ease-out 0.55s both;
+}
+
+@keyframes techFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* SECURE NETWORK with subtle scanning shimmer */
+.tech-label-secure {
+  top: 11%;
+  left: 7%;
+  padding: 3px 8px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 4px;
+  background: rgba(10, 22, 40, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-secure-scan {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent);
+  animation: labelScanSweep 6s ease-in-out infinite;
+}
+
+@keyframes labelScanSweep {
+  0%, 30% { left: -60%; }
+  60%, 100% { left: 120%; }
+}
+
+/* BLOCKCHAIN VERIFIED with subtle verification pulse */
+.tech-label-verified {
+  bottom: 24%;
+  right: 7%;
+  padding: 3px 8px;
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  border-radius: 4px;
+  background: rgba(10, 22, 40, 0.5);
+}
+
+.tech-verified-dot {
+  width: 5px;
+  height: 5px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: verifiedPulse 4s ease-in-out infinite;
+}
+
+@keyframes verifiedPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 4px rgba(59, 130, 246, 0.4); }
+  50% { transform: scale(1.25); box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
+}
+
+/* ● SYSTEM STATUS: OPERATIONAL — live heartbeat pulse */
+.tech-label-status {
+  top: 8%;
+  right: 10%;
+}
+
+.tech-status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--login-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+  animation: statusHeartbeat 3s ease-in-out infinite;
+}
+
+@keyframes statusHeartbeat {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(34, 197, 94, 0.4); }
+  50% { transform: scale(1.2); box-shadow: 0 0 12px rgba(34, 197, 94, 0.75); }
+}
+
+.tech-label-node { bottom: 6%; left: 45%; }
+.tech-label-trust { bottom: 35%; left: 5%; }
+
+/* DEFENCE TITLE */
+.defence-title {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  opacity: 0;
+  animation: techFadeIn 1s ease-out 0.55s forwards;
+}
+
+.defence-title-main {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.25);
+  text-transform: uppercase;
+}
+
+.defence-title-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: rgba(100, 116, 139, 0.25);
+  margin-top: 4px;
+}
+
+/* =========================================================
+   RIGHT-SIDE — Login Form & Branding
+   ========================================================= */
+
+/* ----- BRANDING — Staged 150ms (Icon) & 250ms (Text) ----- */
+.login-branding {
+  margin-bottom: 28px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-brand-icon {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--login-primary), #1e40af);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: #fff;
+  letter-spacing: -0.02em;
+  box-shadow: 0 0 22px rgba(37, 99, 235, 0.2), 0 0 6px rgba(37, 99, 235, 0.12);
+  opacity: 0;
+  animation: brandIconFadeIn 0.6s ease-out 0.15s forwards, iconGlow 4s ease-in-out infinite;
+}
+
+@keyframes brandIconFadeIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes iconGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.2), 0 0 6px rgba(37, 99, 235, 0.1); }
+  50% { box-shadow: 0 0 28px rgba(37, 99, 235, 0.3), 0 0 12px rgba(37, 99, 235, 0.18); }
+}
+
+.login-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  animation: brandTextFadeIn 0.6s ease-out 0.25s forwards;
+}
+
+@keyframes brandTextFadeIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.login-brand-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--login-ink);
+  letter-spacing: 0.06em;
+}
+
+.login-brand-sub {
+  font-size: 0.6rem;
+  color: var(--login-ink-4);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+/* ----- LOGIN CARD — Staged 650ms ----- */
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--login-card-bg);
+  border: 1px solid var(--login-border);
+  border-radius: 10px;
+  padding: 34px 30px;
+  position: relative;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  animation: cardSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.65s forwards;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--login-primary), transparent);
+  border-radius: 1px;
+}
+
+.login-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.02), transparent 40%, rgba(37, 99, 235, 0.01));
+  pointer-events: none;
+  animation: cardShimmer 8s ease-in-out infinite;
+}
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cardShimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.login-card:hover {
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(37, 99, 235, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ----- CARD HEADER ----- */
+.login-card-header {
+  margin-bottom: 24px;
+}
+
+.login-card-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--login-ink);
+  margin: 0 0 6px;
+  letter-spacing: 0.05em;
+}
+
+.login-card-desc {
+  font-size: 0.8rem;
+  color: var(--login-ink-3);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ----- STAGGERED SEQUENCE ----- */
+@keyframes staggerFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-stagger-1 { opacity: 0; animation: staggerFadeIn 0.5s ease-out 0.65s forwards; }
+.login-stagger-2 { opacity: 0; animation: staggerFadeIn 0.5s ease-out 0.72s forwards; }
+.login-stagger-4 { opacity: 0; animation: staggerFadeIn 0.4s ease-out 0.1s forwards; }
+.login-stagger-5 { opacity: 0; animation: staggerFadeIn 0.5s ease-out 0.82s forwards; }
+
+/* Role cards staged at 750ms+ */
+.login-stagger-role-1 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.75s forwards; }
+.login-stagger-role-2 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.78s forwards; }
+.login-stagger-role-3 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.81s forwards; }
+.login-stagger-role-4 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.84s forwards; }
+
+/* ----- ROLE SELECTOR & CARDS ----- */
+.login-role-group {
+  margin-bottom: 20px;
+}
+
+.login-section-label {
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--login-ink-4);
+  margin-bottom: 9px;
+}
+
+.login-role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.login-role-btn {
+  width: 100%;
+  background: var(--login-navy);
+  border: 1px solid var(--login-border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.22s ease,
+              background 0.22s ease,
+              box-shadow 0.22s ease;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  position: relative;
+  overflow: hidden;
+  font-family: inherit;
+  color: inherit;
+}
+
+.login-role-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--login-primary);
+  transition: width 0.3s ease;
+}
+
+/* Hover: translateY(-2px to -4px), brighter border, icon glow, brighter background */
+.login-role-btn:hover {
+  border-color: rgba(37, 99, 235, 0.4);
+  background: rgba(37, 99, 235, 0.06);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+}
+
+.login-role-btn:hover::after {
+  width: 100%;
+}
+
+/* Selected: clear blue border, subtle highlight, animated radio indicator, icon emphasis */
+.login-role-btn[data-selected="true"] {
+  border-color: var(--login-primary);
+  background: rgba(37, 99, 235, 0.09);
+  box-shadow: inset 3px 0 0 var(--login-primary), 0 0 22px rgba(37, 99, 235, 0.08);
+}
+
+.login-role-btn[data-selected="true"]::after {
+  width: 100%;
+  background: var(--login-primary);
+}
+
+.login-role-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.login-role-btn:hover .login-role-icon {
+  transform: scale(1.08);
+  box-shadow: 0 0 10px currentColor;
+}
+
+.login-role-btn[data-selected="true"] .login-role-icon {
+  box-shadow: 0 0 14px currentColor;
+}
+
+.login-role-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.login-role-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--login-ink-2);
+  transition: color 0.2s;
+}
+
+.login-role-btn[data-selected="true"] .login-role-name {
+  color: var(--login-ink);
+}
+
+.login-role-did {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--login-ink-4);
+  margin-left: 8px;
+}
+
+.login-role-desc {
+  font-size: 0.72rem;
+  color: var(--login-ink-4);
+  margin-top: 2px;
+}
+
+/* Radio Indicator */
+.login-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--login-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.login-radio[data-active="true"] {
+  border-color: var(--login-primary);
+  background: var(--login-primary);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+}
+
+.login-radio-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  transform: scale(0);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.login-radio[data-active="true"] .login-radio-dot {
+  transform: scale(1);
+}
+
+/* ----- IDENTITY & CREDENTIAL PANEL ----- */
+.login-cred-panel {
+  background: var(--login-navy);
+  border: 1px solid var(--login-border-subtle);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.login-cred-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.login-cred-label {
+  font-size: 0.67rem;
+  color: var(--login-ink-4);
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.login-cred-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #60a5fa;
+}
+
+/* ----- SIGN IN BUTTON ----- */
+.login-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--login-primary), #1e40af);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.login-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+.login-submit-btn:hover:not(:disabled)::before {
+  animation: btnSweep 0.6s ease forwards;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35), 0 0 40px rgba(37, 99, 235, 0.1);
+}
+
+.login-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-btn-arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.login-submit-btn:hover:not(:disabled) .login-btn-arrow {
+  transform: translateX(4px);
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
+}
+
+.login-submit-btn:disabled {
+  background: var(--login-border);
+  color: var(--login-ink-4);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes btnSweep {
+  from { left: -60%; }
+  to { left: 120%; }
+}
+
+.login-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spinRotate 0.7s linear infinite;
+}
+
+@keyframes spinRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* ----- SECURE CONNECTION — Staged 850ms ----- */
+.login-security-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  justify-content: center;
+  opacity: 0;
+  animation: staggerFadeIn 0.5s ease-out 0.85s forwards;
+}
+
+.login-security-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--login-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+  animation: securityPulse 3s ease-in-out infinite;
+}
+
+@keyframes securityPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 14px rgba(34, 197, 94, 0.7); }
+}
+
+.login-security-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: rgba(34, 197, 94, 0.75);
+  text-transform: uppercase;
+}
+
+/* ----- FOOTER ----- */
+.login-footer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--login-ink-4);
+  margin-top: 14px;
+  line-height: 1.5;
+  opacity: 0;
+  animation: staggerFadeIn 0.5s ease-out 0.9s forwards;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+/* Tablet (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .login-visual-side {
+    flex: 0 0 40%;
+    padding: 24px;
+  }
+
+  .login-form-side {
+    flex: 1;
+    padding: 32px 36px;
+  }
+
+  .radar-container {
+    width: 270px;
+    height: 270px;
+  }
+
+  .satellite-grid {
+    width: 360px;
+    height: 360px;
+  }
+
+  .aircraft-visual {
+    display: none;
+  }
+
+  .tech-labels,
+  .signal-paths,
+  .defence-scan-line,
+  .signal-arc {
+    display: none;
+  }
+
+  .blockchain-flow {
+    bottom: 4%;
+    left: 4%;
+    transform: scale(0.85);
+    transform-origin: bottom left;
+  }
+
+  .asset-verif-badge {
+    top: 10%;
+    right: 4%;
+    transform: scale(0.85);
+    transform-origin: top right;
+  }
+}
+
+/* Mobile (max-width: 768px) */
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-visual-side {
+    flex: none;
+    min-height: auto;
+    padding: 20px;
+    height: 180px;
+  }
+
+  .radar-container {
+    width: 150px;
+    height: 150px;
+  }
+
+  .satellite-grid,
+  .tech-labels,
+  .defence-title,
+  .signal-paths,
+  .defence-scan-line,
+  .signal-arc,
+  .aircraft-visual,
+  .blockchain-flow,
+  .asset-verif-badge {
+    display: none;
+  }
+
+  .login-form-side {
+    flex: 1;
+    min-height: auto;
+    padding: 16px 20px 36px;
+  }
+
+  .login-form-side::before {
+    display: none;
+  }
+
+  .login-card {
+    padding: 26px 20px;
+  }
+}
+
+/* Small mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .login-visual-side {
+    height: 130px;
+    padding: 12px;
+  }
+
+  .radar-container {
+    width: 110px;
+    height: 110px;
+  }
+
+  .login-form-side {
+    padding: 10px 14px 28px;
+  }
+
+  .login-card {
+    padding: 22px 16px;
+    border-radius: 8px;
+  }
+
+  .login-role-btn {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .login-role-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 0.85rem;
+  }
+
+  .login-role-did {
+    display: none;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY — PREFERS REDUCED MOTION
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all continuous loops & spins */
+  .login-bg::before,
+  .login-bg::after,
+  .login-grid-overlay,
+  .login-scanline,
+  .radar-sweep,
+  .radar-sweep-2,
+  .radar-glow,
+  .radar-point,
+  .radar-point::after,
+  .aircraft-visual,
+  .bc-pulse-line,
+  .bc-node-halo,
+  .verif-step,
+  .signal-path::before,
+  .defence-scan-line,
+  .tech-secure-scan,
+  .tech-verified-dot,
+  .tech-status-dot,
+  .login-brand-icon,
+  .login-card::after,
+  .login-security-dot {
+    animation: none !important;
+  }
+
+  /* Reveal static state for cycling verification badge */
+  .verif-step-3 {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .verif-step-1,
+  .verif-step-2 {
+    display: none !important;
+  }
+
+  /* Show all staged elements immediately without motion */
+  .login-card,
+  .login-branding,
+  .login-brand-icon,
+  .login-brand-text,
+  .login-card-header,
+  .login-stagger-1,
+  .login-stagger-2,
+  .login-stagger-4,
+  .login-stagger-5,
+  .login-stagger-role-1,
+  .login-stagger-role-2,
+  .login-stagger-role-3,
+  .login-stagger-role-4,
+  .radar-container,
+  .tech-label,
+  .defence-title,
+  .login-security-status,
+  .login-footer,
+  .satellite-grid,
+  .blockchain-flow,
+  .asset-verif-badge,
+  .signal-paths,
+  .signal-arc {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Preserve essential structural positioning transforms */
+  .defence-title {
+    transform: translateX(-50%) !important;
+  }
+
+  .satellite-grid {
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .login-submit-btn::before {
+    display: none;
+  }
+
+  .login-submit-btn:hover {
+    transform: none;
+  }
+
+  .login-btn-arrow {
+    transform: none !important;
+  }
+
+  .login-role-btn::after {
+    transition: none;
+  }
+
+  .login-role-btn:hover {
+    transform: none;
+  }
+}

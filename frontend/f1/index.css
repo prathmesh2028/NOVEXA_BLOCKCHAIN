@@ -1,0 +1,645 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  --color-canvas: #070f1d;
+  --color-surface: #0c1828;
+  --color-elevated: #132040;
+  --color-border: #1e3a60;
+  --color-border-subtle: #152b4a;
+  --color-sidebar: #08131f;
+
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-muted: rgba(37,99,235,0.15);
+  --color-accent: #3b82f6;
+
+  --color-ink: #e2e8f0;
+  --color-ink-2: #94a3b8;
+  --color-ink-3: #64748b;
+  --color-ink-4: #475569;
+
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34,197,94,0.1);
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245,158,11,0.1);
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239,68,68,0.1);
+  --color-info: #60a5fa;
+  --color-info-bg: rgba(96,165,250,0.1);
+  --color-locked: #8b5cf6;
+  --color-locked-bg: rgba(139,92,246,0.1);
+
+  --font-family-display: 'Barlow Condensed', sans-serif;
+  --font-family-body: 'Inter', sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+}
+
+html {
+  font-family: 'Inter', sans-serif;
+  background-color: #070f1d;
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e3a60; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+
+.font-display { font-family: 'Barlow Condensed', sans-serif; }
+.font-mono-id { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; }
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 5px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.sidebar-link:hover {
+  color: #94a3b8;
+  background: rgba(30,58,96,0.4);
+}
+.sidebar-link.active {
+  color: #e2e8f0;
+  background: rgba(37,99,235,0.18);
+  border-left: 2px solid #2563eb;
+  padding-left: 10px;
+}
+.sidebar-link svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.sidebar-link.active svg {
+  opacity: 1;
+  color: #60a5fa;
+}
+
+.panel {
+  background: #0c1828;
+  border: 1px solid #1e3a60;
+  border-radius: 6px;
+}
+
+.panel-elevated {
+  background: #132040;
+  border: 1px solid #1e3a60;
+  border-radius: 6px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+.btn-primary:hover { background: #1d4ed8; }
+.btn-primary:disabled { background: #1e3a60; color: #475569; cursor: not-allowed; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #1e3a60;
+  border-radius: 5px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.btn-secondary:hover { border-color: #2563eb; color: #e2e8f0; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: transparent;
+  color: #64748b;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { background: rgba(30,58,96,0.4); color: #94a3b8; }
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 5px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-danger:hover { background: rgba(239,68,68,0.22); border-color: rgba(239,68,68,0.5); }
+
+.input-field {
+  width: 100%;
+  background: #070f1d;
+  border: 1px solid #1e3a60;
+  border-radius: 5px;
+  padding: 8px 12px;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input-field:focus { border-color: #2563eb; }
+.input-field::placeholder { color: #475569; }
+
+.table-row {
+  display: grid;
+  border-bottom: 1px solid #152b4a;
+  transition: background 0.1s;
+}
+.table-row:hover { background: rgba(37,99,235,0.04); }
+
+.tab-btn {
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: #94a3b8; }
+.tab-btn.active { color: #e2e8f0; border-bottom-color: #2563eb; }
+
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.meta-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.page-fade {
+  animation: pageFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pageFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Defence UI Foundations & Micro-animations ─── */
+.kpi-card {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: #2b568e !important;
+  box-shadow: 0 12px 28px -6px rgba(12, 24, 40, 0.7),
+              0 0 0 1px rgba(59, 130, 246, 0.25),
+              0 0 16px rgba(37, 99, 235, 0.12);
+}
+
+.defence-panel {
+  background: #0c1828;
+  border: 1px solid #172d4c;
+  border-radius: 7px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.defence-panel:hover {
+  border-color: #1e3a60;
+}
+
+.pulse-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: beaconPulse 2.2s infinite ease-in-out;
+}
+@keyframes beaconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.9);
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+  }
+}
+
+.pulse-beacon-amber {
+  animation: beaconPulseAmber 2.2s infinite ease-in-out;
+}
+@keyframes beaconPulseAmber {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.9);
+    box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
+  }
+}
+
+/* Staggered entrance helpers */
+.stagger-in-1 { animation: pageFade 0.3s ease 0.04s both; }
+.stagger-in-2 { animation: pageFade 0.35s ease 0.08s both; }
+.stagger-in-3 { animation: pageFade 0.4s ease 0.12s both; }
+.stagger-in-4 { animation: pageFade 0.45s ease 0.16s both; }
+
+/* Interactive row hover */
+.interactive-row {
+  transition: background 0.15s ease, border-color 0.15s ease, padding-left 0.15s ease;
+}
+.interactive-row:hover {
+  background: rgba(30, 58, 96, 0.25);
+  padding-left: 4px;
+}
+
+/* Custom interactive button subtle elevation */
+.btn-primary {
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  background: rgba(30, 58, 96, 0.2);
+}
+
+/* Accessibility: Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD PREMIUM ADDITIONS — F1 POLISH
+   ═══════════════════════════════════════════════════════════ */
+
+/* Extended stagger helpers */
+.stagger-in-5 { animation: pageFade 0.48s ease 0.20s both; }
+.stagger-in-6 { animation: pageFade 0.52s ease 0.26s both; }
+.stagger-in-7 { animation: pageFade 0.56s ease 0.32s both; }
+.stagger-in-8 { animation: pageFade 0.60s ease 0.40s both; }
+
+/* ── Keyframes ────────────────────────────────────────────── */
+
+/* Slow vertical scan line across dashboard background */
+@keyframes scanLine {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  5%   { opacity: 0.6; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Horizontal data pulse travelling across trust chain */
+@keyframes dataPulse {
+  0%   { left: -12px; opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { left: calc(100% + 12px); opacity: 0; }
+}
+
+/* Card skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* Count-up entrance (visual only — actual number set by JS) */
+@keyframes kpiReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Header scan line sweep */
+@keyframes headerGlint {
+  0%   { left: -60%; opacity: 0; }
+  30%  { opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+
+/* Ripple glow on status indicator */
+@keyframes statusRipple {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* ── Dashboard Background ─────────────────────────────────── */
+
+.db-bg {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Subtle grid overlay */
+.db-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 58, 96, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 96, 0.12) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Soft radial blue light from top-left */
+.db-bg::after {
+  content: "";
+  position: fixed;
+  top: -120px;
+  left: -80px;
+  width: 680px;
+  height: 480px;
+  background: radial-gradient(ellipse at 30% 30%, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure children sit above background layers */
+.db-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Scan line (decorative, very subtle) ─────────────────── */
+
+.db-scan-line {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.2) 40%,
+    rgba(59, 130, 246, 0.4) 50%,
+    rgba(59, 130, 246, 0.2) 60%,
+    transparent 100%
+  );
+  animation: scanLine 9s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Skeleton Loading ─────────────────────────────────────── */
+
+.skeleton-card {
+  background: #0c1828;
+  border: 1px solid #172d4c;
+  border-radius: 7px;
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(30, 58, 96, 0.35) 40%,
+    rgba(59, 130, 246, 0.08) 50%,
+    rgba(30, 58, 96, 0.35) 60%,
+    transparent 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.skeleton-line {
+  background: rgba(30, 58, 96, 0.4);
+  border-radius: 3px;
+}
+
+/* ── Section Title with accent ────────────────────────────── */
+
+.db-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.db-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: linear-gradient(180deg, #2563eb 0%, #3b82f6 100%);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Trust Chain Line ─────────────────────────────────────── */
+
+.trust-chain-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.trust-chain-connector {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.08) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.trust-chain-pulse {
+  position: absolute;
+  top: -3px;
+  width: 20px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(96, 165, 250, 0.95) 0%, rgba(59, 130, 246, 0.3) 60%, transparent 100%);
+  animation: dataPulse 3.8s ease-in-out infinite;
+}
+
+/* ── Alert Rows ─────────────────────────────────────────── */
+
+.alert-row {
+  border-left: 3px solid transparent;
+  padding-left: 10px !important;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.alert-row-danger  { border-left-color: rgba(239, 68, 68, 0.7); }
+.alert-row-warning { border-left-color: rgba(245, 158, 11, 0.7); }
+.alert-row-info    { border-left-color: rgba(96, 165, 250, 0.5); }
+
+/* ── Avatar Ring ─────────────────────────────────────────── */
+
+.avatar-ring {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.avatar-ring:hover {
+  transform: scale(1.08);
+}
+
+/* ── Enhanced KPI card ────────────────────────────────────── */
+
+.kpi-card-premium {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle corner accent for premium KPI */
+.kpi-card-premium::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(ellipse at top right, rgba(37, 99, 235, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* KPI value entrance */
+.kpi-value-animate {
+  animation: kpiReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Mission Header glint ─────────────────────────────────── */
+
+.db-header-glint {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(59, 130, 246, 0.04) 50%,
+    transparent 100%
+  );
+  animation: headerGlint 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Status Indicator Ripple ─────────────────────────────── */
+
+.status-ripple {
+  animation: beaconPulse 2.2s infinite ease-in-out,
+             statusRipple 2.2s infinite ease-in-out;
+}
+
+/* ── Enhanced defence panel hover ────────────────────────── */
+
+.defence-panel-interactive {
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.defence-panel-interactive:hover {
+  border-color: #1e3a60;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.45),
+              0 0 0 1px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+/* ── NODE Badge ──────────────────────────────────────────── */
+
+.node-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: #60a5fa;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.node-badge:hover {
+  background: rgba(37, 99, 235, 0.16);
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+/* ── Responsive mobile tweaks ─────────────────────────────── */
+
+@media (max-width: 640px) {
+  .db-bg::before { background-size: 28px 28px; opacity: 0.7; }
+  .db-bg::after  { display: none; }
+  .db-scan-line  { display: none; }
+  .trust-chain-pulse { display: none; }
+}
