@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, Req, NotFoundException } from '@nestjs/common';
 import { CertificationsService } from './certifications.service';
 import { JwtAuthGuard } from '../../identity/auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../../identity/auth/guards/casbin.guard';
@@ -13,6 +13,7 @@ export class CertificationsController {
     @Query('status_filter') statusFilter?: string,
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
+    @Query('assetId') assetId?: string,
   ) {
     return this.certificationsService.listCertifications({
       status_filter: statusFilter,
@@ -37,6 +38,16 @@ export class CertificationsController {
       page: page ? parseInt(page, 10) : undefined,
       page_size: pageSize ? parseInt(pageSize, 10) : undefined,
     });
+  }
+
+  /**
+   * GET /certifications/:id
+   * Returns a single certification by its UUID or certId (e.g. CERT-2026-00089).
+   * Backed by fallback data in demo mode.
+   */
+  @Get(':id')
+  async getCertification(@Param('id') id: string) {
+    return this.certificationsService.getCertificationById(id);
   }
 
   @Post()

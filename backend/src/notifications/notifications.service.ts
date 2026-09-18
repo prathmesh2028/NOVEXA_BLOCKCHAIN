@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../core/database/prisma.service';
 import { AppRole, NotificationSeverity, NotificationType } from '@prisma/client';
 
@@ -71,23 +71,50 @@ export class NotificationsService {
       where.isRead = params.isRead;
     }
 
-    const [items, total] = await Promise.all([
-      this.prisma.notification.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.notification.count({ where }),
-    ]);
+    try {
+      const [items, total] = await Promise.all([
+        this.prisma.notification.findMany({
+          where,
+          skip,
+          take: pageSize,
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.notification.count({ where }),
+      ]);
 
-    return {
-      items,
-      total,
-      page,
-      pageSize,
-      hasNext: skip + pageSize < total,
-    };
+      return {
+        items,
+        total,
+        page,
+        pageSize,
+        hasNext: skip + pageSize < total,
+      };
+    } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        this.logger.error(`Database failure in listNotifications: ${e.message}`, e.stack);
+        throw e;
+      }
+      this.logger.warn(
+        'Database offline in DEMO mode — returning fallback notifications',
+      );
+      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
+      let filtered = FALLBACK_NOTIFICATIONS;
+      if (params.isRead !== undefined) {
+        filtered = filtered.filter(n => n.isRead === params.isRead);
+      }
+      if (params.roles && params.roles.length > 0) {
+        filtered = filtered.filter(n => !n.recipientRole || params.roles?.includes(n.recipientRole as any));
+      }
+      return {
+        items: filtered.slice(skip, skip + pageSize),
+        total: filtered.length,
+        page,
+        pageSize,
+        hasNext: skip + pageSize < filtered.length,
+        demo_mode: true,
+      };
+    }
   }
 
   async getUnreadCount(userId?: string, roles?: AppRole[]): Promise<number> {
@@ -104,22 +131,66 @@ export class NotificationsService {
       where.OR = whereOr;
     }
 
-    return this.prisma.notification.count({ where });
+    try {
+      return await this.prisma.notification.count({ where });
+    } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        this.logger.error(`Database failure in getUnreadCount: ${e.message}`, e.stack);
+        throw e;
+      }
+      this.logger.warn('Database offline in DEMO mode — unread count calculated from fallback notifications');
+      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
+      let filtered = FALLBACK_NOTIFICATIONS.filter(n => !n.isRead);
+      if (roles && roles.length > 0) {
+        filtered = filtered.filter(n => !n.recipientRole || roles.includes(n.recipientRole as any));
+      }
+      return filtered.length;
+    }
   }
 
-  async markAsRead(id: string) {
-    const existing = await this.prisma.notification.findUnique({ where: { id } });
-    if (!existing) {
-      throw new NotFoundException(`Notification ${id} not found`);
-    }
+  async markAsRead(id: string, userId?: string, roles?: AppRole[]) {
+    try {
+      const existing = await this.prisma.notification.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
 
-    return this.prisma.notification.update({
-      where: { id },
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
-    });
+      if (userId) {
+        const isRecipient = existing.recipientId === userId;
+        const hasRole = existing.recipientRole ? roles?.includes(existing.recipientRole) : false;
+
+        if (existing.recipientId && !isRecipient && !hasRole) {
+          throw new ForbiddenException('You are not authorized to modify this notification');
+        }
+
+        if (!existing.recipientId && existing.recipientRole && !hasRole) {
+          throw new ForbiddenException('You are not authorized to modify this notification');
+        }
+      }
+
+      return await this.prisma.notification.update({
+        where: { id },
+        data: {
+          isRead: true,
+          readAt: new Date(),
+        },
+      });
+    } catch (e: any) {
+      if (e instanceof NotFoundException || e instanceof ForbiddenException) throw e;
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        throw e;
+      }
+      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
+      const found = FALLBACK_NOTIFICATIONS.find(n => n.id === id);
+      if (!found) {
+        throw new NotFoundException(`Notification ${id} not found`);
+      }
+      found.isRead = true;
+      found.readAt = new Date();
+      return found;
+    }
   }
 
   async markAllAsRead(userId?: string, roles?: AppRole[]) {
@@ -136,14 +207,31 @@ export class NotificationsService {
       where.OR = whereOr;
     }
 
-    const result = await this.prisma.notification.updateMany({
-      where,
-      data: {
-        isRead: true,
-        readAt: new Date(),
-      },
-    });
+    try {
+      const result = await this.prisma.notification.updateMany({
+        where,
+        data: {
+          isRead: true,
+          readAt: new Date(),
+        },
+      });
 
-    return { updatedCount: result.count };
+      return { updatedCount: result.count };
+    } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        throw e;
+      }
+      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
+      let count = 0;
+      for (const n of FALLBACK_NOTIFICATIONS) {
+        if (!n.isRead) {
+          n.isRead = true;
+          n.readAt = new Date();
+          count++;
+        }
+      }
+      return { updatedCount: count };
+    }
   }
 }

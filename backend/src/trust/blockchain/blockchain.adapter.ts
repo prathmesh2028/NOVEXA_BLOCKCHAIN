@@ -81,7 +81,7 @@ export class BlockchainAdapter {
     value?: bigint;
   }): Promise<{ txHash: string; status: string }> {
     if (!this.connected) {
-      if (process.env.APP_ENV === 'demo') {
+      if (this.config.blockchainMode === 'demo' || process.env.APP_ENV === 'demo') {
         this.logger.warn('Blockchain not connected — DEMO mode simulating transaction submission');
         return { txHash: `0xDEMO-mocktx${Date.now()}`, status: 'SIMULATED' };
       }
@@ -113,14 +113,14 @@ export class BlockchainAdapter {
   }
 
   decodeCertificationMintedEvent(receipt: any): any {
-    if (!receipt || !receipt.logs) return null;
+    if (!receipt) return null;
     try {
-      // Dummy ABI for decoding just the CertificationMinted event
       const abi = parseAbi([
         'event CertificationMinted(uint256 indexed tokenId, string assetId, string batchId, string evidenceHash, uint256 issuedAt)'
       ]);
       
-      for (const log of receipt.logs) {
+      const logs = receipt.logs || (Array.isArray(receipt) ? receipt : []);
+      for (const log of logs) {
         try {
           const decoded = decodeEventLog({
             abi,
@@ -128,7 +128,14 @@ export class BlockchainAdapter {
             topics: log.topics,
           });
           if (decoded.eventName === 'CertificationMinted') {
-            return decoded.args;
+            const args: any = decoded.args;
+            return {
+              tokenId: args.tokenId !== undefined ? args.tokenId.toString() : undefined,
+              assetId: args.assetId,
+              batchId: args.batchId,
+              evidenceHash: args.evidenceHash,
+              issuedAt: args.issuedAt !== undefined ? Number(args.issuedAt) : undefined,
+            };
           }
         } catch {
           // ignore logs that don't match

@@ -79,7 +79,6 @@ export class BlockchainService {
       network: info.network,
       chain_id: info.chainId,
       latest_block: blockNumber,
-      rpc_url: info.rpcUrl,
     };
   }
 

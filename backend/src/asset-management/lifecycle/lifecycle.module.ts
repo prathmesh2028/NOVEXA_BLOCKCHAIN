@@ -5,9 +5,10 @@ import { PrismaModule } from '../../core/database/prisma.module';
 import { NotificationsModule } from '../../notifications/notifications.module';
 import { CasbinModule } from '../../core/casbin/casbin.module';
 import { AuthModule } from '../../identity/auth/auth.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, CasbinModule, AuthModule],
+  imports: [PrismaModule, NotificationsModule, CasbinModule, AuthModule, AuditModule],
   controllers: [LifecycleController],
   providers: [LifecycleService],
   exports: [LifecycleService],

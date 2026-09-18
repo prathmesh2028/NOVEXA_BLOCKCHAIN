@@ -1,7 +1,8 @@
 import { Injectable, Logger, BadRequestException, ConflictException, ForbiddenException, Optional, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
-import { LifecycleState } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
+import { AppRole, LifecycleState } from '@prisma/client';
 
 /**
  * Lifecycle State Machine — enforces strict transition rules.
@@ -21,9 +22,12 @@ const TRANSITION_RULES: TransitionRule[] = [
   { from: 'SUPPLIER_DECLARED', to: 'RECEIVED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: false, requiresInspection: false },
   { from: 'RECEIVED', to: 'INSPECTION_RECORDED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: true },
   { from: 'RECEIVED', to: 'INSPECTION_OVERDUE', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
+  { from: 'RECEIVED', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
   { from: 'INSPECTION_OVERDUE', to: 'INSPECTION_RECORDED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: true },
+  { from: 'INSPECTION_OVERDUE', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
   { from: 'INSPECTION_RECORDED', to: 'ACCEPTED_FOR_ASSEMBLY', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: false },
   { from: 'INSPECTION_RECORDED', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: false },
+  { from: 'ACCEPTED_FOR_ASSEMBLY', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
 ];
 
 @Injectable()
@@ -34,6 +38,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly prisma: PrismaService,
     @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
+    @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
   ) {}
 
   onModuleInit() {
@@ -54,6 +59,37 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
       clearInterval(this.scanTimer);
       this.scanTimer = null;
     }
+  }
+
+  /**
+   * Deterministically resolve responsible recipient for lifecycle notifications:
+   * 1. Explicitly assigned responsible user (asset.registeredById)
+   * 2. Assigned inspector if available
+   * 3. Operational role TECHNICIAN
+   * 4. Fallback ADMIN
+   */
+  async resolveResponsibleRecipient(asset: any): Promise<{ recipientId?: string; recipientRole?: AppRole }> {
+    if (asset.registeredById && this.prisma.user?.findUnique) {
+      try {
+        const user = await this.prisma.user.findUnique({ where: { id: asset.registeredById } });
+        if (user) return { recipientId: user.id };
+      } catch {}
+    }
+
+    if (this.prisma.inspection?.findFirst) {
+      try {
+        const lastInspection = await this.prisma.inspection.findFirst({
+          where: { assetId: asset.id },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (lastInspection?.inspectorId && this.prisma.user?.findUnique) {
+          const inspector = await this.prisma.user.findUnique({ where: { id: lastInspection.inspectorId } });
+          if (inspector) return { recipientId: inspector.id };
+        }
+      } catch {}
+    }
+
+    return { recipientRole: 'TECHNICIAN' };
   }
 
   /**
@@ -156,41 +192,62 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
           },
         });
 
-        // Record audit event
-        await tx.auditEvent.create({
-          data: {
-            eventType: 'LIFECYCLE_TRANSITIONED',
-            actorId: params.actorId,
-            actorDid: params.actorDid,
-            actorRole: params.actorRole,
-            action: `Lifecycle transitioned to ${params.toState}`,
-            resourceType: 'Asset',
-            resourceId: params.assetId,
-            result: 'SUCCESS',
-            details: `${fromState} → ${params.toState}`,
-            payload: { fromState, toState: params.toState, reason: params.reason },
-          },
-        });
+        // Record audit event via canonical AuditService
+        if (this.auditService?.recordEvent) {
+          await this.auditService.recordEvent(
+            {
+              eventType: 'LIFECYCLE_TRANSITIONED',
+              actorId: params.actorId,
+              actorDid: params.actorDid,
+              actorRole: params.actorRole,
+              action: `Lifecycle transitioned to ${params.toState}`,
+              resourceType: 'Asset',
+              resourceId: params.assetId,
+              result: 'SUCCESS',
+              details: `${fromState} → ${params.toState}`,
+              payload: { fromState, toState: params.toState, reason: params.reason },
+            },
+            tx,
+          );
+        } else {
+          await tx.auditEvent.create({
+            data: {
+              eventType: 'LIFECYCLE_TRANSITIONED',
+              actorId: params.actorId,
+              actorDid: params.actorDid,
+              actorRole: params.actorRole,
+              action: `Lifecycle transitioned to ${params.toState}`,
+              resourceType: 'Asset',
+              resourceId: params.assetId,
+              result: 'SUCCESS',
+              details: `${fromState} → ${params.toState}`,
+              payload: { fromState, toState: params.toState, reason: params.reason },
+            },
+          });
+        }
 
         this.logger.log(`Asset ${params.assetId}: ${fromState} → ${params.toState}`);
         return event;
       });
     } catch (e: any) {
       if (e instanceof BadRequestException || e instanceof ForbiddenException || e instanceof ConflictException) throw e;
-      this.logger.warn(`Database offline, returning mock transition event: ${e.message}`);
-      return {
-        id: `mock-event-${Date.now()}`,
-        assetId: params.assetId,
-        fromState: 'SUPPLIER_DECLARED',
-        toState: params.toState,
-        actorId: params.actorId,
-        actorDid: params.actorDid || null,
-        actorRole: params.actorRole,
-        reason: params.reason || null,
-        evidenceIds: params.evidenceIds || [],
-        idempotencyKey: params.idempotencyKey || null,
-        createdAt: new Date(),
-      };
+      if (process.env.APP_ENV === 'demo') {
+        this.logger.warn(`Database offline, returning mock transition event: ${e.message}`);
+        return {
+          id: `mock-event-${Date.now()}`,
+          assetId: params.assetId,
+          fromState: 'SUPPLIER_DECLARED',
+          toState: params.toState,
+          actorId: params.actorId,
+          actorDid: params.actorDid || null,
+          actorRole: params.actorRole,
+          reason: params.reason || null,
+          evidenceIds: params.evidenceIds || [],
+          idempotencyKey: params.idempotencyKey || null,
+          createdAt: new Date(),
+        };
+      }
+      throw e;
     }
   }
 
@@ -201,14 +258,18 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
   /**
    * Real expiry detection engine:
    * 1. Finds assets in RECEIVED state whose inspectionDueDate has passed without inspection.
-   * 2. Transitions them atomically to INSPECTION_OVERDUE.
-   * 3. Emits audit trail events.
-   * 4. Sends notifications to technicians and administrators.
-   * 5. Checks for upcoming shelf life / warranty expiry.
+   *    Transitions them atomically to INSPECTION_OVERDUE.
+   * 2. Finds assets whose shelfLifeExpiry has passed.
+   *    Transitions them atomically to REJECTED_QUARANTINED.
+   * 3. Checks for upcoming shelf life / warranty expiry without incorrect state mutation.
+   * 4. Emits audit trail events.
+   * 5. Sends notifications to deterministic responsible recipients with deduplication.
    */
   async detectAndFlagOverdueAssets(actorId: string = 'system') {
     const now = new Date();
+    const flagged: any[] = [];
 
+    // 1. Overdue inspections
     const overdueAssets = await this.prisma.asset.findMany({
       where: {
         lifecycleState: 'RECEIVED',
@@ -216,8 +277,6 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
       },
       include: { batch: true },
     });
-
-    const flagged: any[] = [];
 
     for (const asset of overdueAssets) {
       try {
@@ -241,28 +300,47 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
             },
           });
 
-          await tx.auditEvent.create({
-            data: {
-              eventType: 'LIFECYCLE_TRANSITIONED',
-              actorId,
-              actorRole: 'ADMIN',
-              action: 'Automated overdue detection flagged asset',
-              resourceType: 'Asset',
-              resourceId: asset.id,
-              result: 'WARNING',
-              details: `Asset ${asset.assetId} flagged INSPECTION_OVERDUE (due: ${asset.inspectionDueDate?.toISOString()})`,
-            },
-          });
+          if (this.auditService?.recordEvent) {
+            await this.auditService.recordEvent(
+              {
+                eventType: 'LIFECYCLE_TRANSITIONED',
+                actorId,
+                actorRole: 'ADMIN',
+                action: 'Automated overdue detection flagged asset',
+                resourceType: 'Asset',
+                resourceId: asset.id,
+                result: 'WARNING',
+                details: `Asset ${asset.assetId} flagged INSPECTION_OVERDUE (due: ${asset.inspectionDueDate?.toISOString()})`,
+                payload: { fromState: 'RECEIVED', toState: 'INSPECTION_OVERDUE', dueDate: asset.inspectionDueDate },
+              },
+              tx,
+            );
+          } else {
+            await tx.auditEvent.create({
+              data: {
+                eventType: 'LIFECYCLE_TRANSITIONED',
+                actorId,
+                actorRole: 'ADMIN',
+                action: 'Automated overdue detection flagged asset',
+                resourceType: 'Asset',
+                resourceId: asset.id,
+                result: 'WARNING',
+                details: `Asset ${asset.assetId} flagged INSPECTION_OVERDUE (due: ${asset.inspectionDueDate?.toISOString()})`,
+              },
+            });
+          }
 
           if (this.notificationsService?.createNotification) {
+            const recipient = await this.resolveResponsibleRecipient(asset);
             await this.notificationsService.createNotification({
-              recipientRole: 'TECHNICIAN',
+              recipientId: recipient.recipientId,
+              recipientRole: recipient.recipientRole,
               title: `Inspection Overdue: ${asset.assetId}`,
               message: `Asset ${asset.assetId} has exceeded its inspection deadline. Status transitioned to INSPECTION_OVERDUE.`,
               type: 'EXPIRY_WARNING',
               severity: 'CRITICAL',
               link: `/app/assets/${asset.id}`,
-              metadata: { assetId: asset.assetId, dueDate: asset.inspectionDueDate },
+              metadata: { assetId: asset.assetId, dueDate: asset.inspectionDueDate, subtype: 'INSPECTION_OVERDUE' },
             });
           }
         });
@@ -277,7 +355,95 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    const expiringSoon = await this.prisma.asset.findMany({
+    // 2. Shelf-life expiry -> Transition to REJECTED_QUARANTINED
+    const expiredShelfLifeAssets = (await this.prisma.asset.findMany({
+      where: {
+        shelfLifeExpiry: { lt: now },
+        lifecycleState: { not: 'REJECTED_QUARANTINED' },
+      },
+      include: { batch: true },
+    })) || [];
+
+    for (const asset of expiredShelfLifeAssets) {
+      try {
+        const fromState = asset.lifecycleState;
+        await this.prisma.$transaction(async (tx) => {
+          await tx.asset.update({
+            where: { id: asset.id },
+            data: {
+              lifecycleState: 'REJECTED_QUARANTINED',
+              version: { increment: 1 },
+            },
+          });
+
+          await tx.lifecycleEvent.create({
+            data: {
+              assetId: asset.id,
+              fromState,
+              toState: 'REJECTED_QUARANTINED',
+              actorId,
+              actorRole: 'ADMIN',
+              reason: `Shelf life expired on ${asset.shelfLifeExpiry?.toISOString() || 'prior date'}`,
+            },
+          });
+
+          if (this.auditService?.recordEvent) {
+            await this.auditService.recordEvent(
+              {
+                eventType: 'LIFECYCLE_TRANSITIONED',
+                actorId,
+                actorRole: 'ADMIN',
+                action: 'Automated shelf-life expiry quarantined asset',
+                resourceType: 'Asset',
+                resourceId: asset.id,
+                result: 'WARNING',
+                details: `Asset ${asset.assetId} quarantined due to expired shelf life`,
+                payload: { fromState, toState: 'REJECTED_QUARANTINED', shelfLifeExpiry: asset.shelfLifeExpiry },
+              },
+              tx,
+            );
+          } else {
+            await tx.auditEvent.create({
+              data: {
+                eventType: 'LIFECYCLE_TRANSITIONED',
+                actorId,
+                actorRole: 'ADMIN',
+                action: 'Automated shelf-life expiry quarantined asset',
+                resourceType: 'Asset',
+                resourceId: asset.id,
+                result: 'WARNING',
+                details: `Asset ${asset.assetId} quarantined due to expired shelf life`,
+              },
+            });
+          }
+
+          if (this.notificationsService?.createNotification) {
+            const recipient = await this.resolveResponsibleRecipient(asset);
+            await this.notificationsService.createNotification({
+              recipientId: recipient.recipientId,
+              recipientRole: recipient.recipientRole,
+              title: `Shelf Life Expired: ${asset.assetId}`,
+              message: `Asset ${asset.assetId} shelf-life has expired. Automatically quarantined to REJECTED_QUARANTINED.`,
+              type: 'EXPIRY_WARNING',
+              severity: 'CRITICAL',
+              link: `/app/assets/${asset.id}`,
+              metadata: { assetId: asset.assetId, subtype: 'SHELF_LIFE_QUARANTINE' },
+            });
+          }
+        });
+
+        flagged.push({
+          assetId: asset.assetId,
+          shelfLifeExpiry: asset.shelfLifeExpiry,
+          status: 'FLAGGED_SHELF_LIFE_EXPIRED',
+        });
+      } catch (err: any) {
+        this.logger.error(`Failed to quarantine shelf-life expired asset ${asset.assetId}: ${err.message}`);
+      }
+    }
+
+    // 3. Upcoming shelf life expiry check (next 30 days)
+    const expiringSoon = (await this.prisma.asset.findMany({
       where: {
         shelfLifeExpiry: {
           gte: now,
@@ -289,7 +455,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
         assetId: true,
         shelfLifeExpiry: true,
       },
-    });
+    })) || [];
 
     return {
       evaluatedAt: now.toISOString(),

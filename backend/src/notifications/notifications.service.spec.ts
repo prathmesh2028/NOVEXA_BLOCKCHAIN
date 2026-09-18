@@ -147,6 +147,32 @@ describe('NotificationsService', () => {
 
       await expect(service.markAsRead('nonexistent')).rejects.toThrow(NotFoundException);
     });
+
+    it('should throw ForbiddenException if user does not own notification (IDOR prevention)', async () => {
+      mockPrisma.notification.findUnique.mockResolvedValue({
+        id: 'notif-other',
+        recipientId: 'other-user',
+        recipientRole: 'TECHNICIAN',
+        isRead: false,
+      });
+
+      await expect(
+        service.markAsRead('notif-other', 'attacker-user', ['AUDITOR']),
+      ).rejects.toThrow('You are not authorized to modify this notification');
+    });
+
+    it('should allow markAsRead if user has the recipient role or is ADMIN', async () => {
+      mockPrisma.notification.findUnique.mockResolvedValue({
+        id: 'notif-role',
+        recipientId: null,
+        recipientRole: 'TECHNICIAN',
+        isRead: false,
+      });
+      mockPrisma.notification.update.mockResolvedValue({ id: 'notif-role', isRead: true });
+
+      const result = await service.markAsRead('notif-role', 'tech-user', ['TECHNICIAN']);
+      expect(result.isRead).toBe(true);
+    });
   });
 
   describe('markAllAsRead', () => {

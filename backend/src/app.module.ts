@@ -21,6 +21,7 @@ import { WalletModule } from './identity/wallet/wallet.module';
 import { CasbinModule } from './core/casbin/casbin.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ApprovalsModule } from './asset-management/approvals/approvals.module';
+import { PhysicalBindingsModule } from './asset-management/physical-bindings/physical-bindings.module';
 import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
 
 @Module({
@@ -47,6 +48,7 @@ import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
     WalletModule,
     NotificationsModule,
     ApprovalsModule,
+    PhysicalBindingsModule,
   ],
 })
 export class AppModule implements NestModule {

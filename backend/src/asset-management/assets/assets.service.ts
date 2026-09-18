@@ -1,11 +1,15 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class AssetsService {
   private readonly logger = new Logger(AssetsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   private mapAsset(a: any) {
     return {
@@ -210,23 +214,24 @@ export class AssetsService {
         include: { batch: true },
       });
 
-      await this.prisma.auditEvent.create({
-        data: {
-          eventType: 'ASSET_REGISTERED',
-          actorId: data.registeredById,
-          actorName: data.registeredByName,
-          action: `Asset registered — ${data.assetId}`,
-          resourceType: 'Asset',
-          resourceId: asset.id,
-          result: 'SUCCESS',
-          details: `Model: ${data.model} | Serial: ${data.serialNumber}`,
-        }
+      await this.auditService.recordEvent({
+        eventType: 'ASSET_REGISTERED',
+        actorId: data.registeredById,
+        actorName: data.registeredByName,
+        action: `Asset registered — ${data.assetId}`,
+        resourceType: 'Asset',
+        resourceId: asset.id,
+        result: 'SUCCESS',
+        details: `Model: ${data.model} | Serial: ${data.serialNumber}`,
       });
 
       return this.mapAsset(asset);
     } catch (e: any) {
+      if (process.env.APP_ENV !== 'demo') {
+        throw e;
+      }
       this.logger.warn('Database offline, returning mock created asset', e.message);
-      // Mock return for when DB is down
+      // Mock return for when DB is down in demo mode
       return {
         id: `mock-asset-${Date.now()}`,
         asset_id: data.assetId,
@@ -299,6 +304,7 @@ export class AssetsService {
         },
       };
     } catch (e: any) {
+      if (process.env.APP_ENV !== 'demo') throw e;
       // Fallback: filter fallback data
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS;
       let eligible = fallback.filter(

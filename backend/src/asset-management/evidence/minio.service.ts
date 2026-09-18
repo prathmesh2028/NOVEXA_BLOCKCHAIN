@@ -48,7 +48,10 @@ export class MinioService implements OnModuleInit {
 
   async uploadFile(objectName: string, buffer: Buffer, mimeType: string = 'application/octet-stream'): Promise<string> {
     if (!this.isOnline) {
-      const localFilePath = path.join(this.localStorageDir, objectName);
+      const localFilePath = path.resolve(this.localStorageDir, objectName);
+      if (!localFilePath.startsWith(this.localStorageDir)) {
+        throw new Error('Path traversal attempt detected');
+      }
       this.ensureLocalStorageDir(localFilePath);
       await fs.promises.writeFile(localFilePath, buffer);
       this.logger.log(`[Disk Storage] Stored real evidence file (${buffer.length} bytes): ${localFilePath}`);
@@ -68,7 +71,10 @@ export class MinioService implements OnModuleInit {
 
   async downloadFile(objectName: string): Promise<Buffer> {
     if (!this.isOnline) {
-      const localFilePath = path.join(this.localStorageDir, objectName);
+      const localFilePath = path.resolve(this.localStorageDir, objectName);
+      if (!localFilePath.startsWith(this.localStorageDir)) {
+        throw new Error('Path traversal attempt detected');
+      }
       if (fs.existsSync(localFilePath)) {
         return await fs.promises.readFile(localFilePath);
       }

@@ -1,5 +1,12 @@
 import { Module } from '@nestjs/common';
 import { InspectionsController } from './inspections.controller';
 import { InspectionsService } from './inspections.service';
-@Module({ controllers: [InspectionsController], providers: [InspectionsService], exports: [InspectionsService] })
+import { AuditModule } from '../audit/audit.module';
+
+@Module({
+  imports: [AuditModule],
+  controllers: [InspectionsController],
+  providers: [InspectionsService],
+  exports: [InspectionsService],
+})
 export class InspectionsModule {}

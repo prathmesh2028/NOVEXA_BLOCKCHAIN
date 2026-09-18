@@ -37,8 +37,10 @@ export class NotificationsController {
   }
 
   @Patch(':id/read')
-  async markAsRead(@Param('id') id: string) {
-    return this.notificationsService.markAsRead(id);
+  async markAsRead(@Param('id') id: string, @Req() req: Request) {
+    const user = (req as any).user;
+    const roles: AppRole[] = (user?.roles || []).map((r: string) => r as AppRole);
+    return this.notificationsService.markAsRead(id, user?.sub, roles);
   }
 
   @Post('mark-all-read')
