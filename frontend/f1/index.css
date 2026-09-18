@@ -219,9 +219,118 @@ body {
 }
 
 .page-fade {
-  animation: pageFade 0.2s ease;
+  animation: pageFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes pageFade {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Defence UI Foundations & Micro-animations ─── */
+.kpi-card {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: #2b568e !important;
+  box-shadow: 0 12px 28px -6px rgba(12, 24, 40, 0.7),
+              0 0 0 1px rgba(59, 130, 246, 0.25),
+              0 0 16px rgba(37, 99, 235, 0.12);
+}
+
+.defence-panel {
+  background: #0c1828;
+  border: 1px solid #172d4c;
+  border-radius: 7px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.defence-panel:hover {
+  border-color: #1e3a60;
+}
+
+.pulse-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: beaconPulse 2.2s infinite ease-in-out;
+}
+@keyframes beaconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.9);
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+  }
+}
+
+.pulse-beacon-amber {
+  animation: beaconPulseAmber 2.2s infinite ease-in-out;
+}
+@keyframes beaconPulseAmber {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.9);
+    box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
+  }
+}
+
+/* Staggered entrance helpers */
+.stagger-in-1 { animation: pageFade 0.3s ease 0.04s both; }
+.stagger-in-2 { animation: pageFade 0.35s ease 0.08s both; }
+.stagger-in-3 { animation: pageFade 0.4s ease 0.12s both; }
+.stagger-in-4 { animation: pageFade 0.45s ease 0.16s both; }
+
+/* Interactive row hover */
+.interactive-row {
+  transition: background 0.15s ease, border-color 0.15s ease, padding-left 0.15s ease;
+}
+.interactive-row:hover {
+  background: rgba(30, 58, 96, 0.25);
+  padding-left: 4px;
+}
+
+/* Custom interactive button subtle elevation */
+.btn-primary {
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  background: rgba(30, 58, 96, 0.2);
+}
+
+/* Accessibility: Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

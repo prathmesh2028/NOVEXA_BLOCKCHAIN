@@ -1,18 +1,32 @@
 import { Link } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function PublicNavbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <nav
+      className={scrolled ? "nav-scrolled" : ""}
       style={{
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "rgba(7,15,29,0.92)",
+        background: "rgba(2, 8, 23, 0.94)",
         backdropFilter: "blur(12px)",
         borderBottom: "1px solid #152b4a",
+        transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
       }}
     >
       <div
@@ -20,7 +34,7 @@ export default function PublicNavbar() {
           maxWidth: 1200,
           margin: "0 auto",
           padding: "0 24px",
-          height: 60,
+          height: 62,
           display: "flex",
           alignItems: "center",
           gap: 32,
@@ -29,10 +43,11 @@ export default function PublicNavbar() {
         {/* Logo */}
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <div
+            className="nav-logo-pulse"
             style={{
               width: 32,
               height: 32,
-              background: "#2563eb",
+              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
               borderRadius: "6px",
               display: "flex",
               alignItems: "center",
@@ -42,48 +57,54 @@ export default function PublicNavbar() {
               fontSize: "0.95rem",
               color: "#fff",
               letterSpacing: "-0.03em",
+              border: "1px solid rgba(56, 189, 248, 0.4)",
             }}
           >
-            BT
+            NX
           </div>
           <div>
             <div
               className="font-display"
-              style={{ fontSize: "0.9rem", fontWeight: 700, color: "#e2e8f0", letterSpacing: "0.05em", lineHeight: 1.1 }}
+              style={{ fontSize: "0.95rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "0.05em", lineHeight: 1.1 }}
             >
-              BEL-DEFENCE
+              NOVEXA
             </div>
-            <div style={{ fontSize: "0.55rem", color: "#475569", fontWeight: 600, letterSpacing: "0.1em" }}>
-              ASSET TRUST
+            <div style={{ fontSize: "0.55rem", color: "#38bdf8", fontWeight: 600, letterSpacing: "0.12em" }}>
+              DEFENCE TRUST
             </div>
           </div>
         </Link>
 
         <div style={{ flex: 1 }} />
 
-        {/* Links */}
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        {/* Navigation Links with animated hover underlines */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {["Platform", "Roles", "Blockchain", "Security"].map((item) => (
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
+              className="nav-link-animated"
               style={{
-                padding: "6px 12px",
+                padding: "8px 14px",
                 fontSize: "0.8125rem",
-                color: "#64748b",
+                color: "#94a3b8",
                 textDecoration: "none",
                 borderRadius: "4px",
-                transition: "color 0.15s",
+                fontWeight: 500,
               }}
-              className="hover:text-[#94a3b8]"
             >
               {item}
             </a>
           ))}
         </div>
 
-        <Link to="/login" className="btn-primary" style={{ padding: "7px 16px", fontSize: "0.8125rem" }}>
-          Sign In →
+        <Link
+          to="/login"
+          className="home-primary-btn"
+          style={{ padding: "8px 18px", fontSize: "0.8125rem", borderRadius: "5px" }}
+        >
+          <span>Sign In</span>
+          <span className="home-btn-arrow">→</span>
         </Link>
       </div>
     </nav>

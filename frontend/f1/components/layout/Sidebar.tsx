@@ -97,7 +97,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           style={{
             width: 28,
             height: 28,
-            background: "#2563eb",
+            background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
             borderRadius: "5px",
             display: "flex",
             alignItems: "center",
@@ -108,26 +108,27 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             flexShrink: 0,
             letterSpacing: "-0.04em",
             fontFamily: "'Barlow Condensed', sans-serif",
+            boxShadow: "0 2px 8px rgba(37, 99, 235, 0.35)",
           }}
         >
-          BT
+          NX
         </div>
         {!collapsed && (
           <div>
             <div
               className="font-display"
               style={{
-                fontSize: "0.9rem",
+                fontSize: "0.95rem",
                 fontWeight: 700,
                 color: "#e2e8f0",
                 letterSpacing: "0.04em",
                 lineHeight: 1.1,
               }}
             >
-              BEL-DEFENCE
+              NOVEXA
             </div>
-            <div style={{ fontSize: "0.6rem", color: "#475569", letterSpacing: "0.08em", fontWeight: 600 }}>
-              ASSET TRUST
+            <div style={{ fontSize: "0.6rem", color: "#60a5fa", letterSpacing: "0.08em", fontWeight: 600 }}>
+              DEFENCE TRUST
             </div>
           </div>
         )}
