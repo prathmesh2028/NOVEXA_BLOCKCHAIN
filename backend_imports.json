@@ -1,0 +1,388 @@
+[
+  {
+    "File": "app.module.ts",
+    "Imports": [
+      "./config/config.module",
+      "./prisma/prisma.module",
+      "./auth/auth.module",
+      "./users/users.module",
+      "./assets/assets.module",
+      "./evidence/evidence.module",
+      "./lifecycle/lifecycle.module",
+      "./inspections/inspections.module",
+      "./certifications/certifications.module",
+      "./blockchain/blockchain.module",
+      "./audit/audit.module",
+      "./merkle/merkle.module",
+      "./outbox/outbox.module",
+      "./verification/verification.module",
+      "./search/search.module",
+      "./dashboard/dashboard.module",
+      "./health/health.module",
+      "./identity/identity.module",
+      "./wallet/wallet.module",
+      "./common/casbin/casbin.module",
+      "./common/middleware/request-id.middleware"
+    ]
+  },
+  {
+    "File": "main.ts",
+    "Imports": [
+      "./app.module",
+      "./config/config.service"
+    ]
+  },
+  {
+    "File": "assets/assets.controller.ts",
+    "Imports": [
+      "./assets.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "assets/assets.module.ts",
+    "Imports": [
+      "./assets.controller",
+      "./assets.service"
+    ]
+  },
+  {
+    "File": "assets/assets.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "audit/audit.controller.ts",
+    "Imports": [
+      "./audit.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "audit/audit.module.ts",
+    "Imports": [
+      "./audit.controller",
+      "./audit.service",
+      "./merkle.service"
+    ]
+  },
+  {
+    "File": "audit/audit.service.spec.ts",
+    "Imports": "./audit.service"
+  },
+  {
+    "File": "audit/audit.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "auth/auth.controller.ts",
+    "Imports": [
+      "./auth.service",
+      "./guards/jwt-auth.guard",
+      "./guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "auth/auth.module.ts",
+    "Imports": [
+      "./auth.controller",
+      "./auth.service",
+      "./guards/jwt-auth.guard",
+      "./guards/roles.guard"
+    ]
+  },
+  {
+    "File": "auth/auth.service.ts",
+    "Imports": [
+      "../prisma/prisma.service",
+      "../config/config.service"
+    ]
+  },
+  {
+    "File": "auth/guards/casbin.guard.ts",
+    "Imports": "../../common/casbin/casbin.service"
+  },
+  {
+    "File": "auth/guards/jwt-auth.guard.ts",
+    "Imports": "../auth.service"
+  },
+  {
+    "File": "blockchain/blockchain.adapter.ts",
+    "Imports": "../config/config.service"
+  },
+  {
+    "File": "blockchain/blockchain.controller.ts",
+    "Imports": [
+      "./blockchain.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "blockchain/blockchain.module.ts",
+    "Imports": [
+      "./blockchain.controller",
+      "./blockchain.service",
+      "./blockchain.adapter"
+    ]
+  },
+  {
+    "File": "blockchain/blockchain.service.ts",
+    "Imports": [
+      "../prisma/prisma.service",
+      "./blockchain.adapter"
+    ]
+  },
+  {
+    "File": "certifications/certifications.controller.ts",
+    "Imports": [
+      "./certifications.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "certifications/certifications.module.ts",
+    "Imports": [
+      "./certifications.controller",
+      "./certifications.service"
+    ]
+  },
+  {
+    "File": "certifications/certifications.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "common/casbin/casbin.module.ts",
+    "Imports": "./casbin.service"
+  },
+  {
+    "File": "config/config.module.ts",
+    "Imports": "./config.service"
+  },
+  {
+    "File": "config/config.service.ts",
+    "Imports": "./env.validation"
+  },
+  {
+    "File": "dashboard/dashboard.controller.ts",
+    "Imports": [
+      "./dashboard.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "dashboard/dashboard.module.ts",
+    "Imports": [
+      "./dashboard.controller",
+      "./dashboard.service"
+    ]
+  },
+  {
+    "File": "dashboard/dashboard.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "evidence/evidence.controller.ts",
+    "Imports": [
+      "./evidence.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard",
+      "../auth/guards/roles.guard"
+    ]
+  },
+  {
+    "File": "evidence/evidence.module.ts",
+    "Imports": [
+      "./evidence.controller",
+      "./evidence.service",
+      "./minio.service"
+    ]
+  },
+  {
+    "File": "evidence/evidence.service.ts",
+    "Imports": [
+      "../prisma/prisma.service",
+      "./minio.service"
+    ]
+  },
+  {
+    "File": "health/health.controller.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "health/health.module.ts",
+    "Imports": "./health.controller"
+  },
+  {
+    "File": "identity/identity.module.ts",
+    "Imports": "./identity.service"
+  },
+  {
+    "File": "identity/identity.service.spec.ts",
+    "Imports": "./identity.service"
+  },
+  {
+    "File": "identity/identity.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "inspections/inspections.controller.ts",
+    "Imports": [
+      "./inspections.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard",
+      "../auth/guards/roles.guard"
+    ]
+  },
+  {
+    "File": "inspections/inspections.module.ts",
+    "Imports": [
+      "./inspections.controller",
+      "./inspections.service"
+    ]
+  },
+  {
+    "File": "inspections/inspections.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "lifecycle/lifecycle.controller.ts",
+    "Imports": [
+      "./lifecycle.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard",
+      "../auth/guards/roles.guard"
+    ]
+  },
+  {
+    "File": "lifecycle/lifecycle.module.ts",
+    "Imports": [
+      "./lifecycle.service",
+      "./lifecycle.controller"
+    ]
+  },
+  {
+    "File": "lifecycle/lifecycle.service.spec.ts",
+    "Imports": "./lifecycle.service"
+  },
+  {
+    "File": "lifecycle/lifecycle.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "merkle/merkle.module.ts",
+    "Imports": "./merkle.service"
+  },
+  {
+    "File": "merkle/merkle.service.spec.ts",
+    "Imports": "./merkle.service"
+  },
+  {
+    "File": "outbox/outbox.module.ts",
+    "Imports": [
+      "./outbox.service",
+      "./worker.service",
+      "../blockchain/blockchain.module"
+    ]
+  },
+  {
+    "File": "outbox/outbox.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "outbox/worker.service.ts",
+    "Imports": [
+      "./outbox.service",
+      "../blockchain/blockchain.adapter",
+      "../prisma/prisma.service"
+    ]
+  },
+  {
+    "File": "prisma/prisma.module.ts",
+    "Imports": "./prisma.service"
+  },
+  {
+    "File": "search/search.controller.ts",
+    "Imports": [
+      "./search.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "search/search.module.ts",
+    "Imports": [
+      "./search.controller",
+      "./search.service"
+    ]
+  },
+  {
+    "File": "search/search.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "users/users.controller.ts",
+    "Imports": [
+      "./users.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "users/users.module.ts",
+    "Imports": [
+      "./users.controller",
+      "./users.service"
+    ]
+  },
+  {
+    "File": "users/users.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "verification/verification.controller.ts",
+    "Imports": [
+      "./verification.service",
+      "../auth/guards/jwt-auth.guard",
+      "../auth/guards/casbin.guard"
+    ]
+  },
+  {
+    "File": "verification/verification.module.ts",
+    "Imports": [
+      "./verification.controller",
+      "./verification.service"
+    ]
+  },
+  {
+    "File": "verification/verification.service.spec.ts",
+    "Imports": "./verification.service"
+  },
+  {
+    "File": "verification/verification.service.ts",
+    "Imports": "../prisma/prisma.service"
+  },
+  {
+    "File": "wallet/wallet.controller.ts",
+    "Imports": [
+      "./wallet.service",
+      "../auth/guards/jwt-auth.guard"
+    ]
+  },
+  {
+    "File": "wallet/wallet.module.ts",
+    "Imports": [
+      "./wallet.controller",
+      "./wallet.service",
+      "../prisma/prisma.module",
+      "../auth/auth.module"
+    ]
+  },
+  {
+    "File": "wallet/wallet.service.ts",
+    "Imports": "../prisma/prisma.service"
+  }
+]

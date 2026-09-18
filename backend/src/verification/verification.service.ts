@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../core/database/prisma.service';
 
 export type CheckResult = 'VALID' | 'INVALID' | 'MISMATCH' | 'MISSING' | 'UNVERIFIED' | 'NOT_APPLICABLE';
 
@@ -82,7 +82,7 @@ export class VerificationService {
       if (process.env.APP_ENV === 'demo') {
         this.logger.warn(`Database offline, returning fallback verification: ${e.message}`);
         
-        const { FALLBACK_ASSETS, FALLBACK_CERTIFICATIONS, FALLBACK_EVIDENCE } = await import('../common/fallback-data');
+        const { FALLBACK_ASSETS, FALLBACK_CERTIFICATIONS, FALLBACK_EVIDENCE } = await import('../core/common/fallback-data');
         const mockAsset = FALLBACK_ASSETS.find(a => a.id === assetId || a.id === assetId);
         
         if (!mockAsset) {
