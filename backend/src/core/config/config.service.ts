@@ -10,7 +10,7 @@ export class ConfigService {
   }
 
   get nodeEnv(): string { return this.config.NODE_ENV; }
-  get isDevelopment(): boolean { return this.config.NODE_ENV === 'development'; }
+  get isDevelopment(): boolean { return this.config.NODE_ENV === 'development' || this.config.NODE_ENV === 'demo'; }
   get isProduction(): boolean { return this.config.NODE_ENV === 'production'; }
   get isTest(): boolean { return this.config.NODE_ENV === 'test'; }
   get port(): number { return this.config.PORT; }

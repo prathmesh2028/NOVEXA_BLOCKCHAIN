@@ -46,6 +46,69 @@ describe('AuthService (Authentication & Password Management)', () => {
         service.login('unknown@nonexistent.domain', 'password')
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    // SECURITY: Verify that the JWT payload contains expected claims
+    it('issues a token with correct sub, email, and roles claims', async () => {
+      const res = await service.login('admin@kavachtrust.gov.in', 'password');
+      // Decode (not verify) the token to inspect claims shape
+      const [, payloadB64] = res.access_token.split('.');
+      const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+      expect(payload.sub).toBeDefined();
+      expect(payload.email).toBe('admin@kavachtrust.gov.in');
+      expect(Array.isArray(payload.roles)).toBe(true);
+      expect(payload.iss).toBe('kavachtrust');
+    });
+
+    // SECURITY: Demo email alias resolution — .gov.in aliases map to .bel.in entries
+    it('resolves demo email aliases (gov.in -> bel.in)', async () => {
+      const res = await service.login('nft@kavachtrust.gov.in', 'password');
+      expect(res.access_token).toBeDefined();
+    });
+
+    // SECURITY: Disabled accounts must be rejected even with correct password
+    it('rejects login for DISABLED account (non-demo DB path)', async () => {
+      const bcrypt = await import('bcryptjs');
+      const disabledUser = {
+        id: 'usr-disabled',
+        email: 'disabled@example.com',
+        name: 'Disabled',
+        status: 'DISABLED',
+        passwordHash: await bcrypt.hash('password', 10),
+        roles: [{ role: 'TECHNICIAN' }],
+        actor: null,
+      };
+      mockPrisma.user.findUnique = vi.fn().mockResolvedValue(disabledUser);
+      process.env.APP_ENV = 'development';
+      process.env.NODE_ENV = 'development';
+      const serviceNonDemo = new AuthService(mockPrisma, mockConfig);
+
+      await expect(
+        serviceNonDemo.login('disabled@example.com', 'password')
+      ).rejects.toThrow(UnauthorizedException);
+
+      // Restore demo mode for subsequent tests
+      process.env.APP_ENV = 'demo';
+      process.env.NODE_ENV = 'demo';
+    });
+  });
+
+  describe('validateToken', () => {
+    it('returns a valid payload for a genuine token', async () => {
+      const { access_token } = await service.login('admin@kavachtrust.gov.in', 'password');
+      const payload = await service.validateToken(access_token);
+      expect(payload.sub).toBeDefined();
+      expect(payload.email).toBe('admin@kavachtrust.gov.in');
+    });
+
+    it('throws UnauthorizedException for a tampered token', async () => {
+      await expect(
+        service.validateToken('header.tampered.signature')
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws UnauthorizedException for an empty string', async () => {
+      await expect(service.validateToken('')).rejects.toThrow(UnauthorizedException);
+    });
   });
 
   describe('changePassword', () => {

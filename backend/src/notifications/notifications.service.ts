@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../core/database/prisma.service';
 import { AppRole, NotificationSeverity, NotificationType } from '@prisma/client';
+import { INotificationPort } from './notification.port';
 
 export interface CreateNotificationDto {
   recipientId?: string;
@@ -14,7 +15,7 @@ export interface CreateNotificationDto {
 }
 
 @Injectable()
-export class NotificationsService {
+export class NotificationsService implements INotificationPort {
   private readonly logger = new Logger(NotificationsService.name);
 
   constructor(private readonly prisma: PrismaService) {}

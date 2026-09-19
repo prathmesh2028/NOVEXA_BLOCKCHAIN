@@ -21,12 +21,15 @@ export class AssetsController {
     @Query('lifecycle') lifecycle?: string,
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
+    @Req() req?: Request,
   ) {
+    const user = (req as any).user;
     return this.assetsService.listAssets({
       search,
       lifecycle,
       page: page ? parseInt(page, 10) : undefined,
       page_size: pageSize ? parseInt(pageSize, 10) : undefined,
+      user,
     });
   }
 
@@ -40,10 +43,13 @@ export class AssetsController {
   async getEligibleAssets(
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
+    @Req() req?: Request,
   ) {
+    const user = (req as any).user;
     return this.assetsService.getEligibleAssets({
       page: page ? parseInt(page, 10) : undefined,
       page_size: pageSize ? parseInt(pageSize, 10) : undefined,
+      user,
     });
   }
 
@@ -63,13 +69,15 @@ export class AssetsController {
    * Generates a verification QR code and canonical payload for physical asset verification.
    */
   @Get(':id/qr')
-  async getAssetQr(@Param('id') id: string) {
-    return this.assetsService.getAssetQr(id);
+  async getAssetQr(@Param('id') id: string, @Req() req: Request) {
+    const user = (req as any).user;
+    return this.assetsService.getAssetQr(id, user);
   }
 
   @Get(':id')
-  async getAsset(@Param('id') id: string) {
-    return this.assetsService.getAsset(id);
+  async getAsset(@Param('id') id: string, @Req() req: Request) {
+    const user = (req as any).user;
+    return this.assetsService.getAsset(id, user);
   }
 
   @Post()
