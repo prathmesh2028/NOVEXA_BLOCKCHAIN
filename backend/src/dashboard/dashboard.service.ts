@@ -43,6 +43,10 @@ export class DashboardService {
         failed_verifications: failedVerifications,
       };
     } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        throw e;
+      }
       return {
         total_assets: 5,
         active_users: 8,

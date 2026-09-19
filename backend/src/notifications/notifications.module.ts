@@ -10,18 +10,19 @@ import { NOTIFICATION_PORT } from './notification.port';
   controllers: [NotificationsController],
   providers: [
     NotificationsService,
-    // Provide INotificationPort under the NOTIFICATION_PORT token.
-    // Part B domain services (ApprovalsService, LifecycleService, WorkerService)
-    // should inject via @Inject(NOTIFICATION_PORT) rather than importing
-    // NotificationsService directly, to keep the Part A/B boundary clean.
     {
       provide: NOTIFICATION_PORT,
+      useExisting: NotificationsService,
+    },
+    {
+      provide: 'NotificationPort',
       useExisting: NotificationsService,
     },
   ],
   exports: [
     NotificationsService,
-    NOTIFICATION_PORT, // Exported so Part B modules can inject by token
+    NOTIFICATION_PORT,
+    'NotificationPort',
   ],
 })
 export class NotificationsModule {}
