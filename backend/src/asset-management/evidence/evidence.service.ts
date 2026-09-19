@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { MinioService } from './minio.service';
+import { AuditService } from '../audit/audit.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class EvidenceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly minio: MinioService,
+    private readonly auditService: AuditService,
   ) {}
 
   private mapEvidence(e: any) {
@@ -204,6 +206,7 @@ export class EvidenceService {
               mimeType: data.mimeType,
               sizeKb: data.sizeKb,
               hash,
+              objectKey: objectName,
               event: data.event,
               status: 'COMPLETE',
               integrityVerified: true,
@@ -219,20 +222,29 @@ export class EvidenceService {
             data: { evidenceCount: { increment: 1 } },
           });
 
-          // Audit event
-          await tx.auditEvent.create({
-            data: {
+          // Audit event using canonical AuditService
+          await this.auditService.recordEvent(
+            {
               eventType: 'EVIDENCE_UPLOADED',
               actorId: data.uploadedById,
               actorDid: data.uploadedByDid,
               actorName: data.uploadedByName,
+              actorRole: data.uploadedByRole,
               action: `Evidence uploaded — ${data.filename}`,
               resourceType: 'Evidence',
               resourceId: evidence.id,
               result: 'SUCCESS',
               details: `SHA-256: ${hash.substring(0, 16)}... | Asset: ${asset.assetId}`,
+              payload: {
+                evidenceId,
+                filename: data.filename,
+                hash,
+                objectKey: objectName,
+                assetId: asset.assetId,
+              },
             },
-          });
+            tx,
+          );
 
           this.logger.log(`Evidence ${evidence.id} uploaded for asset ${asset.assetId} — hash: ${hash.substring(0, 16)}...`);
           return this.mapEvidence(evidence);
@@ -354,6 +366,27 @@ export class EvidenceService {
       overall_integrity: (
         items.length === 0 ? 'NO_EVIDENCE' : failed > 0 ? 'FAILED' : verified === items.length ? 'VERIFIED' : 'PARTIAL'
       ) as 'VERIFIED' | 'PARTIAL' | 'FAILED' | 'NO_EVIDENCE',
+    };
+  }
+
+  async downloadEvidence(id: string) {
+    let evidence = await this.prisma.evidence.findUnique({ where: { id } });
+    if (!evidence) {
+      evidence = await this.prisma.evidence.findUnique({ where: { evidenceId: id } });
+    }
+    if (!evidence) {
+      throw new NotFoundException(`Evidence ${id} not found`);
+    }
+    if (!evidence.objectKey) {
+      throw new NotFoundException(`Evidence ${id} has no stored object key`);
+    }
+
+    const buffer = await this.minio.downloadFile(evidence.objectKey);
+    return {
+      buffer,
+      filename: evidence.filename,
+      mimeType: evidence.mimeType,
+      sizeKb: evidence.sizeKb,
     };
   }
 }

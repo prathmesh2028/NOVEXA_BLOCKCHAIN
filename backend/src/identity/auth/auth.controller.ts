@@ -27,4 +27,15 @@ export class AuthController {
     // Stateless JWT — logout is client-side token removal
     return { message: 'Logged out' };
   }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  async changePassword(
+    @Body() body: { current_password?: string; new_password?: string },
+    @Req() req: Request,
+  ) {
+    const userId = (req as any).user.sub;
+    return this.authService.changePassword(userId, body.current_password, body.new_password);
+  }
 }

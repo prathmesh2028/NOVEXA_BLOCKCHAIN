@@ -1,12 +1,16 @@
 import { Injectable, Logger, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { AuditService } from '../../asset-management/audit/audit.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class CertificationsService {
   private readonly logger = new Logger(CertificationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   private mapCert(c: any) {
     return {
@@ -85,6 +89,48 @@ export class CertificationsService {
     };
   }
 
+  async getCertificationById(id: string) {
+    try {
+      let cert = await this.prisma.certification.findUnique({ where: { id }, include: { batch: true } });
+      if (!cert) {
+        cert = await this.prisma.certification.findUnique({ where: { certId: id }, include: { batch: true } });
+      }
+      if (!cert) {
+        const { NotFoundException } = await import('@nestjs/common');
+        throw new NotFoundException(`Certification ${id} not found`);
+      }
+      return this.mapCert(cert);
+    } catch (e: any) {
+      if (e?.status === 404) throw e;
+      if (process.env.APP_ENV === 'demo') {
+        const { FALLBACK_CERTIFICATIONS } = await import('../../core/common/fallback-data');
+        const found = FALLBACK_CERTIFICATIONS.find(c => c.id === id || c.id === id);
+        if (!found) {
+          const { NotFoundException } = await import('@nestjs/common');
+          throw new NotFoundException(`Certification ${id} not found`);
+        }
+        return {
+          id: found.id,
+          cert_id: found.id,
+          asset_id: found.assetId,
+          batch_id: found.batchId,
+          token_id: found.tokenId,
+          contract_address: found.contractAddress,
+          network: found.network,
+          tx_hash: found.txHash,
+          block_number: found.blockNumber,
+          status: found.status,
+          issued_by: found.issuedBy,
+          issued_by_did: found.issuedByDid,
+          issued_at: found.issuedAt,
+          confirmed_at: found.confirmedAt || null,
+          confirmations: found.confirmations,
+        };
+      }
+      throw e;
+    }
+  }
+
   /**
    * Create certification with preconditions:
    * 1. Asset must be in ACCEPTED_FOR_ASSEMBLY state
@@ -154,9 +200,9 @@ export class CertificationsService {
           },
         });
 
-        // Audit
-        await tx.auditEvent.create({
-          data: {
+        // Audit via canonical AuditService
+        await this.auditService.recordEvent(
+          {
             eventType: 'CERTIFICATION_CREATED',
             actorId: data.issuedById,
             actorDid: data.issuedByDid,
@@ -167,7 +213,8 @@ export class CertificationsService {
             result: 'SUCCESS',
             details: `Certification ${certId} created for asset ${asset.assetId}`,
           },
-        });
+          tx,
+        );
 
         this.logger.log(`Certification ${certId} created for asset ${asset.assetId}`);
         return this.mapCert(cert);
