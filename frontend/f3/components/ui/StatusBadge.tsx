@@ -30,9 +30,14 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
   UNAVAILABLE: { label: "Unavailable", color: "#64748b", bg: "rgba(100,116,139,0.1)", icon: "—" },
 
   REVOKED: { label: "Revoked", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", icon: "⊘" },
+  Revoked: { label: "Revoked", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", icon: "⊘" },
   LOCKED: { label: "Non-transferable", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", icon: "⊠" },
   Duplicate: { label: "Duplicate", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", icon: "⊘" },
   DISABLED: { label: "Disabled", color: "#64748b", bg: "rgba(100,116,139,0.1)", icon: "⊘" },
+  APPROVED: { label: "Approved", color: "#22c55e", bg: "rgba(34,197,94,0.12)", icon: "✓" },
+  Approved: { label: "Approved", color: "#22c55e", bg: "rgba(34,197,94,0.12)", icon: "✓" },
+  REJECTED: { label: "Rejected", color: "#ef4444", bg: "rgba(239,68,68,0.12)", icon: "✕" },
+  Rejected: { label: "Rejected", color: "#ef4444", bg: "rgba(239,68,68,0.12)", icon: "✕" },
 
   // Inspection Statuses
   SCHEDULED: { label: "Scheduled", color: "#60a5fa", bg: "rgba(96,165,250,0.12)", icon: "◷" },

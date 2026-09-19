@@ -7,6 +7,7 @@ import AssetsPage from "./pages/assets/AssetsPage";
 import AssetDetailPage from "./pages/assets/AssetDetailPage";
 import CertificationsPage from "./pages/certifications/CertificationsPage";
 import CertificationDetailPage from "./pages/certifications/CertificationDetailPage";
+import CertificationQueuePage from "./pages/certifications/CertificationQueuePage";
 import BlockchainPage from "./pages/blockchain/BlockchainPage";
 import AuditPage from "./pages/audit/AuditPage";
 import UsersPage from "./pages/users/UsersPage";
@@ -59,7 +60,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "certification-queue",
-        Component: () => <StubPage title="Certification Queue" icon="◆" description="Queue of assets eligible for certification. Review evidence, verify lifecycle state, and initiate minting." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: CertificationQueuePage,
       },
       {
         path: "history",
