@@ -11,7 +11,6 @@ import { TechnicalRecordsModule } from './asset-management/technical-records/tec
 import { CertificationsModule } from './certification/certifications/certifications.module';
 import { BlockchainModule } from './trust/blockchain/blockchain.module';
 import { AuditModule } from './asset-management/audit/audit.module';
-import { MerkleModule } from './asset-management/merkle/merkle.module';
 import { OutboxModule } from './trust/outbox/outbox.module';
 import { VerificationModule } from './verification/verification.module';
 import { SearchModule } from './search/search.module';
@@ -40,7 +39,6 @@ import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
     CertificationsModule,
     BlockchainModule,
     AuditModule,
-    MerkleModule,
     OutboxModule,
     VerificationModule,
     SearchModule,
