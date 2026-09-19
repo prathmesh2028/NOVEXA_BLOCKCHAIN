@@ -528,3 +528,497 @@ export function shortHash(hash: string, chars = 6): string {
   if (hash.length <= chars * 2 + 3) return hash;
   return hash.slice(0, chars) + "..." + hash.slice(-4);
 }
+
+// ---------------------------------------------------------------------------
+// Defence Asset Inspection Types & Dataset (BEL Standard Inspired)
+// ---------------------------------------------------------------------------
+
+export type InspectionStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "ATTENTION_REQUIRED";
+export type InspectionPriority = "CRITICAL" | "HIGH" | "MEDIUM" | "STANDARD";
+export type ChecklistItemState = "Pass" | "Fail" | "Not Checked";
+export type EvidenceRequirement = "Required" | "Attached" | "Missing" | "Not Required";
+
+export interface ChecklistItem {
+  id: string;
+  criterion: string;
+  description: string;
+  standardRef: string;
+  state: ChecklistItemState;
+  notes?: string;
+  mandatory: boolean;
+}
+
+export interface InspectionHistoryEntry {
+  id: string;
+  timestamp: string;
+  actor: string;
+  actorRole: string;
+  action: string;
+  details: string;
+}
+
+export interface Inspection {
+  id: string;
+  assetId: string;
+  assetName: string;
+  assetModel: string;
+  assetSerial: string;
+  batchId: string;
+  type: string;
+  assignedTechnician: string;
+  technicianDid: string;
+  scheduledDate: string;
+  updatedAt: string;
+  status: InspectionStatus;
+  priority: InspectionPriority;
+  location: string;
+  evidenceStatus: EvidenceRequirement;
+  evidenceId?: string;
+  evidenceFilename?: string;
+  checklist: ChecklistItem[];
+  findings: string;
+  recommendation?: string;
+  history: InspectionHistoryEntry[];
+}
+
+export const INSPECTIONS_LIST: Inspection[] = [
+  {
+    id: "INSP-2026-0088",
+    assetId: "PT-2026-00105",
+    assetName: "Pressure Transducer",
+    assetModel: "PT-SEN-SYNTH",
+    assetSerial: "SN-PT-00105",
+    batchId: "PT-BATCH-2026-004",
+    type: "Sensor Calibration & Tolerance Verification",
+    assignedTechnician: "Rajesh Kumar",
+    technicianDid: "did:bel:actor:003",
+    scheduledDate: "2026-09-14T09:00:00Z",
+    updatedAt: "2026-09-14T11:45:00Z",
+    status: "IN_PROGRESS",
+    priority: "HIGH",
+    location: "BEL Bengaluru - Bay 04 / Cleanroom B",
+    evidenceStatus: "Required",
+    findings: "Initial zero-offset pressure check is within nominal ±0.02 bar. Physical casing integrity confirmed without micro-fractures. Electrical pin impedance conforms to BEL-QC-SEN-12.",
+    checklist: [
+      {
+        id: "CHK-01",
+        criterion: "Physical Enclosure & Seal Integrity",
+        description: "Verify absence of casing fissures, thread stripping, and hermetic O-ring degradation.",
+        standardRef: "MIL-STD-810H Cl 5.2",
+        state: "Pass",
+        notes: "Passed visual microscopy. O-ring seated correctly.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-02",
+        criterion: "Zero-Offset Voltage Calibration",
+        description: "Measure baseline differential voltage output at 101.3 kPa ambient pressure (target 0.00V ± 15mV).",
+        standardRef: "BEL-STD-SEN-401",
+        state: "Pass",
+        notes: "Measured offset: +4.2mV (well within tolerance).",
+        mandatory: true,
+      },
+      {
+        id: "CHK-03",
+        criterion: "Tamper-Evident Barcode & Serial Match",
+        description: "Scan physical 2D matrix on housing and confirm exact match against asset ledger SN-PT-00105.",
+        standardRef: "DEF-AERO-UID-09",
+        state: "Pass",
+        notes: "Serial matched cryptographically with batch manifest.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-04",
+        criterion: "High-Pressure Hydraulic Ramp (300 Bar)",
+        description: "Sustain 300 Bar hydrostatic pressure for 180 seconds with less than 0.05% pressure decay.",
+        standardRef: "MIL-STD-202G Meth 112",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-05",
+        criterion: "Thermal Drift Coefficient (-20°C to +70°C)",
+        description: "Measure sensor drift across operating temperature delta; thermal coefficient must remain < 0.02%/°C.",
+        standardRef: "BEL-QC-ENV-08",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+    ],
+    history: [
+      {
+        id: "IH-001",
+        timestamp: "2026-09-12T08:00:00Z",
+        actor: "Arjun Mehta",
+        actorRole: "Administrator",
+        action: "Inspection task scheduled and assigned to Rajesh Kumar",
+        details: "Assigned per batch PT-BATCH-2026-004 receiving protocol.",
+      },
+      {
+        id: "IH-002",
+        timestamp: "2026-09-14T09:30:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Inspection commenced — Workstation Bay 04 Cleanroom B",
+        details: "Checks CHK-01, CHK-02, and CHK-03 passed without deviation.",
+      },
+    ],
+  },
+  {
+    id: "INSP-2026-0085",
+    assetId: "EF-2026-00421",
+    assetName: "Electronic Fuze",
+    assetModel: "EF-MK4-SYNTH",
+    assetSerial: "SN-EF-00421",
+    batchId: "EF-BATCH-2026-017",
+    type: "Pre-Assembly QC & Arming Circuit Validation",
+    assignedTechnician: "Rajesh Kumar",
+    technicianDid: "did:bel:actor:003",
+    scheduledDate: "2026-09-05T08:30:00Z",
+    updatedAt: "2026-09-05T10:15:00Z",
+    status: "COMPLETED",
+    priority: "CRITICAL",
+    location: "BEL Bengaluru - Ordnance Test Facility 2",
+    evidenceStatus: "Attached",
+    evidenceId: "EVD-2026-001",
+    evidenceFilename: "inspection_report_EF00421.pdf",
+    findings: "All mechanical, electrical, and environmental tests passed with zero non-conformances. Arming circuit delay calibrated to precisely 1.450s ± 0.005s. Asset cleared for assembly integration.",
+    checklist: [
+      {
+        id: "CHK-01",
+        criterion: "Ordnance Housing Hermetic Seal",
+        description: "Helium leak detection at 10^-8 atm cc/s threshold.",
+        standardRef: "MIL-STD-331D Test A1",
+        state: "Pass",
+        notes: "Helium rate: 1.2x10^-8 atm cc/s. Passed.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-02",
+        criterion: "Arming Switch Safety Interlock Circuit",
+        description: "Verify dual-path redundant safety interlock failsafe operation.",
+        standardRef: "BEL-ORD-FUZE-202",
+        state: "Pass",
+        notes: "Both paths opened in < 2.1 ms under simulated fault.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-03",
+        criterion: "Capacitor Discharge Voltage Curve",
+        description: "Verify detonation pulse discharge reaches 28.5V within 12 microseconds.",
+        standardRef: "DEF-STAN-07-85",
+        state: "Pass",
+        notes: "Peak voltage 28.8V reached at 10.4 microseconds.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-04",
+        criterion: "Cryptographic Identity Chip Ping",
+        description: "Authenticate on-board cryptographic chip and verify ECDSA key signature against registry.",
+        standardRef: "BEL-CRYPTO-FIPS-140-3",
+        state: "Pass",
+        notes: "Key verified against BEL Central PKI Root.",
+        mandatory: true,
+      },
+    ],
+    history: [
+      {
+        id: "IH-010",
+        timestamp: "2026-09-04T15:00:00Z",
+        actor: "Arjun Mehta",
+        actorRole: "Administrator",
+        action: "Inspection task created",
+        details: "Mandatory pre-assembly inspection scheduled.",
+      },
+      {
+        id: "IH-011",
+        timestamp: "2026-09-05T08:30:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Inspection commenced",
+        details: "Tested on calibrated test rack TR-09.",
+      },
+      {
+        id: "IH-012",
+        timestamp: "2026-09-05T10:14:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Inspection marked COMPLETED",
+        details: "All criteria satisfied. PDF report uploaded to evidence store.",
+      },
+    ],
+  },
+  {
+    id: "INSP-2026-0087",
+    assetId: "EF-2026-00423",
+    assetName: "Electronic Fuze",
+    assetModel: "EF-MK4-SYNTH",
+    assetSerial: "SN-EF-00423",
+    batchId: "EF-BATCH-2026-017",
+    type: "Pre-Assembly QC & Arming Circuit Validation",
+    assignedTechnician: "Rajesh Kumar",
+    technicianDid: "did:bel:actor:003",
+    scheduledDate: "2026-09-08T13:00:00Z",
+    updatedAt: "2026-09-08T15:10:00Z",
+    status: "ATTENTION_REQUIRED",
+    priority: "CRITICAL",
+    location: "BEL Bengaluru - Ordnance Test Facility 2",
+    evidenceStatus: "Missing",
+    findings: "CRITICAL DEFECT DETECTED: Housing hermetic seal failed pressure integrity check. Internal pressure dropped by 0.45 bar during the 60s hold test. Asset quarantined immediately.",
+    checklist: [
+      {
+        id: "CHK-01",
+        criterion: "Ordnance Housing Hermetic Seal",
+        description: "Helium leak detection at 10^-8 atm cc/s threshold.",
+        standardRef: "MIL-STD-331D Test A1",
+        state: "Fail",
+        notes: "FAILED: Major pressure loss observed at rear cap weld.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-02",
+        criterion: "Arming Switch Safety Interlock Circuit",
+        description: "Verify dual-path redundant safety interlock failsafe operation.",
+        standardRef: "BEL-ORD-FUZE-202",
+        state: "Pass",
+        notes: "Interlocks operational.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-03",
+        criterion: "Capacitor Discharge Voltage Curve",
+        description: "Verify detonation pulse discharge reaches 28.5V within 12 microseconds.",
+        standardRef: "DEF-STAN-07-85",
+        state: "Pass",
+        notes: "Capacitor curve acceptable.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-04",
+        criterion: "Cryptographic Identity Chip Ping",
+        description: "Authenticate on-board cryptographic chip and verify ECDSA key signature against registry.",
+        standardRef: "BEL-CRYPTO-FIPS-140-3",
+        state: "Pass",
+        notes: "Chip response valid.",
+        mandatory: true,
+      },
+    ],
+    history: [
+      {
+        id: "IH-020",
+        timestamp: "2026-09-08T13:00:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Inspection commenced",
+        details: "Testing batch unit 00423 on test rack TR-09.",
+      },
+      {
+        id: "IH-021",
+        timestamp: "2026-09-08T14:45:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Status transitioned to ATTENTION_REQUIRED",
+        details: "Hermetic seal failed leak threshold. Quarantined for QA review.",
+      },
+    ],
+  },
+  {
+    id: "INSP-2026-0089",
+    assetId: "IG-2026-00210",
+    assetName: "Ignition Module",
+    assetModel: "IG-MOD-SYNTH",
+    assetSerial: "SN-IG-00210",
+    batchId: "IG-BATCH-2026-008",
+    type: "Ballistic Ignition Continuity & Pulse Integrity",
+    assignedTechnician: "Vikram Singh",
+    technicianDid: "did:bel:actor:005",
+    scheduledDate: "2026-09-20T10:30:00Z",
+    updatedAt: "2026-09-10T14:30:00Z",
+    status: "SCHEDULED",
+    priority: "MEDIUM",
+    location: "BEL Pune - Pyrotechnic Analysis Lab 1",
+    evidenceStatus: "Required",
+    findings: "Asset scheduled for initial intake inspection following supplier declaration.",
+    checklist: [
+      {
+        id: "CHK-01",
+        criterion: "Bridgewire Resistance Check (1.05Ω ± 0.05Ω)",
+        description: "Measure resistance of primary pyrotechnic bridgewire at 20°C.",
+        standardRef: "MIL-DTL-23659",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-02",
+        criterion: "High-Voltage Static Sensitivity Shielding",
+        description: "Verify ESD shielding resistance to 25kV static discharge.",
+        standardRef: "BEL-PYRO-ESD-02",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-03",
+        criterion: "Physical Dimensions & Mounting Thread Check",
+        description: "Gauge threading with go/no-go ring gauges per ISO 965-2.",
+        standardRef: "ISO-965-2 M14x1.5",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-04",
+        criterion: "Supplier Batch Certificate Conformity",
+        description: "Cross-examine lot certificate against chemical purity requirements.",
+        standardRef: "BEL-PUR-SPEC-711",
+        state: "Not Checked",
+        notes: "",
+        mandatory: false,
+      },
+    ],
+    history: [
+      {
+        id: "IH-030",
+        timestamp: "2026-09-10T14:30:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Inspection task created upon supplier declaration",
+        details: "Assigned to Vikram Singh for pyrotechnic testing in Pune facility.",
+      },
+    ],
+  },
+  {
+    id: "INSP-2026-0091",
+    assetId: "EF-2026-00422",
+    assetName: "Electronic Fuze",
+    assetModel: "EF-MK4-SYNTH",
+    assetSerial: "SN-EF-00422",
+    batchId: "EF-BATCH-2026-017",
+    type: "Firmware Hash & Cryptochip Key Verification",
+    assignedTechnician: "Rajesh Kumar",
+    technicianDid: "did:bel:actor:003",
+    scheduledDate: "2026-09-15T11:00:00Z",
+    updatedAt: "2026-09-15T13:20:00Z",
+    status: "IN_PROGRESS",
+    priority: "HIGH",
+    location: "BEL Bengaluru - Avionics Integration Bay 1",
+    evidenceStatus: "Required",
+    findings: "Firmware binary extracted via JTAG interface. Cryptographic hash matches certified golden build. Awaiting secure boot signature verification.",
+    checklist: [
+      {
+        id: "CHK-01",
+        criterion: "JTAG Port Secure Lockdown State",
+        description: "Confirm physical fuse blowing or hardware lock preventing debug access.",
+        standardRef: "BEL-SEC-HW-303",
+        state: "Pass",
+        notes: "Hardware security fuse blown as expected.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-02",
+        criterion: "Firmware SHA-256 Checksum Matching",
+        description: "Compare on-chip flash memory SHA-256 against authorized build catalog.",
+        standardRef: "DEF-AERO-SW-SEC",
+        state: "Pass",
+        notes: "Checksum: 8d2e...44a1 matches golden image 100%.",
+        mandatory: true,
+      },
+      {
+        id: "CHK-03",
+        criterion: "Hardware Random Number Generator Entropy Test",
+        description: "Execute NIST SP 800-22 statistical test suite on internal TRNG.",
+        standardRef: "NIST SP 800-22",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-04",
+        criterion: "Anti-Tamper Active Mesh Voltage",
+        description: "Verify active sensor mesh monitors enclosure removal under battery backup.",
+        standardRef: "FIPS 140-3 Level 4",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+    ],
+    history: [
+      {
+        id: "IH-040",
+        timestamp: "2026-09-11T09:00:00Z",
+        actor: "Arjun Mehta",
+        actorRole: "Administrator",
+        action: "Firmware security inspection scheduled",
+        details: "Scheduled as stage 2 verification for asset EF-2026-00422.",
+      },
+      {
+        id: "IH-041",
+        timestamp: "2026-09-15T11:15:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "JTAG verification and ROM dump completed",
+        details: "ROM checksum confirmed against master release manifest.",
+      },
+    ],
+  },
+  {
+    id: "INSP-2026-0094",
+    assetId: "PT-2026-00105",
+    assetName: "Pressure Transducer",
+    assetModel: "PT-SEN-SYNTH",
+    assetSerial: "SN-PT-00105",
+    batchId: "PT-BATCH-2026-004",
+    type: "Vibration & Multi-Axis Shock Stress",
+    assignedTechnician: "Rajesh Kumar",
+    technicianDid: "did:bel:actor:003",
+    scheduledDate: "2026-09-22T14:00:00Z",
+    updatedAt: "2026-09-12T07:45:00Z",
+    status: "SCHEDULED",
+    priority: "STANDARD",
+    location: "BEL Bengaluru - Environmental Testing Center",
+    evidenceStatus: "Required",
+    findings: "Scheduled for stage 2 shock and vibration testing after baseline calibration.",
+    checklist: [
+      {
+        id: "CHK-01",
+        criterion: "Random Vibration Profile (20Hz - 2000Hz, 12.5 Grms)",
+        description: "Apply 3-axis continuous random vibration for 60 minutes per axis.",
+        standardRef: "MIL-STD-810H Meth 514",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-02",
+        criterion: "Mechanical Shock Pulse (100G, 6ms Half-Sine)",
+        description: "Subject unit to 18 total shock impacts (3 shocks per direction along 3 orthogonal axes).",
+        standardRef: "MIL-STD-202G Meth 213",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+      {
+        id: "CHK-03",
+        criterion: "Post-Shock Output Voltage Stability",
+        description: "Verify sensor output does not shift by more than ±0.1% FS after shock.",
+        standardRef: "BEL-SEN-QUAL-19",
+        state: "Not Checked",
+        notes: "",
+        mandatory: true,
+      },
+    ],
+    history: [
+      {
+        id: "IH-050",
+        timestamp: "2026-09-12T08:00:00Z",
+        actor: "Rajesh Kumar",
+        actorRole: "Technician",
+        action: "Vibration test protocol scheduled",
+        details: "Linked to sensor batch PT-BATCH-2026-004.",
+      },
+    ],
+  },
+];
+

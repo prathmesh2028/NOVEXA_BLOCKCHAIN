@@ -16,6 +16,8 @@ import EvidenceDetailPage from "./pages/evidence/EvidenceDetailPage";
 import VerificationCenterPage from "./pages/verification/VerificationCenterPage";
 import SearchPage from "./pages/search/SearchPage";
 import SettingsPage from "./pages/settings/SettingsPage";
+import InspectionsPage from "./pages/inspections/InspectionsPage";
+import InspectionDetailPage from "./pages/inspections/InspectionDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import StubPage from "./pages/StubPage";
 
@@ -77,7 +79,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "inspections",
-        Component: () => <StubPage title="Inspections" icon="◌" description="Pending, in-progress, and completed inspection tasks on registered assets. Update inspection status and attach evidence." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: InspectionsPage,
+      },
+      {
+        path: "inspections/:id",
+        Component: InspectionDetailPage,
       },
       {
         path: "lifecycle",
