@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException, Optional, Inject } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { NotificationPort } from '../../notifications/notification.port';
+import { INotificationPort, NOTIFICATION_PORT } from '../../notifications/notification.port';
 import { AuditService } from '../audit/audit.service';
 import { AppRole, ApprovalStage, ApprovalStatus } from '@prisma/client';
 import * as crypto from 'crypto';
@@ -31,7 +31,7 @@ export class ApprovalsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    @Inject('NotificationPort') private readonly notificationsService: NotificationPort,
+    @Inject(NOTIFICATION_PORT) private readonly notificationsService: INotificationPort,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
   ) {}
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, ConflictException, ForbiddenException, Optional, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { NotificationPort } from '../../notifications/notification.port';
+import { INotificationPort, NOTIFICATION_PORT } from '../../notifications/notification.port';
 import { AuditService } from '../audit/audit.service';
 import { AppRole, LifecycleState } from '@prisma/client';
 
@@ -37,7 +37,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly prisma: PrismaService,
-    @Optional() @Inject('NotificationPort') private readonly notificationsService?: NotificationPort,
+    @Optional() @Inject(NOTIFICATION_PORT) private readonly notificationsService?: INotificationPort,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
   ) {}
 
