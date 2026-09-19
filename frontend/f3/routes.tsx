@@ -5,6 +5,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import AssetsPage from "./pages/assets/AssetsPage";
 import AssetDetailPage from "./pages/assets/AssetDetailPage";
+import RegisterAssetPage from "./pages/assets/RegisterAssetPage";
 import CertificationsPage from "./pages/certifications/CertificationsPage";
 import CertificationDetailPage from "./pages/certifications/CertificationDetailPage";
 import CertificationQueuePage from "./pages/certifications/CertificationQueuePage";
@@ -72,7 +73,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "register",
-        Component: () => <StubPage title="Register / Update Asset" icon="⊕" description="Register a new defence asset or update an existing asset record with technical data, evidence, and lifecycle information." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: RegisterAssetPage,
       },
       {
         path: "technical-records",

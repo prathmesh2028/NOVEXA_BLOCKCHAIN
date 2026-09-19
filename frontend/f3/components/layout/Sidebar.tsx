@@ -11,6 +11,7 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/users", label: "Users", icon: "◉" },
       { to: "/app/roles", label: "Roles & Permissions", icon: "⊛" },
       { to: "/app/assets", label: "Assets", icon: "◈" },
+      { to: "/app/register", label: "Register Asset", icon: "⊕" },
       { to: "/app/inspections", label: "Inspections", icon: "◌" },
       { to: "/app/certification-queue", label: "Certification Queue", icon: "◉" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },

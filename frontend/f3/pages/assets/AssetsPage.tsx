@@ -33,8 +33,14 @@ export default function AssetsPage() {
       }
     };
     
-    const debounce = setTimeout(fetchAssets, 300);
-    return () => clearTimeout(debounce);
+    const debounce = setTimeout(fetchAssets, 200);
+    const unsub = assetService.subscribe(() => {
+      fetchAssets();
+    });
+    return () => {
+      clearTimeout(debounce);
+      unsub();
+    };
   }, [search, filterLifecycle]);
 
   return (
@@ -44,11 +50,9 @@ export default function AssetsPage() {
         subtitle="All registered defence asset records"
         breadcrumbs={[{ label: "Dashboard", to: "/app/dashboard" }, { label: "Assets" }]}
         actions={
-          role === "technician" && (
-            <Link to="/app/register" className="btn-primary">
-              + Register Asset
-            </Link>
-          )
+          <Link to="/app/register" className="btn-primary">
+            + Register Asset
+          </Link>
         }
       />
 

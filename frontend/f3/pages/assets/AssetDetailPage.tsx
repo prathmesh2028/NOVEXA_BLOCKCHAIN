@@ -1,19 +1,98 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import LifecycleStepper from "../../components/ui/LifecycleStepper";
 import AuditTimeline from "../../components/ui/AuditTimeline";
 import VerificationPanel from "../../components/ui/VerificationPanel";
-import { ASSETS, EVIDENCE_LIST, AUDIT_EVENTS, CERTIFICATIONS, BLOCKCHAIN_TXS, formatDateTime, shortHash } from "../../data/mockData";
+import { EVIDENCE_LIST, AUDIT_EVENTS, CERTIFICATIONS, BLOCKCHAIN_TXS, formatDateTime, shortHash, LifecycleState, Asset } from "../../data/mockData";
+import { assetService } from "../../services/assets";
+import { useAuth } from "../../context/AuthContext";
 
 const TABS = ["Overview", "Technical", "Evidence", "Lifecycle", "Certification", "Blockchain", "Audit Trail"];
 
 export default function AssetDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { user, role } = useAuth();
   const [activeTab, setActiveTab] = useState("Overview");
 
-  const asset = ASSETS.find((a) => a.id === id);
+  const [asset, setAsset] = useState<Asset | null>(() => assetService.getRawAsset(id || ""));
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Edit form state
+  const [editType, setEditType] = useState("");
+  const [editModel, setEditModel] = useState("");
+  const [editSupplier, setEditSupplier] = useState("");
+  const [editLifecycle, setEditLifecycle] = useState<LifecycleState>("SUPPLIER_DECLARED");
+  const [editDescription, setEditDescription] = useState("");
+
+  const refreshAsset = () => {
+    if (!id) return;
+    const current = assetService.getRawAsset(id);
+    setAsset(current);
+    if (current) {
+      setEditType(current.type);
+      setEditModel(current.model);
+      setEditSupplier(current.supplier);
+      setEditLifecycle(current.lifecycle);
+      setEditDescription(current.description || "");
+    }
+  };
+
+  useEffect(() => {
+    refreshAsset();
+    const unsub = assetService.subscribe(() => {
+      refreshAsset();
+    });
+    return unsub;
+  }, [id]);
+
+  const handleOpenEdit = () => {
+    if (!asset) return;
+    setEditType(asset.type);
+    setEditModel(asset.model);
+    setEditSupplier(asset.supplier);
+    setEditLifecycle(asset.lifecycle);
+    setEditDescription(asset.description || "");
+    setIsEditing(true);
+    setFeedback(null);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!asset) return;
+
+    if (!editType.trim() || !editModel.trim() || !editSupplier.trim()) {
+      setFeedback({ type: "error", text: "Equipment type, model code, and supplier division are required." });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await assetService.updateAsset(
+        asset.id,
+        {
+          type: editType.trim(),
+          model: editModel.trim().toUpperCase(),
+          supplier: editSupplier.trim(),
+          lifecycle: editLifecycle,
+          description: editDescription.trim(),
+        },
+        user?.name ? `${user.name} (${role || "Technician"})` : "Rajesh Kumar (Technician)"
+      );
+
+      setIsEditing(false);
+      setFeedback({ type: "success", text: `Asset ${asset.id} specifications and lifecycle successfully updated.` });
+      setTimeout(() => setFeedback(null), 4000);
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Failed to update asset." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!asset) {
     return (
       <div style={{ textAlign: "center", padding: "80px 24px" }}>
@@ -50,12 +129,221 @@ export default function AssetDetailPage() {
         ]}
         badge={<StatusBadge status={asset.lifecycle} />}
         actions={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={handleOpenEdit}
+              className="btn-secondary"
+              style={{ fontSize: "0.75rem", padding: "5px 12px" }}
+            >
+              ✏ Edit Asset
+            </button>
             <StatusBadge status={asset.verification} />
             <Link to="/app/assets" className="btn-ghost" style={{ fontSize: "0.75rem" }}>← Back</Link>
           </div>
         }
       />
+
+      {/* Feedback Toast */}
+      {feedback && (
+        <div
+          style={{
+            padding: "10px 16px",
+            marginBottom: 20,
+            borderRadius: "6px",
+            fontSize: "0.8125rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: feedback.type === "success" ? "rgba(34, 197, 94, 0.12)" : "rgba(239, 68, 68, 0.12)",
+            border: feedback.type === "success" ? "1px solid rgba(34, 197, 94, 0.35)" : "1px solid rgba(239, 68, 68, 0.35)",
+            color: feedback.type === "success" ? "#4ade80" : "#f87171",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>{feedback.type === "success" ? "✓" : "✕"}</span>
+            <span>{feedback.text}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            style={{ background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Edit Asset Modal Dialog */}
+      {isEditing && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(7, 15, 29, 0.85)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            padding: 16,
+          }}
+        >
+          <form
+            onSubmit={handleSaveEdit}
+            className="panel-elevated"
+            style={{
+              maxWidth: 600,
+              width: "100%",
+              padding: 24,
+              border: "1px solid #1e3a60",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: "1.25rem", color: "#38bdf8" }}>✏</span>
+                <h3 className="font-display" style={{ margin: 0, fontSize: "1.25rem", color: "#e2e8f0" }}>
+                  Update Defence Asset Specification
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                style={{ background: "none", border: "none", color: "#64748b", fontSize: "1.25rem", cursor: "pointer" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Protected Immutable Identifiers */}
+            <div
+              style={{
+                background: "#08131f",
+                border: "1px solid #152b4a",
+                borderRadius: "6px",
+                padding: "12px 14px",
+                marginBottom: 16,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: 10,
+                fontSize: "0.75rem",
+              }}
+            >
+              <div>
+                <span style={{ color: "#64748b", display: "block" }}>ASSET ID (LOCKED)</span>
+                <span className="meta-id" style={{ color: "#60a5fa", fontWeight: 700 }}>{asset.id}</span>
+              </div>
+              <div>
+                <span style={{ color: "#64748b", display: "block" }}>BATCH ID (LOCKED)</span>
+                <span className="meta-id" style={{ color: "#94a3b8" }}>{asset.batchId}</span>
+              </div>
+              <div>
+                <span style={{ color: "#64748b", display: "block" }}>SERIAL (LOCKED)</span>
+                <span className="meta-id" style={{ color: "#94a3b8" }}>{asset.serialNumber}</span>
+              </div>
+            </div>
+
+            {/* Editable Fields */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#cbd5e1", marginBottom: 4 }}>
+                  ASSET TYPE *
+                </label>
+                <input
+                  className="input-field"
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value)}
+                  placeholder="e.g. Electronic Fuze"
+                  style={{ fontSize: "0.8125rem" }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#cbd5e1", marginBottom: 4 }}>
+                  MODEL SPECIFICATION *
+                </label>
+                <input
+                  className="input-field"
+                  value={editModel}
+                  onChange={(e) => setEditModel(e.target.value.toUpperCase())}
+                  placeholder="e.g. EF-MK4-SYNTH"
+                  style={{ fontSize: "0.8125rem", fontFamily: "'JetBrains Mono', monospace" }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#cbd5e1", marginBottom: 4 }}>
+                  SUPPLIER / DIVISION *
+                </label>
+                <input
+                  className="input-field"
+                  value={editSupplier}
+                  onChange={(e) => setEditSupplier(e.target.value)}
+                  placeholder="e.g. BEL Synthetic Procurement Div."
+                  style={{ fontSize: "0.8125rem" }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#cbd5e1", marginBottom: 4 }}>
+                  LIFECYCLE STATE *
+                </label>
+                <select
+                  className="input-field"
+                  value={editLifecycle}
+                  onChange={(e) => setEditLifecycle(e.target.value as LifecycleState)}
+                  style={{ fontSize: "0.8125rem" }}
+                >
+                  <option value="UNREGISTERED">UNREGISTERED</option>
+                  <option value="SUPPLIER_DECLARED">SUPPLIER_DECLARED</option>
+                  <option value="RECEIVED">RECEIVED</option>
+                  <option value="INSPECTION_RECORDED">INSPECTION_RECORDED</option>
+                  <option value="ACCEPTED_FOR_ASSEMBLY">ACCEPTED_FOR_ASSEMBLY</option>
+                  <option value="REJECTED_QUARANTINED">REJECTED_QUARANTINED</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#cbd5e1", marginBottom: 4 }}>
+                DESCRIPTION & TECHNICAL SPECIFICATIONS
+              </label>
+              <textarea
+                className="input-field"
+                rows={3}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Enter technical notes, revision parameters, or physical observations…"
+                style={{ fontSize: "0.8125rem", lineHeight: 1.4 }}
+              />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, borderTop: "1px solid #152b4a", paddingTop: 14 }}>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="btn-secondary"
+                style={{ fontSize: "0.8125rem" }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary"
+                style={{ fontSize: "0.8125rem", padding: "8px 18px" }}
+              >
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ borderBottom: "1px solid #1e3a60", marginBottom: 24, overflowX: "auto" }}>
