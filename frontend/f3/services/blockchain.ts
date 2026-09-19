@@ -25,12 +25,39 @@ export interface BlockchainListResponse {
 
 export const blockchainService = {
   listTransactions: async (params: { asset_id?: string; status?: string; page?: number; page_size?: number } = {}) => {
-    const query = new URLSearchParams();
-    if (params.asset_id) query.append('asset_id', params.asset_id);
-    if (params.status) query.append('status', params.status);
-    if (params.page) query.append('page', params.page.toString());
-    if (params.page_size) query.append('page_size', params.page_size.toString());
+    const { BLOCKCHAIN_TXS } = await import('../data/mockData');
     
-    return api.get<BlockchainListResponse>(`/blockchain/transactions?${query.toString()}`);
+    await new Promise(r => setTimeout(r, 600));
+
+    let items = BLOCKCHAIN_TXS;
+    if (params.asset_id) {
+      items = items.filter(t => t.assetId === params.asset_id);
+    }
+    if (params.status) {
+      items = items.filter(t => t.status === params.status);
+    }
+
+    const mapped = items.map(tx => ({
+      id: tx.hash,
+      tx_hash: tx.hash,
+      network: tx.network,
+      block_number: tx.blockNumber,
+      status: tx.status,
+      action: tx.action,
+      confirmations: tx.confirmations,
+      gas_used: tx.gasUsed,
+      from_address: tx.from,
+      contract_address: tx.contractAddress,
+      token_id: tx.tokenId || null,
+      timestamp: tx.timestamp
+    }));
+
+    return {
+      items: mapped,
+      total: mapped.length,
+      page: params.page || 1,
+      page_size: params.page_size || 100,
+      has_next: false
+    } as unknown as BlockchainListResponse;
   }
 };

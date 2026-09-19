@@ -26,12 +26,39 @@ export interface EvidenceListResponse {
 
 export const evidenceService = {
   listEvidence: async (params: { asset_id?: string; event_type?: string; page?: number; page_size?: number } = {}) => {
-    const query = new URLSearchParams();
-    if (params.asset_id) query.append('asset_id', params.asset_id);
-    if (params.event_type) query.append('event_type', params.event_type);
-    if (params.page) query.append('page', params.page.toString());
-    if (params.page_size) query.append('page_size', params.page_size.toString());
+    // Demo implementation using mockData
+    const { EVIDENCE_LIST } = await import('../data/mockData');
     
-    return api.get<EvidenceListResponse>(`/evidence?${query.toString()}`);
+    // Simulate network delay
+    await new Promise(r => setTimeout(r, 600));
+
+    let items = EVIDENCE_LIST;
+    if (params.asset_id) {
+      items = items.filter(e => e.assetId === params.asset_id);
+    }
+
+    const mapped = items.map(e => ({
+      id: e.id,
+      evidence_id: e.id,
+      asset_id: e.assetId,
+      filename: e.filename,
+      type: e.type,
+      mime_type: e.mimeType,
+      size_kb: e.sizeKb,
+      status: e.status,
+      hash: e.hash,
+      event: e.event,
+      integrity_verified: e.integrityVerified,
+      blockchain_tx: e.blockchainTx || null,
+      created_at: e.uploadedAt
+    }));
+
+    return {
+      items: mapped,
+      total: mapped.length,
+      page: params.page || 1,
+      page_size: params.page_size || 100,
+      has_next: false
+    } as unknown as EvidenceListResponse;
   }
 };

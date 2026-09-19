@@ -15,6 +15,24 @@ export interface DashboardSummary {
 
 export const dashboardService = {
   getSummary: async () => {
-    return api.get<DashboardSummary>('/dashboard/summary');
+    await new Promise(r => setTimeout(r, 600));
+    return {
+      total_assets: 5,
+      active_users: 12,
+      pending_users: 2,
+      total_certifications: 2,
+      pending_certifications: 1,
+      confirmed_certifications: 1,
+      total_blockchain_txs: 3,
+      total_audit_events: 7,
+      lifecycle_breakdown: {
+        ACCEPTED_FOR_ASSEMBLY: 1,
+        INSPECTION_RECORDED: 1,
+        REJECTED_QUARANTINED: 1,
+        RECEIVED: 1,
+        SUPPLIER_DECLARED: 1
+      },
+      failed_verifications: 1
+    } as DashboardSummary;
   }
 };

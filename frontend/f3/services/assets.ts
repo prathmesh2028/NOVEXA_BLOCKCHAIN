@@ -31,16 +31,71 @@ export interface AssetListResponse {
 
 export const assetService = {
   listAssets: async (params: { search?: string; lifecycle?: string; page?: number; page_size?: number } = {}) => {
-    const query = new URLSearchParams();
-    if (params.search) query.append('search', params.search);
-    if (params.lifecycle) query.append('lifecycle', params.lifecycle);
-    if (params.page) query.append('page', params.page.toString());
-    if (params.page_size) query.append('page_size', params.page_size.toString());
+    const { ASSETS } = await import('../data/mockData');
     
-    return api.get<AssetListResponse>(`/assets?${query.toString()}`);
+    await new Promise(r => setTimeout(r, 600));
+
+    let items = ASSETS;
+    if (params.search) {
+      const q = params.search.toLowerCase();
+      items = items.filter(a => a.id.toLowerCase().includes(q) || a.batchId.toLowerCase().includes(q) || a.type.toLowerCase().includes(q));
+    }
+    if (params.lifecycle && params.lifecycle !== "ALL") {
+      items = items.filter(a => a.lifecycle === params.lifecycle);
+    }
+
+    const mapped = items.map(a => ({
+      id: a.id,
+      asset_id: a.id,
+      batch_id: a.batchId,
+      type: a.type,
+      model: a.model,
+      serial_number: a.serialNumber,
+      lifecycle_state: a.lifecycle,
+      verification_status: a.verification,
+      evidence_count: a.evidenceCount,
+      evidence_status: a.evidenceStatus,
+      cert_status: a.certStatus,
+      cert_id: a.certId || null,
+      supplier: a.supplier,
+      description: a.description,
+      registered_by_name: a.registeredBy,
+      created_at: a.registeredAt,
+      updated_at: a.updatedAt
+    }));
+
+    return {
+      items: mapped,
+      total: mapped.length,
+      page: params.page || 1,
+      page_size: params.page_size || 100,
+      has_next: false
+    } as unknown as AssetListResponse;
   },
 
   getAsset: async (id: string) => {
-    return api.get<AssetResponse>(`/assets/${id}`);
+    const { ASSETS } = await import('../data/mockData');
+    await new Promise(r => setTimeout(r, 400));
+    const a = ASSETS.find(a => a.id === id);
+    if (!a) throw new Error("Not found");
+    return {
+      id: a.id,
+      asset_id: a.id,
+      batch_id: a.batchId,
+      type: a.type,
+      model: a.model,
+      serial_number: a.serialNumber,
+      lifecycle_state: a.lifecycle,
+      verification_status: a.verification,
+      evidence_count: a.evidenceCount,
+      evidence_status: a.evidenceStatus,
+      cert_status: a.certStatus,
+      cert_id: a.certId || null,
+      supplier: a.supplier,
+      description: a.description,
+      registered_by_name: a.registeredBy,
+      created_at: a.registeredAt,
+      updated_at: a.updatedAt
+    } as AssetResponse;
   }
 };

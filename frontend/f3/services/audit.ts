@@ -24,13 +24,38 @@ export interface AuditListResponse {
 
 export const auditService = {
   listAuditEvents: async (params: { resource_id?: string; event_type?: string; actor_role?: string; page?: number; page_size?: number } = {}) => {
-    const query = new URLSearchParams();
-    if (params.resource_id) query.append('resource_id', params.resource_id);
-    if (params.event_type) query.append('event_type', params.event_type);
-    if (params.actor_role) query.append('actor_role', params.actor_role);
-    if (params.page) query.append('page', params.page.toString());
-    if (params.page_size) query.append('page_size', params.page_size.toString());
+    const { AUDIT_EVENTS } = await import('../data/mockData');
     
-    return api.get<AuditListResponse>(`/audit/events?${query.toString()}`);
+    await new Promise(r => setTimeout(r, 600));
+
+    let items = AUDIT_EVENTS;
+    if (params.resource_id) {
+      items = items.filter(e => e.assetId === params.resource_id || e.evidenceId === params.resource_id || e.certId === params.resource_id);
+    }
+    if (params.actor_role) {
+      items = items.filter(e => e.actorRole === params.actor_role);
+    }
+
+    const mapped = items.map(e => ({
+      id: e.id,
+      event_type: e.action, // Approx mapping
+      actor_did: e.actorDid,
+      actor_role: e.actorRole,
+      action: e.action,
+      resource_type: e.assetId ? 'Asset' : (e.evidenceId ? 'Evidence' : 'System'),
+      resource_id: e.assetId || e.evidenceId || e.certId || 'SYS',
+      timestamp: e.timestamp,
+      result: e.result,
+      details: e.details,
+      blockchain_tx_hash: e.blockchainTx || null
+    }));
+
+    return {
+      items: mapped,
+      total: mapped.length,
+      page: params.page || 1,
+      page_size: params.page_size || 100,
+      has_next: false
+    } as unknown as AuditListResponse;
   }
 };
