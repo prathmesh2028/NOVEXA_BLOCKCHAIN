@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional, Inject } f
 import { OutboxService } from './outbox.service';
 import { BlockchainAdapter } from '../blockchain/blockchain.adapter';
 import { PrismaService } from '../../core/database/prisma.service';
-import { NotificationPort } from '../../notifications/notification.port';
+import { INotificationPort, NOTIFICATION_PORT } from '../../notifications/notification.port';
 import { AuditService } from '../../asset-management/audit/audit.service';
 import { ConfigService } from '../../core/config/config.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,7 +32,7 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     private readonly outboxService: OutboxService,
     private readonly blockchainAdapter: BlockchainAdapter,
     private readonly prisma: PrismaService,
-    @Optional() @Inject('NotificationPort') private readonly notificationsService?: NotificationPort,
+    @Optional() @Inject(NOTIFICATION_PORT) private readonly notificationsService?: INotificationPort,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
     @Optional() @Inject(ConfigService) private readonly configService?: ConfigService,
   ) {}
