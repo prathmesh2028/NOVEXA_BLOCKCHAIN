@@ -4,9 +4,13 @@ import * as crypto from 'crypto';
 
 /**
  * Identity Service — DID management (did:web) and W3C VC 2.0 credential operations.
- * 
+ *
  * LIMITATION: did:web resolution is prototype-only in this version.
  * Full resolution requires a publicly accessible web server to host DID documents.
+ *
+ * @deprecated UNUSED SCAFFOLD — this service has no controller and is not called by
+ * any other service as of the Part A review (2026-09-19). The implementation is
+ * functional but unreachable at runtime. See IdentityModule for disposal instructions.
  */
 @Injectable()
 export class IdentityService {

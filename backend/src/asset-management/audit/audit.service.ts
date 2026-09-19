@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { MerkleService } from './merkle.service';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class AuditService {
   private readonly logger = new Logger(AuditService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly merkleService: MerkleService,
+  ) {}
 
   /**
    * Canonical serialization for hash chaining.
@@ -190,5 +194,19 @@ export class AuditService {
       this.logger.error(`Chain verification error: ${e.message}`);
       throw e;
     }
+  }
+
+  /**
+   * Compute a Merkle root for a set of audit event payloads.
+   */
+  async computeMerkleRoot(eventIds: string[]): Promise<string> {
+    const events = await this.prisma.auditEvent.findMany({
+      where: { id: { in: eventIds } },
+      select: { payloadHash: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    
+    const hashes = events.map(e => e.payloadHash).filter(h => h) as string[];
+    return this.merkleService.computeRoot(hashes);
   }
 }
