@@ -7,7 +7,13 @@ import { AuthModule } from '../identity/auth/auth.module';
 @Module({
   imports: [PrismaModule, AuthModule],
   controllers: [NotificationsController],
-  providers: [NotificationsService],
-  exports: [NotificationsService],
+  providers: [
+    NotificationsService,
+    {
+      provide: 'NotificationPort',
+      useExisting: NotificationsService,
+    },
+  ],
+  exports: [NotificationsService, 'NotificationPort'],
 })
 export class NotificationsModule {}

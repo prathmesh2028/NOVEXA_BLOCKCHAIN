@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import * as QRCode from 'qrcode';
@@ -11,6 +11,27 @@ export class AssetsService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
   ) {}
+
+  private getSupplierDomain(email?: string): string | null {
+    if (!email) return null;
+    const parts = email.split('@');
+    return parts.length > 1 ? parts[1] : null;
+  }
+
+  private async enforceAssetAccess(asset: any, user: any) {
+    if (!user || user.roles.includes('ADMIN') || user.roles.includes('AUDITOR')) return;
+    if (!asset.registeredById) return;
+    if (asset.registeredById === user.sub) return;
+
+    const creator = await this.prisma.user.findUnique({ where: { id: asset.registeredById } });
+    if (creator) {
+      const creatorDomain = this.getSupplierDomain(creator.email);
+      const userDomain = this.getSupplierDomain(user.email);
+      if (creatorDomain && userDomain && creatorDomain !== userDomain) {
+        throw new ForbiddenException('You do not have permission to access data from another supplier');
+      }
+    }
+  }
 
   private mapAsset(a: any) {
     return {
@@ -53,12 +74,24 @@ export class AssetsService {
     lifecycle?: string;
     page?: number;
     page_size?: number;
+    user?: any;
   }) {
     const page = params.page || 1;
     const pageSize = params.page_size || 20;
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
+
+    if (params.user && !params.user.roles.includes('ADMIN') && !params.user.roles.includes('AUDITOR')) {
+      const userDomain = this.getSupplierDomain(params.user.email);
+      if (userDomain) {
+        const usersInDomain = await this.prisma.user.findMany({
+          where: { email: { endsWith: `@${userDomain}` } },
+          select: { id: true },
+        });
+        where.registeredById = { in: usersInDomain.map(u => u.id) };
+      }
+    }
 
     if (params.search) {
       where.OR = [
@@ -145,7 +178,7 @@ export class AssetsService {
     };
   }
 
-  async getAsset(id: string) {
+  async getAsset(id: string, user?: any) {
     try {
       let asset = await this.prisma.asset.findUnique({
         where: { id },
@@ -163,9 +196,13 @@ export class AssetsService {
         throw new NotFoundException(`Asset ${id} not found`);
       }
 
+      if (user) {
+        await this.enforceAssetAccess(asset, user);
+      }
+
       return this.mapAsset(asset);
     } catch (e: any) {
-      if (e instanceof NotFoundException) throw e;
+      if (e instanceof NotFoundException || e instanceof ForbiddenException) throw e;
       if (process.env.APP_ENV !== 'demo') throw e;
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS.find(a => a.id === id);
       if (fallback) {
@@ -277,7 +314,7 @@ export class AssetsService {
    * Assets in ACCEPTED_FOR_ASSEMBLY state with at least one integrity-verified evidence item.
    * These are the pool from which NFT_CREATOR can initiate certification.
    */
-  async getEligibleAssets(params: { page?: number; page_size?: number } = {}) {
+  async getEligibleAssets(params: { page?: number; page_size?: number; user?: any } = {}) {
     const page = params.page || 1;
     const pageSize = params.page_size || 20;
     const skip = (page - 1) * pageSize;
@@ -287,6 +324,17 @@ export class AssetsService {
         lifecycleState: 'ACCEPTED_FOR_ASSEMBLY',
         certStatus: { not: 'CONFIRMED' }, // not already certified
       };
+
+      if (params.user && !params.user.roles.includes('ADMIN') && !params.user.roles.includes('AUDITOR')) {
+        const userDomain = this.getSupplierDomain(params.user.email);
+        if (userDomain) {
+          const usersInDomain = await this.prisma.user.findMany({
+            where: { email: { endsWith: `@${userDomain}` } },
+            select: { id: true },
+          });
+          where.registeredById = { in: usersInDomain.map(u => u.id) };
+        }
+      }
 
       const [dbAssets, dbTotal] = await Promise.all([
         this.prisma.asset.findMany({
@@ -367,8 +415,8 @@ export class AssetsService {
     }
   }
 
-  async getAssetQr(id: string) {
-    const asset = await this.getAsset(id);
+  async getAssetQr(id: string, user?: any) {
+    const asset = await this.getAsset(id, user);
     const verificationUrl = `${process.env.APP_URL || 'http://localhost:8443'}/app/verification?id=${asset.asset_id || asset.id}`;
     const qrPayload = JSON.stringify({
       asset_id: asset.asset_id || asset.id,

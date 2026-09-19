@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, ConflictException, ForbiddenException, Optional, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { NotificationsService } from '../../notifications/notifications.service';
+import { NotificationPort } from '../../notifications/notification.port';
 import { AuditService } from '../audit/audit.service';
 import { AppRole, LifecycleState } from '@prisma/client';
 
@@ -37,7 +37,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly prisma: PrismaService,
-    @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
+    @Optional() @Inject('NotificationPort') private readonly notificationsService?: NotificationPort,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
   ) {}
 
@@ -156,6 +156,21 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
         // Check evidence requirement
         if (rule.requiresEvidence && (!params.evidenceIds || params.evidenceIds.length === 0)) {
           throw new BadRequestException('This transition requires evidence');
+        }
+
+        // IDOR/BOLA Check: ensure actor belongs to the same supplier as the asset
+        if (params.actorRole !== 'ADMIN' && params.actorRole !== 'SYSTEM' && params.actorRole !== 'AUDITOR') {
+          if (asset.registeredById && asset.registeredById !== params.actorId) {
+            const creator = await tx.user.findUnique({ where: { id: asset.registeredById } });
+            const actorUser = await tx.user.findUnique({ where: { id: params.actorId } });
+            if (creator && actorUser) {
+              const creatorDomain = creator.email.split('@')[1];
+              const actorDomain = actorUser.email.split('@')[1];
+              if (creatorDomain !== actorDomain) {
+                throw new ForbiddenException('You cannot transition an asset owned by another supplier');
+              }
+            }
+          }
         }
 
         // Check inspection requirement

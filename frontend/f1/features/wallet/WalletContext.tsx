@@ -23,12 +23,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // Sync wallet state with backend
   const syncWalletState = async (currentAddress: string) => {
+    // Only attempt to sync if user has an auth token, as /wallet requires JWT authentication
+    const token = localStorage.getItem('kavach_token');
+    if (!token) {
+      setWalletBinding(null);
+      return;
+    }
+
     try {
       const wallets = await walletApi.getWallets();
       const binding = wallets.find(w => w.address.toLowerCase() === currentAddress.toLowerCase());
       setWalletBinding(binding || null);
     } catch (err) {
-      console.error("Failed to sync wallet state", err);
+      console.warn("Could not sync wallet state with backend", err);
       setWalletBinding(null);
     }
   };
