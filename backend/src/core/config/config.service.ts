@@ -44,6 +44,9 @@ export class ConfigService {
   get blockchainPrivateKey(): string { return this.config.BLOCKCHAIN_PRIVATE_KEY; }
   get contractAddress(): string { return this.config.CONTRACT_ADDRESS; }
   get blockchainNetworkName(): string { return this.config.BLOCKCHAIN_NETWORK_NAME; }
+  get blockchainMode(): string { return this.config.BLOCKCHAIN_MODE; }
+  get blockchainConfirmationsRequired(): number { return this.config.BLOCKCHAIN_CONFIRMATIONS_REQUIRED; }
+  get defaultNftRecipient(): string { return this.config.DEFAULT_NFT_RECIPIENT || ''; }
 
   // Encryption
   get aesKey(): string { return this.config.AES_KEY; }

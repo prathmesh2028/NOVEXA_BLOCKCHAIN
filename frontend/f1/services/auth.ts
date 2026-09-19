@@ -34,6 +34,13 @@ export const authService = {
     return api.get<UserMeResponse>('/auth/me');
   },
 
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    return api.post<{ message: string }>('/auth/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
+  },
+
   logout: () => {
     localStorage.removeItem('kavach_token');
     // We don't necessarily need to call the backend logout for now, 

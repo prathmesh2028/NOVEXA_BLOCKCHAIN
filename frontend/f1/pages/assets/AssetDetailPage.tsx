@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
@@ -6,14 +6,50 @@ import LifecycleStepper from "../../components/ui/LifecycleStepper";
 import AuditTimeline from "../../components/ui/AuditTimeline";
 import VerificationPanel from "../../components/ui/VerificationPanel";
 import { ASSETS, EVIDENCE_LIST, AUDIT_EVENTS, CERTIFICATIONS, BLOCKCHAIN_TXS, formatDateTime, shortHash } from "../../data/mockData";
+import { assetService } from "../../services/assets";
+import { api } from "../../services/api";
 
 const TABS = ["Overview", "Technical", "Evidence", "Lifecycle", "Certification", "Blockchain", "Audit Trail"];
 
 export default function AssetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("Overview");
+  const [backendAsset, setBackendAsset] = useState<any>(null);
+  const [qrData, setQrData] = useState<any>(null);
 
-  const asset = ASSETS.find((a) => a.id === id);
+  useEffect(() => {
+    if (!id) return;
+    assetService.getAsset(id)
+      .then(res => setBackendAsset(res))
+      .catch(err => console.warn("Could not fetch asset from backend:", err));
+
+    api.get<any>(`/assets/${id}/qr`)
+      .then(res => setQrData(res))
+      .catch(err => console.warn("Could not fetch QR code:", err));
+  }, [id]);
+
+  const mockFallback = ASSETS.find((a) => a.id === id);
+
+  const asset = backendAsset ? {
+    ...mockFallback,
+    ...backendAsset,
+    id: backendAsset.asset_id || backendAsset.id,
+    batchId: backendAsset.batch_id || mockFallback?.batchId,
+    type: backendAsset.type || mockFallback?.type,
+    model: backendAsset.model || mockFallback?.model,
+    serialNumber: backendAsset.serial_number || mockFallback?.serialNumber,
+    supplier: backendAsset.supplier || mockFallback?.supplier,
+    lifecycle: backendAsset.lifecycle_state || mockFallback?.lifecycle,
+    verification: backendAsset.verification_status || mockFallback?.verification,
+    evidenceCount: backendAsset.evidence_count ?? mockFallback?.evidenceCount ?? 0,
+    certId: backendAsset.cert_id || mockFallback?.certId,
+    certStatus: backendAsset.cert_status || mockFallback?.certStatus,
+    registeredBy: backendAsset.registered_by_name || mockFallback?.registeredBy,
+    registeredAt: backendAsset.created_at || mockFallback?.registeredAt,
+    updatedAt: backendAsset.updated_at || mockFallback?.updatedAt,
+    description: backendAsset.description || mockFallback?.description,
+  } : mockFallback;
+
   if (!asset) {
     return (
       <div style={{ textAlign: "center", padding: "80px 24px" }}>
@@ -111,6 +147,28 @@ export default function AssetDetailPage() {
                 </div>
               ))}
             </div>
+
+            {qrData?.qr_data_url && (
+              <div className="panel" style={{ padding: 16, marginTop: 16, display: "flex", alignItems: "center", gap: 16 }}>
+                <img
+                  src={qrData.qr_data_url}
+                  alt={`QR for ${asset.id}`}
+                  style={{ width: 90, height: 90, borderRadius: 4, border: "1px solid #1e3a60", background: "#fff", padding: 2 }}
+                />
+                <div>
+                  <div className="section-label" style={{ marginBottom: 4 }}>PHYSICAL VERIFICATION QR</div>
+                  <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Scan with mobile or inspection terminal to verify on-chain integrity.</div>
+                  <a
+                    href={qrData.verification_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: "0.6875rem", color: "#3b82f6", display: "inline-block", marginTop: 4 }}
+                  >
+                    Open verification link ↗
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

@@ -34,7 +34,19 @@ export class BlockchainController {
   }
 
   @Get('status')
+  @UseGuards(JwtAuthGuard, CasbinGuard)
   async getStatus() {
+    return this.blockchainService.getStatus();
+  }
+
+  /**
+   * GET /blockchain/network
+   * Compatibility route — returns the same network/chain status as /blockchain/status.
+   * The frontend calls this path; the data source is identical.
+   */
+  @Get('network')
+  @UseGuards(JwtAuthGuard, CasbinGuard)
+  async getNetwork() {
     return this.blockchainService.getStatus();
   }
 }

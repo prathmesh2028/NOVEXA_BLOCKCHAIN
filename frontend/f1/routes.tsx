@@ -5,14 +5,23 @@ import LoginPage from "./pages/auth/LoginPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import AssetsPage from "./pages/assets/AssetsPage";
 import AssetDetailPage from "./pages/assets/AssetDetailPage";
+import EligibleAssetsPage from "./pages/assets/EligibleAssetsPage";
+import RegisterAssetPage from "./pages/assets/RegisterAssetPage";
+import MyAssetsPage from "./pages/assets/MyAssetsPage";
 import CertificationsPage from "./pages/certifications/CertificationsPage";
 import CertificationDetailPage from "./pages/certifications/CertificationDetailPage";
+import CertificationQueuePage from "./pages/certifications/CertificationQueuePage";
 import BlockchainPage from "./pages/blockchain/BlockchainPage";
+import BlockchainProofPage from "./pages/blockchain/BlockchainProofPage";
 import AuditPage from "./pages/audit/AuditPage";
 import UsersPage from "./pages/users/UsersPage";
 import RolesPage from "./pages/roles/RolesPage";
 import EvidencePage from "./pages/evidence/EvidencePage";
 import EvidenceDetailPage from "./pages/evidence/EvidenceDetailPage";
+import EvidenceIntegrityPage from "./pages/evidence/EvidenceIntegrityPage";
+import InspectionsPage from "./pages/inspections/InspectionsPage";
+import LifecyclePage from "./pages/lifecycle/LifecyclePage";
+import TechnicalRecordsPage from "./pages/technical-records/TechnicalRecordsPage";
 import VerificationCenterPage from "./pages/verification/VerificationCenterPage";
 import SearchPage from "./pages/search/SearchPage";
 import SettingsPage from "./pages/settings/SettingsPage";
@@ -49,15 +58,15 @@ export const router = createBrowserRouter([
       { path: "settings", Component: SettingsPage },
       {
         path: "system-activity",
-        Component: () => <StubPage title="System Activity" icon="◎" description="Chronological feed of all system-level events across the platform. Filter by date, actor, role, and action type." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: AuditPage,
       },
       {
         path: "eligible-assets",
-        Component: () => <StubPage title="Eligible Assets" icon="◈" description="Assets meeting the criteria for NFT certification — verified evidence, completed lifecycle, active identity permissions." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: EligibleAssetsPage,
       },
       {
         path: "certification-queue",
-        Component: () => <StubPage title="Certification Queue" icon="◆" description="Queue of assets eligible for certification. Review evidence, verify lifecycle state, and initiate minting." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: CertificationQueuePage,
       },
       {
         path: "history",
@@ -65,31 +74,31 @@ export const router = createBrowserRouter([
       },
       {
         path: "my-assets",
-        Component: () => <StubPage title="My Assets" icon="◈" description="Your assigned assets with quick access to registration updates, lifecycle tracking, and evidence management." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: MyAssetsPage,
       },
       {
         path: "register",
-        Component: () => <StubPage title="Register / Update Asset" icon="⊕" description="Register a new defence asset or update an existing asset record with technical data, evidence, and lifecycle information." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: RegisterAssetPage,
       },
       {
         path: "technical-records",
-        Component: () => <StubPage title="Technical Records" icon="☰" description="All technical data records associated with assets under your purview. View, filter, and update technical specifications." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: TechnicalRecordsPage,
       },
       {
         path: "inspections",
-        Component: () => <StubPage title="Inspections" icon="◌" description="Pending, in-progress, and completed inspection tasks on registered assets. Update inspection status and attach evidence." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: InspectionsPage,
       },
       {
         path: "lifecycle",
-        Component: () => <StubPage title="Lifecycle Management" icon="◷" description="Asset lifecycle progression from UNREGISTERED through SUPPLIER_DECLARED, RECEIVED, INSPECTION_RECORDED to terminal state." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: LifecyclePage,
       },
       {
         path: "evidence-integrity",
-        Component: () => <StubPage title="Evidence Integrity" icon="◫" description="Verify evidence integrity across all assets. Check SHA-256 fingerprint matching and blockchain anchoring status." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: EvidenceIntegrityPage,
       },
       {
         path: "blockchain-proof",
-        Component: () => <StubPage title="Blockchain Proof" icon="⬡" description="Verify blockchain proof for assets and certifications. Check transaction confirmation, block number, and on-chain status." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        Component: BlockchainProofPage,
       },
       {
         path: "audit-trail",

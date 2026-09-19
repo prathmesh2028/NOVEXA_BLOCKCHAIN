@@ -46,7 +46,12 @@ export class CasbinGuard implements CanActivate {
     
     // For REST conventions, fallback to HTTP method and path if action/resource are not explicitly set
     const reqAction = action || request.method;
-    const reqResource = resource || request.route.path;
+    const rawPath = request.originalUrl
+      ? request.originalUrl.split('?')[0]
+      : (request.baseUrl && request.route?.path
+          ? `${request.baseUrl}${request.route.path === '/' ? '' : request.route.path}`
+          : (request.route?.path || request.path || '/'));
+    const reqResource = resource || rawPath;
 
     const allowed = await this.casbinService.checkPermission(casbinRoles, reqResource, reqAction);
     

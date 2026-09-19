@@ -1,11 +1,39 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { CERTIFICATIONS, EVIDENCE_LIST, ASSETS, formatDateTime, shortHash } from "../../data/mockData";
+import { certificationService } from "../../services/certifications";
 
 export default function CertificationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const cert = CERTIFICATIONS.find((c) => c.id === id);
+  const [backendCert, setBackendCert] = useState<any>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    certificationService.getCertification(id)
+      .then(res => setBackendCert(res))
+      .catch(err => console.warn("Could not fetch certification from backend:", err));
+  }, [id]);
+
+  const mockFallback = CERTIFICATIONS.find((c) => c.id === id);
+  const cert = backendCert ? {
+    ...mockFallback,
+    ...backendCert,
+    id: backendCert.cert_id || backendCert.id,
+    assetId: backendCert.asset_id || mockFallback?.assetId,
+    batchId: backendCert.batch_id || mockFallback?.batchId,
+    tokenId: backendCert.token_id || mockFallback?.tokenId,
+    contractAddress: backendCert.contract_address || mockFallback?.contractAddress,
+    network: backendCert.network || mockFallback?.network,
+    txHash: backendCert.tx_hash || mockFallback?.txHash,
+    blockNumber: backendCert.block_number || mockFallback?.blockNumber,
+    status: backendCert.status || mockFallback?.status,
+    issuedBy: backendCert.issued_by || mockFallback?.issuedBy,
+    issuedAt: backendCert.issued_at || mockFallback?.issuedAt,
+    confirmedAt: backendCert.confirmed_at || mockFallback?.confirmedAt,
+    confirmations: backendCert.confirmations ?? mockFallback?.confirmations ?? 0,
+  } : mockFallback;
 
   if (!cert) {
     return (

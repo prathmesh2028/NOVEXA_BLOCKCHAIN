@@ -27,36 +27,56 @@ export class AuditService {
 
   /**
    * Append an audit event with hash chaining.
+   * Accepts an optional Prisma transaction client to preserve atomicity.
    * Normal APIs must not update or delete audit history.
    */
-  async recordEvent(data: {
-    eventType: string;
-    actorId?: string;
-    actorDid?: string;
-    actorRole?: string;
-    actorName?: string;
-    action: string;
-    resourceType?: string;
-    resourceId?: string;
-    result?: string;
-    details?: string;
-    payload?: any;
-    requestId?: string;
-    blockchainTxHash?: string;
-  }) {
+  async recordEvent(
+    data: {
+      eventType: string;
+      actorId?: string;
+      actorDid?: string;
+      actorRole?: string;
+      actorName?: string;
+      action: string;
+      resourceType?: string;
+      resourceId?: string;
+      result?: string;
+      details?: string;
+      payload?: any;
+      requestId?: string;
+      blockchainTxHash?: string;
+      classification?: any;
+    },
+    client?: any,
+  ) {
+    const db = client || this.prisma;
+
     // Get previous hash for chaining
-    const lastEvent = await this.prisma.auditEvent.findFirst({
+    const lastEvent = await db.auditEvent.findFirst({
       orderBy: { createdAt: 'desc' },
       select: { payloadHash: true },
     });
     const previousHash = lastEvent?.payloadHash || '0'.repeat(64);
 
-    // Compute payload hash
-    const payloadHash = crypto.createHash('sha256')
-      .update(JSON.stringify(data.payload || data))
-      .digest('hex');
+    // Compute canonical payload hash
+    const canonicalPayload = JSON.stringify({
+      eventType: data.eventType,
+      actorId: data.actorId,
+      actorDid: data.actorDid,
+      actorRole: data.actorRole,
+      action: data.action,
+      resourceType: data.resourceType,
+      resourceId: data.resourceId,
+      result: data.result || 'SUCCESS',
+      details: data.details,
+      payload: data.payload,
+      requestId: data.requestId,
+      blockchainTxHash: data.blockchainTxHash,
+      previousHash,
+    });
+    const payloadHash = crypto.createHash('sha256').update(canonicalPayload).digest('hex');
 
-    const event = await this.prisma.auditEvent.create({
+    const event = await db.auditEvent.create({
       data: {
         eventType: data.eventType,
         actorId: data.actorId,
@@ -73,6 +93,7 @@ export class AuditService {
         previousHash,
         requestId: data.requestId,
         blockchainTxHash: data.blockchainTxHash,
+        classification: data.classification || 'INTERNAL',
       },
     });
 
@@ -108,14 +129,17 @@ export class AuditService {
       events = dbEvents;
       total = dbTotal;
     } catch (e: any) {
-      const fallback = (await import('../../core/common/fallback-data')).FALLBACK_AUDIT_EVENTS;
-      return {
-        items: fallback,
-        total: fallback.length,
-        page,
-        page_size: pageSize,
-        has_next: false,
-      };
+      if (process.env.APP_ENV === 'demo') {
+        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_AUDIT_EVENTS;
+        return {
+          items: fallback,
+          total: fallback.length,
+          page,
+          page_size: pageSize,
+          has_next: false,
+        };
+      }
+      throw e;
     }
 
     return {
@@ -148,17 +172,23 @@ export class AuditService {
         take: limit,
       });
 
+      if (events.length === 0) {
+        return { valid: true, checked: 0 };
+      }
+
       let previousHash = '0'.repeat(64);
-      for (const event of events) {
-        if (event.previousHash !== previousHash) {
-          return { valid: false, checked: events.indexOf(event), brokenAt: event.id };
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        if (!event.payloadHash || !event.previousHash || event.previousHash !== previousHash) {
+          return { valid: false, checked: i, brokenAt: event.id };
         }
-        previousHash = event.payloadHash || '';
+        previousHash = event.payloadHash;
       }
 
       return { valid: true, checked: events.length };
     } catch (e: any) {
-      return { valid: true, checked: 2 };
+      this.logger.error(`Chain verification error: ${e.message}`);
+      throw e;
     }
   }
 }
