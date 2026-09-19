@@ -198,12 +198,16 @@ model Asset {
   registeredByName   String?            @map("registered_by_name")
   classification     DataClassification @default(INTERNAL)
   version            Int                @default(1)
+  inspectionDueDate  DateTime?          @map("inspection_due_date")
+  shelfLifeExpiry    DateTime?          @map("shelf_life_expiry")
+  warrantyExpiry     DateTime?          @map("warranty_expiry")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
   batch              Batch              @relation(fields: [batchRefId], references: [id])
   evidence           Evidence[]
   inspections        Inspection[]
+  approvals          Approval[]
   lifecycleEvents    LifecycleEvent[]
   certifications     Certification[]
   technicalRecords   TechnicalRecord[]
@@ -542,3 +546,86 @@ model WalletChallenge {
 
   @@map("wallet_challenges")
 }
+
+// ═══════════════════════════════════════════════════════
+// APPROVAL TRACKING DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStage {
+  QA_REVIEW
+  QC_SIGN_OFF
+  COMMAND_AUTHORIZATION
+  CERTIFICATION_CLEARANCE
+}
+
+model Approval {
+  id               String         @id @default(uuid())
+  approvalId       String         @unique @map("approval_id") // Display ID e.g. "APR-2026-001"
+  assetId          String         @map("asset_id")
+  entityType       String         @map("entity_type") // ASSET, INSPECTION, CERTIFICATION, LIFECYCLE
+  entityId         String         @map("entity_id")
+  stage            ApprovalStage  @default(QA_REVIEW)
+  status           ApprovalStatus @default(PENDING)
+  requestedById    String         @map("requested_by_id")
+  requestedByName  String?        @map("requested_by_name")
+  requestedByRole  String?        @map("requested_by_role")
+  approverId       String?        @map("approver_id")
+  approverName     String?        @map("approver_name")
+  approverRole     AppRole?       @map("approver_role")
+  comments         String?
+  digitalSignature String?        @map("digital_signature")
+  decidedAt        DateTime?      @map("decided_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@index([status, stage])
+  @@index([assetId])
+  @@map("approvals")
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTIFICATION & ALERT DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum NotificationType {
+  EXPIRY_WARNING
+  APPROVAL_REQUIRED
+  APPROVAL_DECIDED
+  INSPECTION_FAILED
+  CERTIFICATION_MINTED
+  SYSTEM_ALERT
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Notification {
+  id            String               @id @default(uuid())
+  recipientId   String?              @map("recipient_id")
+  recipientRole AppRole?             @map("recipient_role")
+  title         String
+  message       String
+  type          NotificationType     @default(SYSTEM_ALERT)
+  severity      NotificationSeverity @default(INFO)
+  isRead        Boolean              @default(false) @map("is_read")
+  link          String?
+  metadata      Json?
+  createdAt     DateTime             @default(now()) @map("created_at")
+  readAt        DateTime?            @map("read_at")
+
+  @@index([recipientId, isRead])
+  @@index([recipientRole, isRead])
+  @@map("notifications")
+}
+

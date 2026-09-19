@@ -1,11 +1,15 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class InspectionsService {
   private readonly logger = new Logger(InspectionsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async recordInspection(data: {
     assetId: string;
@@ -36,9 +40,9 @@ export class InspectionsService {
           },
         });
 
-        // Audit
-        await tx.auditEvent.create({
-          data: {
+        // Audit via canonical AuditService
+        await this.auditService.recordEvent(
+          {
             eventType: 'INSPECTION_RECORDED',
             actorId: data.inspectorId,
             actorDid: data.inspectorDid,
@@ -48,7 +52,8 @@ export class InspectionsService {
             result: data.result === 'FAIL' ? 'WARNING' : 'SUCCESS',
             details: data.notes || `Inspection result: ${data.result}`,
           },
-        });
+          tx,
+        );
 
         return insp;
       });
@@ -56,6 +61,7 @@ export class InspectionsService {
       return inspection;
     } catch (e: any) {
       if (e instanceof BadRequestException) throw e;
+      if (process.env.APP_ENV !== 'demo') throw e;
       this.logger.warn(`Database offline, returning mock inspection record: ${e.message}`);
       return {
         id: `mock-insp-${Date.now()}`,
@@ -84,6 +90,7 @@ export class InspectionsService {
         total: items.length,
       };
     } catch (e: any) {
+      if (process.env.APP_ENV !== 'demo') throw e;
       this.logger.warn(`Database offline, returning fallback inspections: ${e.message}`);
       const fallback = [
         {

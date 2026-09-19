@@ -7,6 +7,7 @@ import {
   Body,
   UseGuards,
   Req,
+  Res,
   BadRequestException,
 } from '@nestjs/common';
 import { EvidenceService } from './evidence.service';
@@ -53,6 +54,16 @@ export class EvidenceController {
   @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
   async getIntegrityReport(@Param('assetId') assetId: string) {
     return this.evidenceService.getIntegrityReport(assetId);
+  }
+
+  @Get(':id/download')
+  async downloadEvidence(@Param('id') id: string, @Res() res: any) {
+    const file = await this.evidenceService.downloadEvidence(id);
+    const sanitizedFilename = (file.filename || 'evidence').replace(/["\r\n\/\\]/g, '_');
+    res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
+    res.setHeader('Content-Length', file.buffer.length);
+    res.end(file.buffer);
   }
 
   @Get(':id')

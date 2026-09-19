@@ -7,7 +7,7 @@ export const FALLBACK_USERS = [
   {
     id: 'USR-001',
     name: 'Arjun Mehta',
-    email: 'admin@kavachtrust.bel.in',
+    email: 'admin@kavachtrust.gov.in',
     status: 'ACTIVE',
     role: 'ADMIN',
     roles: ['ADMIN'],
@@ -29,7 +29,7 @@ export const FALLBACK_USERS = [
   {
     id: 'USR-001-ALT',
     name: 'Arjun Mehta',
-    email: 'a.mehta@bel-defence.in',
+    email: 'admin@kavachtrust.bel.in',
     status: 'ACTIVE',
     role: 'ADMIN',
     roles: ['ADMIN'],
@@ -51,7 +51,7 @@ export const FALLBACK_USERS = [
   {
     id: 'USR-002',
     name: 'Priya Sharma',
-    email: 'nft@kavachtrust.bel.in',
+    email: 'nft@kavachtrust.gov.in',
     status: 'ACTIVE',
     role: 'NFT_CREATOR',
     roles: ['NFT_CREATOR'],
@@ -73,7 +73,7 @@ export const FALLBACK_USERS = [
   {
     id: 'USR-003',
     name: 'Rajesh Kumar',
-    email: 'tech@kavachtrust.bel.in',
+    email: 'tech@kavachtrust.gov.in',
     status: 'ACTIVE',
     role: 'TECHNICIAN',
     roles: ['TECHNICIAN'],
@@ -569,3 +569,146 @@ export const FALLBACK_DASHBOARD_SUMMARY = {
   recentActivity: FALLBACK_AUDIT_EVENTS,
 };
 
+/**
+ * FALLBACK_APPROVALS_ITEMS
+ * Demo fallback items for approval workflows when PostgreSQL is offline.
+ */
+export const FALLBACK_APPROVALS_ITEMS: any[] = [
+  {
+    id: 'apr-001-uuid',
+    approvalId: 'APR-2026-00001',
+    assetId: 'EF-2026-00421',
+    entityType: 'ASSET',
+    entityId: 'EF-2026-00421',
+    stage: 'QA_REVIEW',
+    status: 'PENDING',
+    requestedById: 'USR-003',
+    requestedByName: 'Rajesh Kumar',
+    requestedByRole: 'TECHNICIAN',
+    comments: 'TR-900 Transmitter Assembly ready for QA sign-off',
+    approverId: null,
+    approverName: null,
+    approverRole: null,
+    decidedAt: null,
+    createdAt: new Date('2026-09-17T09:00:00Z'),
+    updatedAt: new Date('2026-09-17T09:00:00Z'),
+    asset: {
+      id: 'EF-2026-00421',
+      assetId: 'EF-2026-00421',
+      serialNumber: 'BEL-RAD-2026-00421',
+      lifecycleState: 'INSPECTION',
+      model: 'BEL-TR-900',
+    },
+  },
+  {
+    id: 'apr-002-uuid',
+    approvalId: 'APR-2026-00002',
+    assetId: 'EF-2026-00422',
+    entityType: 'ASSET',
+    entityId: 'EF-2026-00422',
+    stage: 'FACTORY_ACCEPTANCE',
+    status: 'APPROVED',
+    requestedById: 'USR-003',
+    requestedByName: 'Rajesh Kumar',
+    requestedByRole: 'TECHNICIAN',
+    comments: 'Optical payload bench testing completed',
+    approverId: 'USR-001',
+    approverName: 'Arjun Mehta',
+    approverRole: 'ADMIN',
+    decidedAt: new Date('2026-09-16T14:30:00Z'),
+    createdAt: new Date('2026-09-16T11:00:00Z'),
+    updatedAt: new Date('2026-09-16T14:30:00Z'),
+    asset: {
+      id: 'EF-2026-00422',
+      assetId: 'EF-2026-00422',
+      serialNumber: 'BEL-OPT-2026-00812',
+      lifecycleState: 'ACCEPTED_FOR_ASSEMBLY',
+      model: 'BEL-OP-450',
+    },
+  },
+];
+
+/**
+ * FALLBACK_APPROVALS
+ * Approval queue requires database — there is no meaningful in-memory equivalent
+ * for a real approval workflow. In DEMO mode we return an explicitly empty list
+ * with a demo_mode flag so callers can distinguish "no approvals" from "DB down".
+ */
+export const FALLBACK_APPROVALS = {
+  items: FALLBACK_APPROVALS_ITEMS,
+  total: FALLBACK_APPROVALS_ITEMS.length,
+  page: 1,
+  pageSize: 20,
+  hasNext: false,
+  demo_mode: true,
+  demo_note: '[DEMO MODE] Database offline — served from synthetic fallback data',
+};
+
+/**
+ * FALLBACK_NOTIFICATIONS
+ * Fallback notifications for demo/offline mode.
+ */
+export const FALLBACK_NOTIFICATIONS = [
+  {
+    id: 'NTF-001',
+    recipientId: null,
+    recipientRole: 'ADMIN',
+    title: 'System Operational — Demo Fallback Mode',
+    message: 'KavachTrust is operating in demo/fallback mode without active PostgreSQL connection.',
+    type: 'SYSTEM_ALERT',
+    severity: 'INFO',
+    isRead: false,
+    link: null,
+    metadata: { demo_mode: true },
+    createdAt: new Date('2026-09-18T10:00:00.000Z'),
+    readAt: null,
+  },
+  {
+    id: 'NTF-002',
+    recipientId: null,
+    recipientRole: 'NFT_CREATOR',
+    title: 'Certification Queue Alert',
+    message: 'Asset EF-2026-00421 (BEL TR-900 Radar) is ready for NFT minting sign-off.',
+    type: 'CERTIFICATION_PENDING',
+    severity: 'WARNING',
+    isRead: false,
+    link: '/app/certifications',
+    metadata: { assetId: 'EF-2026-00421' },
+    createdAt: new Date('2026-09-18T09:30:00.000Z'),
+    readAt: null,
+  },
+  {
+    id: 'NTF-003',
+    recipientId: null,
+    recipientRole: 'TECHNICIAN',
+    title: 'Inspection Completed',
+    message: 'Optical Sensor EF-2026-00422 QA physical inspection passed successfully.',
+    type: 'LIFECYCLE_UPDATE',
+    severity: 'SUCCESS',
+    isRead: true,
+    link: '/app/assets/EF-2026-00422',
+    metadata: { assetId: 'EF-2026-00422' },
+    createdAt: new Date('2026-09-17T16:15:00.000Z'),
+    readAt: new Date('2026-09-17T17:00:00.000Z'),
+  },
+];
+
+/**
+ * DEMO_EMAIL_ALIASES
+ * Maps email variations across .gov.in and .bel.in domains.
+ * Allows frontend login with admin@kavachtrust.gov.in while preserving
+ * compatibility with legacy seed emails.
+ */
+export const DEMO_EMAIL_ALIASES: Record<string, string> = {
+  'admin@kavachtrust.gov.in': 'admin@kavachtrust.gov.in',
+  'admin@kavachtrust.bel.in': 'admin@kavachtrust.gov.in',
+  'a.mehta@bel-defence.in': 'admin@kavachtrust.gov.in',
+  'nft@kavachtrust.gov.in': 'nft@kavachtrust.gov.in',
+  'nft@kavachtrust.bel.in': 'nft@kavachtrust.gov.in',
+  'p.sharma@bel-defence.in': 'nft@kavachtrust.gov.in',
+  'tech@kavachtrust.gov.in': 'tech@kavachtrust.gov.in',
+  'tech@kavachtrust.bel.in': 'tech@kavachtrust.gov.in',
+  'r.kumar@bel-defence.in': 'tech@kavachtrust.gov.in',
+  'audit@dod.gov.in': 'audit@dod.gov.in',
+  'd.nair@bel-defence.in': 'audit@dod.gov.in',
+};

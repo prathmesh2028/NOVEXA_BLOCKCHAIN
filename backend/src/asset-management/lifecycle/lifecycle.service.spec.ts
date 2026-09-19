@@ -115,4 +115,75 @@ describe('LifecycleService', () => {
     // Should return existing without executing transaction
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
+
+  describe('detectAndFlagOverdueAssets', () => {
+    it('should detect assets past inspectionDueDate and flag them as INSPECTION_OVERDUE', async () => {
+      const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // yesterday
+      const overdueAsset = {
+        id: 'ast-overdue-1',
+        assetId: 'BEL-RADAR-001',
+        lifecycleState: 'RECEIVED',
+        inspectionDueDate: pastDate,
+        batch: { batchId: 'BATCH-001' },
+      };
+
+      mockPrisma.asset = {
+        findMany: vi.fn()
+          .mockResolvedValueOnce([overdueAsset]) // overdue query
+          .mockResolvedValueOnce([]),            // expiring soon query
+      };
+
+      const mockNotificationsService = {
+        createNotification: vi.fn().mockResolvedValue({ id: 'notif-1' }),
+      };
+
+      lifecycleService = new LifecycleService(mockPrisma, mockNotificationsService as any);
+
+      const result = await lifecycleService.detectAndFlagOverdueAssets('admin-user');
+
+      expect(result.overdueFlaggedCount).toBe(1);
+      expect(result.overdueAssets[0].assetId).toBe('BEL-RADAR-001');
+      expect(result.overdueAssets[0].status).toBe('FLAGGED_OVERDUE');
+      expect(mockTx.asset.update).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 'ast-overdue-1' },
+        data: expect.objectContaining({ lifecycleState: 'INSPECTION_OVERDUE' }),
+      }));
+      expect(mockNotificationsService.createNotification).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'EXPIRY_WARNING',
+        recipientRole: 'TECHNICIAN',
+      }));
+    });
+
+    it('should report zero overdue when all assets have future inspectionDueDate', async () => {
+      mockPrisma.asset = {
+        findMany: vi.fn()
+          .mockResolvedValueOnce([]) // no overdue
+          .mockResolvedValueOnce([]), // no expiring
+      };
+
+      const result = await lifecycleService.detectAndFlagOverdueAssets('admin-user');
+
+      expect(result.overdueFlaggedCount).toBe(0);
+      expect(result.overdueAssets).toHaveLength(0);
+    });
+  });
+
+  describe('getOverdueAssets', () => {
+    it('should query assets with INSPECTION_OVERDUE or past inspectionDueDate', async () => {
+      const mockOverdueList = [
+        { id: 'ast-1', assetId: 'BEL-100', lifecycleState: 'INSPECTION_OVERDUE' },
+      ];
+      mockPrisma.asset = {
+        findMany: vi.fn().mockResolvedValue(mockOverdueList),
+      };
+
+      const result = await lifecycleService.getOverdueAssets();
+      expect(result).toEqual(mockOverdueList);
+      expect(mockPrisma.asset.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.any(Array),
+        }),
+      }));
+    });
+  });
 });

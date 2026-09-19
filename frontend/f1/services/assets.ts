@@ -42,5 +42,17 @@ export const assetService = {
 
   getAsset: async (id: string) => {
     return api.get<AssetResponse>(`/assets/${id}`);
+  },
+
+  createAsset: async (data: {
+    assetId: string;
+    batchId: string;
+    type: string;
+    model: string;
+    serialNumber: string;
+    supplier?: string;
+    description?: string;
+  }) => {
+    return api.post<AssetResponse>('/assets', data);
   }
 };

@@ -1,11 +1,16 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { AuditService } from '../audit/audit.service';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class AssetsService {
   private readonly logger = new Logger(AssetsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   private mapAsset(a: any) {
     return {
@@ -87,8 +92,25 @@ export class AssetsService {
     } catch (e: any) {
       if (process.env.APP_ENV !== 'demo') throw e;
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS;
+      let filtered = [...fallback];
+      if (params.search) {
+        const q = params.search.toLowerCase().trim();
+        filtered = filtered.filter(a =>
+          a.id.toLowerCase().includes(q) ||
+          (a.serialNumber && a.serialNumber.toLowerCase().includes(q)) ||
+          (a.type && a.type.toLowerCase().includes(q)) ||
+          (a.model && a.model.toLowerCase().includes(q)) ||
+          (a.batchId && a.batchId.toLowerCase().includes(q)) ||
+          (a.supplier && a.supplier.toLowerCase().includes(q))
+        );
+      }
+      if (params.lifecycle && params.lifecycle !== 'ALL') {
+        filtered = filtered.filter(a => a.lifecycle === params.lifecycle);
+      }
+      const totalCount = filtered.length;
+      const paginated = filtered.slice(skip, skip + pageSize);
       return {
-        items: fallback.map(a => ({
+        items: paginated.map(a => ({
           id: a.id,
           asset_id: a.id,
           batch_id: a.batchId,
@@ -107,10 +129,10 @@ export class AssetsService {
           created_at: a.registeredAt,
           updated_at: a.updatedAt,
         })),
-        total: fallback.length,
+        total: totalCount,
         page,
         page_size: pageSize,
-        has_next: false,
+        has_next: skip + pageSize < totalCount,
       };
     }
 
@@ -210,23 +232,24 @@ export class AssetsService {
         include: { batch: true },
       });
 
-      await this.prisma.auditEvent.create({
-        data: {
-          eventType: 'ASSET_REGISTERED',
-          actorId: data.registeredById,
-          actorName: data.registeredByName,
-          action: `Asset registered — ${data.assetId}`,
-          resourceType: 'Asset',
-          resourceId: asset.id,
-          result: 'SUCCESS',
-          details: `Model: ${data.model} | Serial: ${data.serialNumber}`,
-        }
+      await this.auditService.recordEvent({
+        eventType: 'ASSET_REGISTERED',
+        actorId: data.registeredById,
+        actorName: data.registeredByName,
+        action: `Asset registered — ${data.assetId}`,
+        resourceType: 'Asset',
+        resourceId: asset.id,
+        result: 'SUCCESS',
+        details: `Model: ${data.model} | Serial: ${data.serialNumber}`,
       });
 
       return this.mapAsset(asset);
     } catch (e: any) {
+      if (process.env.APP_ENV !== 'demo') {
+        throw e;
+      }
       this.logger.warn('Database offline, returning mock created asset', e.message);
-      // Mock return for when DB is down
+      // Mock return for when DB is down in demo mode
       return {
         id: `mock-asset-${Date.now()}`,
         asset_id: data.assetId,
@@ -299,6 +322,7 @@ export class AssetsService {
         },
       };
     } catch (e: any) {
+      if (process.env.APP_ENV !== 'demo') throw e;
       // Fallback: filter fallback data
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS;
       let eligible = fallback.filter(
@@ -341,5 +365,36 @@ export class AssetsService {
         },
       };
     }
+  }
+
+  async getAssetQr(id: string) {
+    const asset = await this.getAsset(id);
+    const verificationUrl = `${process.env.APP_URL || 'http://localhost:8443'}/app/verification?id=${asset.asset_id || asset.id}`;
+    const qrPayload = JSON.stringify({
+      asset_id: asset.asset_id || asset.id,
+      serial_number: asset.serial_number,
+      batch_id: asset.batch_id,
+      type: asset.type,
+      model: asset.model,
+      verification_url: verificationUrl,
+      did: `did:kavachtrust:asset:${asset.asset_id || asset.id}`,
+    });
+
+    const qrDataUrl = await QRCode.toDataURL(qrPayload, {
+      errorCorrectionLevel: 'M',
+      margin: 2,
+      width: 280,
+      color: { dark: '#0284c7', light: '#ffffff' },
+    });
+
+    return {
+      asset_id: asset.asset_id || asset.id,
+      serial_number: asset.serial_number,
+      type: asset.type,
+      model: asset.model,
+      verification_url: verificationUrl,
+      qr_payload: qrPayload,
+      qr_data_url: qrDataUrl,
+    };
   }
 }

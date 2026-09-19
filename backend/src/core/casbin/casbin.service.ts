@@ -12,13 +12,17 @@ export class CasbinService implements OnModuleInit {
     try {
       const candidateModelPaths = [
         path.resolve(__dirname, 'model.conf'),
-        path.resolve(process.cwd(), 'src/common/casbin/model.conf'),
-        path.resolve(process.cwd(), 'backend/src/common/casbin/model.conf')
+        path.resolve(process.cwd(), 'src/core/casbin/model.conf'),
+        path.resolve(process.cwd(), 'backend/src/core/casbin/model.conf'),
+        path.resolve(__dirname, '../../src/core/casbin/model.conf'),
+        path.resolve(__dirname, '../../../src/core/casbin/model.conf'),
       ];
       const candidatePolicyPaths = [
         path.resolve(__dirname, 'policy.csv'),
-        path.resolve(process.cwd(), 'src/common/casbin/policy.csv'),
-        path.resolve(process.cwd(), 'backend/src/common/casbin/policy.csv')
+        path.resolve(process.cwd(), 'src/core/casbin/policy.csv'),
+        path.resolve(process.cwd(), 'backend/src/core/casbin/policy.csv'),
+        path.resolve(__dirname, '../../src/core/casbin/policy.csv'),
+        path.resolve(__dirname, '../../../src/core/casbin/policy.csv'),
       ];
 
       const modelFile = candidateModelPaths.find(p => fs.existsSync(p));
@@ -44,7 +48,11 @@ export class CasbinService implements OnModuleInit {
    * Check if the user with the given roles is allowed to access the resource with the action
    */
   async checkPermission(roles: string[], obj: string, act: string): Promise<boolean> {
-    if (!this.enforcer) return true;
+    // CRITICAL: Fail closed, not open. No enforcer = deny by default.
+    if (!this.enforcer) {
+      this.logger.error('Casbin enforcer not initialized — denying access (fail closed)');
+      return false;
+    }
     for (const role of roles) {
       const allowed = await this.enforcer.enforce(role, obj, act);
       if (allowed) {
