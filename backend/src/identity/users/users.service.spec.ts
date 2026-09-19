@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UsersService } from './users.service';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { AppRole } from '@prisma/client';
@@ -6,8 +6,12 @@ import { AppRole } from '@prisma/client';
 describe('UsersService', () => {
   let service: UsersService;
   let mockPrisma: any;
+  const originalEnv = { ...process.env };
 
   beforeEach(() => {
+    process.env.APP_ENV = 'demo';
+    process.env.NODE_ENV = 'demo';
+
     mockPrisma = {
       user: {
         create: vi.fn(),
@@ -16,6 +20,10 @@ describe('UsersService', () => {
       },
     };
     service = new UsersService(mockPrisma);
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
   });
 
   // ─── inviteUser ────────────────────────────────────────────────────────────
@@ -66,7 +74,8 @@ describe('UsersService', () => {
       ).rejects.toThrow(ConflictException);
     });
 
-    it('returns mock user when database is offline (non-P2002 error)', async () => {
+    it('returns mock user when database is offline in DEMO mode', async () => {
+      process.env.APP_ENV = 'demo';
       mockPrisma.user.create.mockRejectedValue(new Error('Connection refused'));
 
       const result = await service.inviteUser({
@@ -79,6 +88,20 @@ describe('UsersService', () => {
       expect(result.email).toBe('offline@example.com');
       expect(result.status).toBe('PENDING');
       expect(result.roles).toContain(AppRole.NFT_CREATOR);
+    });
+
+    it('throws database error when database is offline in NON-DEMO mode', async () => {
+      process.env.APP_ENV = 'production';
+      process.env.NODE_ENV = 'production';
+      mockPrisma.user.create.mockRejectedValue(new Error('Connection refused'));
+
+      await expect(
+        service.inviteUser({
+          email: 'offline@example.com',
+          name: 'Offline User',
+          role: AppRole.NFT_CREATOR,
+        }),
+      ).rejects.toThrow('Connection refused');
     });
   });
 
@@ -107,7 +130,8 @@ describe('UsersService', () => {
       expect(result.items[0].roles).toContain('ADMIN');
     });
 
-    it('falls back to FALLBACK_USERS when database is offline', async () => {
+    it('falls back to FALLBACK_USERS when database is offline in DEMO mode', async () => {
+      process.env.APP_ENV = 'demo';
       mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
       mockPrisma.user.count.mockRejectedValue(new Error('DB offline'));
 
@@ -120,7 +144,17 @@ describe('UsersService', () => {
       }
     });
 
-    it('filters by search term on fallback data', async () => {
+    it('throws database error when database is offline in NON-DEMO mode', async () => {
+      process.env.APP_ENV = 'production';
+      process.env.NODE_ENV = 'production';
+      mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
+      mockPrisma.user.count.mockRejectedValue(new Error('DB offline'));
+
+      await expect(service.listUsers({})).rejects.toThrow('DB offline');
+    });
+
+    it('filters by search term on fallback data in DEMO mode', async () => {
+      process.env.APP_ENV = 'demo';
       mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
 
       const result = await service.listUsers({ search: 'Arjun' });
@@ -128,7 +162,8 @@ describe('UsersService', () => {
       expect(result.items.every((u: any) => u.name.includes('Arjun'))).toBe(true);
     });
 
-    it('filters by role on fallback data', async () => {
+    it('filters by role on fallback data in DEMO mode', async () => {
+      process.env.APP_ENV = 'demo';
       mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
 
       const result = await service.listUsers({ role: 'ADMIN' });
