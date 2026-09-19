@@ -165,6 +165,8 @@ export class AuthService {
         },
       });
     } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) throw e;
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_USERS.find(u => u.id === userId);
       if (fallback) {
         return {
@@ -178,7 +180,8 @@ export class AuthService {
       }
     }
 
-    if (!user) {
+    const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+    if (!user && isDemoMode) {
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_USERS.find(u => u.id === userId || u.email === userId);
       if (fallback) {
         return {
@@ -190,6 +193,9 @@ export class AuthService {
           actor: fallback.actor,
         };
       }
+    }
+
+    if (!user) {
       throw new UnauthorizedException('User not found');
     }
 

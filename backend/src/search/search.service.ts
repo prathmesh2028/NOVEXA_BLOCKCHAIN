@@ -71,6 +71,10 @@ export class SearchService {
         });
       }
     } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        throw e;
+      }
       const q = query.toLowerCase();
       const { FALLBACK_ASSETS, FALLBACK_USERS, FALLBACK_CERTIFICATIONS, FALLBACK_TRANSACTIONS } = await import('../core/common/fallback-data');
 

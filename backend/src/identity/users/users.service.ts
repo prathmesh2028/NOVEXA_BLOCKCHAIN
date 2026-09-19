@@ -53,6 +53,12 @@ export class UsersService {
         throw new ConflictException(`A user with email '${data.email}' already exists`);
       }
 
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        this.logger.error(`Database failure during user invitation: ${e?.message}`, e?.stack);
+        throw e;
+      }
+
       // Demo/offline fallback — return a synthetic success response
       this.logger.warn(`Database unavailable, returning mock user (code: ${e?.code})`);
       const mockId = `user-${Date.now()}`;
@@ -112,6 +118,11 @@ export class UsersService {
       users = dbUsers;
       total = dbTotal;
     } catch (e: any) {
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        this.logger.error(`Database failure in listUsers: ${e?.message}`, e?.stack);
+        throw e;
+      }
       const fallback = (await import('../../core/common/fallback-data')).FALLBACK_USERS;
       // Exclude ALT variants — only return canonical users (no -ALT suffix IDs)
       const canonical = fallback.filter(

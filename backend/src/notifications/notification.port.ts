@@ -10,19 +10,21 @@ import { AppRole } from '@prisma/client';
  * that is actually called today. Do not expand it without a concrete
  * new call site in Part B that justifies the addition.
  *
- * Part B consumers should inject this by the NOTIFICATION_PORT token,
+ * Part B consumers should inject this by the NotificationPort / NOTIFICATION_PORT token,
  * not by the concrete NotificationsService class, to preserve the
  * boundary between Part A (notifications infrastructure) and Part B
  * (domain business logic).
  *
  * Injection example (Part B service):
  *
- *   @Optional() @Inject(NOTIFICATION_PORT)
- *   private readonly notificationPort?: INotificationPort,
+ *   @Inject('NotificationPort')
+ *   private readonly notificationsService: NotificationPort,
  */
 export interface INotificationPort {
   createNotification(data: CreateNotificationData): Promise<any>;
 }
+
+export type NotificationPort = INotificationPort;
 
 export interface CreateNotificationData {
   recipientId?: string;
@@ -36,8 +38,9 @@ export interface CreateNotificationData {
 }
 
 /**
- * Injection token for the INotificationPort.
+ * Injection token for the NotificationPort.
  * Use this in Part B @Inject() decorators so Part B never depends
  * on the NotificationsService class directly.
  */
-export const NOTIFICATION_PORT = Symbol('INotificationPort');
+export const NOTIFICATION_PORT = 'NotificationPort';
+export const NotificationPort = NOTIFICATION_PORT;
