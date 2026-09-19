@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { MinioService } from './minio.service';
 import { AuditService } from '../audit/audit.service';
@@ -13,6 +13,30 @@ export class EvidenceService {
     private readonly minio: MinioService,
     private readonly auditService: AuditService,
   ) {}
+
+  private getSupplierDomain(email?: string): string | null {
+    if (!email) return null;
+    const parts = email.split('@');
+    return parts.length > 1 ? parts[1] : null;
+  }
+
+  private async enforceAssetAccess(assetId: string, user: any) {
+    if (!user || user.roles.includes('ADMIN') || user.roles.includes('AUDITOR')) return;
+    const asset = await this.prisma.asset.findFirst({
+      where: { OR: [{ id: assetId }, { assetId: assetId }] },
+    });
+    if (!asset || !asset.registeredById) return;
+    if (asset.registeredById === user.sub) return;
+
+    const creator = await this.prisma.user.findUnique({ where: { id: asset.registeredById } });
+    if (creator) {
+      const creatorDomain = this.getSupplierDomain(creator.email);
+      const userDomain = this.getSupplierDomain(user.email);
+      if (creatorDomain && userDomain && creatorDomain !== userDomain) {
+        throw new ForbiddenException('You do not have permission to access evidence for another supplier');
+      }
+    }
+  }
 
   private mapEvidence(e: any) {
     // Map DB enum to frontend Title Case
@@ -43,6 +67,7 @@ export class EvidenceService {
     event_type?: string;
     page?: number;
     page_size?: number;
+    user?: any;
   }) {
     const page = params.page || 1;
     const pageSize = params.page_size || 20;
@@ -51,6 +76,28 @@ export class EvidenceService {
     const where: any = {};
     if (params.asset_id) where.assetId = params.asset_id;
     if (params.event_type) where.event = params.event_type;
+
+    if (params.user && !params.user.roles.includes('ADMIN') && !params.user.roles.includes('AUDITOR')) {
+      const userDomain = this.getSupplierDomain(params.user.email);
+      if (userDomain) {
+        const usersInDomain = await this.prisma.user.findMany({
+          where: { email: { endsWith: `@${userDomain}` } },
+          select: { id: true },
+        });
+        const assets = await this.prisma.asset.findMany({
+          where: { registeredById: { in: usersInDomain.map(u => u.id) } },
+          select: { id: true },
+        });
+        // If an asset filter is already provided, ensure it's in the allowed list
+        if (params.asset_id) {
+          if (!assets.some(a => a.id === params.asset_id)) {
+             where.assetId = 'NOT_FOUND_NO_ACCESS'; 
+          }
+        } else {
+          where.assetId = { in: assets.map(a => a.id) };
+        }
+      }
+    }
 
     let evidence: any[] = [];
     let total = 0;
@@ -104,13 +151,18 @@ export class EvidenceService {
     };
   }
 
-  async getEvidence(id: string) {
+  async getEvidence(id: string, user?: any) {
     try {
       let evidence = await this.prisma.evidence.findUnique({ where: { id } });
       if (!evidence) {
         evidence = await this.prisma.evidence.findUnique({ where: { evidenceId: id } });
       }
       if (!evidence) throw new NotFoundException(`Evidence ${id} not found`);
+      
+      if (user) {
+        await this.enforceAssetAccess(evidence.assetId, user);
+      }
+
       return this.mapEvidence(evidence);
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
@@ -189,6 +241,12 @@ export class EvidenceService {
         where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
       });
       if (!asset) throw new NotFoundException(`Asset ${data.assetId} not found`);
+
+      // Enforce access
+      const uploaderUser = { sub: data.uploadedById, email: data.uploadedByName || '', roles: [data.uploadedByRole] }; // minimal mock user if full not passed
+      if (data.uploadedById && data.uploadedByName) {
+        await this.enforceAssetAccess(asset.id, uploaderUser);
+      }
 
       // Upload to MinIO
       const objectName = `${asset.assetId}/${evidenceId}-${data.filename}`;
@@ -287,7 +345,7 @@ export class EvidenceService {
    * Re-reads stored hashes and returns a per-item integrity report.
    * In fallback mode: uses stored integrityVerified flag.
    */
-  async getIntegrityReport(assetId: string): Promise<{
+  async getIntegrityReport(assetId: string, user?: any): Promise<{
     asset_id: string;
     total: number;
     verified: number;
@@ -295,6 +353,10 @@ export class EvidenceService {
     items: any[];
     overall_integrity: 'VERIFIED' | 'PARTIAL' | 'FAILED' | 'NO_EVIDENCE';
   }> {
+    if (user) {
+      await this.enforceAssetAccess(assetId, user);
+    }
+    
     try {
       const evidence = await this.prisma.evidence.findMany({
         where: { assetId },
@@ -369,7 +431,7 @@ export class EvidenceService {
     };
   }
 
-  async downloadEvidence(id: string) {
+  async downloadEvidence(id: string, user?: any) {
     let evidence = await this.prisma.evidence.findUnique({ where: { id } });
     if (!evidence) {
       evidence = await this.prisma.evidence.findUnique({ where: { evidenceId: id } });
@@ -377,6 +439,11 @@ export class EvidenceService {
     if (!evidence) {
       throw new NotFoundException(`Evidence ${id} not found`);
     }
+    
+    if (user) {
+      await this.enforceAssetAccess(evidence.assetId, user);
+    }
+
     if (!evidence.objectKey) {
       throw new NotFoundException(`Evidence ${id} has no stored object key`);
     }

@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional, Inject } f
 import { OutboxService } from './outbox.service';
 import { BlockchainAdapter } from '../blockchain/blockchain.adapter';
 import { PrismaService } from '../../core/database/prisma.service';
-import { NotificationsService } from '../../notifications/notifications.service';
+import { NotificationPort } from '../../notifications/notification.port';
 import { AuditService } from '../../asset-management/audit/audit.service';
 import { ConfigService } from '../../core/config/config.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,7 +32,7 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     private readonly outboxService: OutboxService,
     private readonly blockchainAdapter: BlockchainAdapter,
     private readonly prisma: PrismaService,
-    @Optional() @Inject(NotificationsService) private readonly notificationsService?: NotificationsService,
+    @Optional() @Inject('NotificationPort') private readonly notificationsService?: NotificationPort,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
     @Optional() @Inject(ConfigService) private readonly configService?: ConfigService,
   ) {}
@@ -230,20 +230,14 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (result.status === 'FAILED' || !result.txHash) {
-      if (isDemo) {
-        const mockHash = `0xDEMO_${uuidv4().replace(/-/g, '')}`;
-        result = { txHash: mockHash, status: 'SIMULATED' };
-        this.logger.warn(`[DEMO MODE] Blockchain simulated confirmed transaction: ${mockHash}`);
-      } else {
-        await this.prisma.blockchainTransaction.update({
-          where: { id: txRecord.id },
-          data: {
-            status: 'FAILED',
-            errorMessage: 'Transaction submission failed: RPC unavailable or node rejected transaction',
-          },
-        });
-        throw new Error('Blockchain submission failed — node offline or transaction rejected');
-      }
+      await this.prisma.blockchainTransaction.update({
+        where: { id: txRecord.id },
+        data: {
+          status: 'FAILED',
+          errorMessage: 'Transaction submission failed: RPC unavailable or node rejected transaction',
+        },
+      });
+      throw new Error('Blockchain submission failed — node offline or transaction rejected');
     }
 
     let tokenId: string | null = null;
@@ -251,19 +245,14 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     let blockNumber: number | null = null;
     let gasUsed: number | null = null;
 
-    if (result.status === 'SIMULATED') {
-      tokenId = `demo-token-${Date.now()}`;
-      confirmations = 1;
-      blockNumber = 100;
-    } else {
-      // 1. Mark transaction as submitted
-      await this.prisma.blockchainTransaction.update({
-        where: { id: txRecord.id },
-        data: {
-          txHash: result.txHash,
-          status: 'SUBMITTED',
-        },
-      });
+    // 1. Mark transaction as submitted
+    await this.prisma.blockchainTransaction.update({
+      where: { id: txRecord.id },
+      data: {
+        txHash: result.txHash,
+        status: 'SUBMITTED',
+      },
+    });
 
       // 2. Fetch transaction receipt
       const receipt = await this.blockchainAdapter.getTransactionReceipt(result.txHash);
@@ -322,7 +311,6 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         this.logger.log(`Transaction ${result.txHash} mined with ${confirmations}/${requiredConfirmations} confirmations. Pending final confirmation.`);
         return { status: 'PENDING_CONFIRMATIONS' };
       }
-    }
 
     // 3. Update DB after confirmed receipt & confirmations reached
     await this.prisma.$transaction(async (tx) => {
