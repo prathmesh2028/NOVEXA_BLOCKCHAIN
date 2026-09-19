@@ -26,12 +26,14 @@ export class EvidenceController {
     @Query('event_type') eventType?: string,
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
+    @Req() req?: any,
   ) {
     return this.evidenceService.listEvidence({
       asset_id: assetId,
       event_type: eventType,
       page: page ? parseInt(page, 10) : undefined,
       page_size: pageSize ? parseInt(pageSize, 10) : undefined,
+      user: req?.user,
     });
   }
 
@@ -45,20 +47,20 @@ export class EvidenceController {
   @Get('integrity-report')
   @UseGuards(RolesGuard)
   @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
-  async getIntegrityReportByQuery(@Query('asset_id') assetId?: string) {
-    return this.evidenceService.getIntegrityReport(assetId || 'EF-2026-00421');
+  async getIntegrityReportByQuery(@Query('asset_id') assetId?: string, @Req() req?: any) {
+    return this.evidenceService.getIntegrityReport(assetId || 'EF-2026-00421', req?.user);
   }
 
   @Get('integrity-report/:assetId')
   @UseGuards(RolesGuard)
   @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
-  async getIntegrityReport(@Param('assetId') assetId: string) {
-    return this.evidenceService.getIntegrityReport(assetId);
+  async getIntegrityReport(@Param('assetId') assetId: string, @Req() req?: any) {
+    return this.evidenceService.getIntegrityReport(assetId, req?.user);
   }
 
   @Get(':id/download')
-  async downloadEvidence(@Param('id') id: string, @Res() res: any) {
-    const file = await this.evidenceService.downloadEvidence(id);
+  async downloadEvidence(@Param('id') id: string, @Res() res: any, @Req() req?: any) {
+    const file = await this.evidenceService.downloadEvidence(id, req?.user);
     const sanitizedFilename = (file.filename || 'evidence').replace(/["\r\n\/\\]/g, '_');
     res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
@@ -67,8 +69,8 @@ export class EvidenceController {
   }
 
   @Get(':id')
-  async getEvidence(@Param('id') id: string) {
-    return this.evidenceService.getEvidence(id);
+  async getEvidence(@Param('id') id: string, @Req() req?: any) {
+    return this.evidenceService.getEvidence(id, req?.user);
   }
 
   /**

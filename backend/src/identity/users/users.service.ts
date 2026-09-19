@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
+import { AppRole } from '@prisma/client';
+import { InviteUserDto } from './dto/invite-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -7,12 +9,21 @@ export class UsersService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async inviteUser(data: { email: string; name: string; role: string }) {
+  async inviteUser(data: InviteUserDto) {
+    // Guard: role must be a valid AppRole enum value.
+    // InviteUserDto enforces this at the DTO layer, but we re-check here
+    // to be safe if this method is called programmatically.
+    if (!Object.values(AppRole).includes(data.role)) {
+      throw new BadRequestException(
+        `Invalid role '${data.role}'. Must be one of: ${Object.values(AppRole).join(', ')}`,
+      );
+    }
+
     try {
-      // Create user with pending status - using a temporary password hash
-      // In production, this would trigger an email with a password reset link
+      // Create user with pending status.
+      // In production, this would trigger an email with a password reset link.
       const tempPasswordHash = 'INVITATION_PENDING';
-      
+
       const user = await this.prisma.user.create({
         data: {
           email: data.email,
@@ -20,7 +31,7 @@ export class UsersService {
           passwordHash: tempPasswordHash,
           status: 'PENDING',
           roles: {
-            create: [{ role: data.role as any }],
+            create: [{ role: data.role }],
           },
         },
         include: { roles: true },
@@ -37,8 +48,13 @@ export class UsersService {
         created_at: user.createdAt.toISOString(),
       };
     } catch (e: any) {
-      this.logger.warn(`Database unavailable, returning mock user`);
-      // In demo mode, return a mock success
+      // Prisma unique constraint on email (P2002) → 409 Conflict
+      if (e?.code === 'P2002') {
+        throw new ConflictException(`A user with email '${data.email}' already exists`);
+      }
+
+      // Demo/offline fallback — return a synthetic success response
+      this.logger.warn(`Database unavailable, returning mock user (code: ${e?.code})`);
       const mockId = `user-${Date.now()}`;
       return {
         id: mockId,
