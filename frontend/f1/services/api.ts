@@ -1,8 +1,9 @@
 /**
  * KavachTrust — Base API Client
  */
-// Dynamically use the current hostname (e.g. localhost or 192.168.x.x) so it works on other devices across the LAN.
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// Read from Vite environment variable (VITE_API_URL) if configured (e.g. Render/production), fallback to localhost
+const rawApiUrl = (import.meta.env?.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl}/api/v1`;
 
 export class ApiError extends Error {
   status: number;
