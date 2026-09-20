@@ -57,4 +57,32 @@ describe("KavachTrustSBT", function () {
     // IERC5192 interface ID is 0xb45a3c0e
     expect(await sbt.supportsInterface("0xb45a3c0e")).to.be.true;
   });
+
+  describe("Revocation", function () {
+    beforeEach(async function () {
+      await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash");
+    });
+
+    it("Should allow the owner to revoke a certification", async function () {
+      await expect(sbt.revokeCertification(1))
+        .to.emit(sbt, "CertificationRevoked")
+        .withArgs(1, (anyValue: any) => true);
+
+      const details = await sbt.getCertification(1);
+      expect(details.revokedAt).to.be.greaterThan(0);
+    });
+
+    it("Should prevent non-owners from revoking a certification", async function () {
+      await expect(
+        sbt.connect(user).revokeCertification(1)
+      ).to.be.revertedWithCustomError(sbt, "OwnableUnauthorizedAccount")
+       .withArgs(user.address);
+    });
+
+    it("Should revert if revoking a non-existent certification", async function () {
+      await expect(
+        sbt.revokeCertification(999)
+      ).to.be.revertedWithCustomError(sbt, "ERC721NonexistentToken");
+    });
+  });
 });

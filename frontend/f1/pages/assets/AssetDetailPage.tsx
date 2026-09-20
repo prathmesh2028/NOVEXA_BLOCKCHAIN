@@ -16,6 +16,11 @@ export default function AssetDetailPage() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [backendAsset, setBackendAsset] = useState<any>(null);
   const [qrData, setQrData] = useState<any>(null);
+  
+  const [evidence, setEvidence] = useState<any[]>([]);
+  const [auditEvents, setAuditEvents] = useState<any[]>([]);
+  const [certification, setCertification] = useState<any>(null);
+  const [blockchainTxs, setBlockchainTxs] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -26,6 +31,22 @@ export default function AssetDetailPage() {
     api.get<any>(`/assets/${id}/qr`)
       .then(res => setQrData(res))
       .catch(err => console.warn("Could not fetch QR code:", err));
+      
+    api.get<any>(`/evidence?asset_id=${id}`)
+      .then(res => setEvidence(res.items || []))
+      .catch(() => setEvidence(EVIDENCE_LIST.filter(e => e.assetId === id)));
+
+    api.get<any>(`/audit/events?resource_id=${id}`)
+      .then(res => setAuditEvents(res.items || []))
+      .catch(() => setAuditEvents(AUDIT_EVENTS.filter(e => e.assetId === id)));
+
+    api.get<any>(`/certifications?asset_id=${id}`)
+      .then(res => setCertification(res.items?.[0] || CERTIFICATIONS.find(c => c.assetId === id)))
+      .catch(() => setCertification(CERTIFICATIONS.find(c => c.assetId === id)));
+
+    api.get<any>(`/blockchain/transactions?asset_id=${id}`)
+      .then(res => setBlockchainTxs(res.items || []))
+      .catch(() => setBlockchainTxs(BLOCKCHAIN_TXS.filter(t => t.assetId === id)));
   }, [id]);
 
   const mockFallback = ASSETS.find((a) => a.id === id);
@@ -60,11 +81,6 @@ export default function AssetDetailPage() {
       </div>
     );
   }
-
-  const evidence = EVIDENCE_LIST.filter((e) => e.assetId === asset.id);
-  const auditEvents = AUDIT_EVENTS.filter((e) => e.assetId === asset.id);
-  const certification = CERTIFICATIONS.find((c) => c.id === asset.certId);
-  const blockchainTxs = BLOCKCHAIN_TXS.filter((t) => t.assetId === asset.id);
 
   const verItems = [
     { label: "Identity & Supplier", status: (asset.verification === "VERIFIED" ? "VERIFIED" : "PENDING") as any, detail: "Supplier declaration on file" },

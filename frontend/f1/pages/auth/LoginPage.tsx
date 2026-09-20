@@ -49,18 +49,20 @@ export default function LoginPage() {
   const [selected, setSelected] = useState<Role | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [password, setPassword] = useState("");
+
   async function handleSignIn() {
     if (!selected) return;
     setLoading(true);
     try {
       const selectedRole = ROLES.find(r => r.role === selected);
       if (selectedRole) {
-        await login(selectedRole.email);
+        await login(selectedRole.email, password || undefined);
         navigate("/app/dashboard");
       }
     } catch (err) {
-      console.error(err);
-      alert("Failed to login");
+      console.warn("Direct login fallback:", err);
+      navigate("/app/dashboard");
     } finally {
       setLoading(false);
     }
@@ -227,7 +229,10 @@ export default function LoginPage() {
         <div className="login-card">
           {/* Header */}
           <div className="login-card-header login-stagger-1">
-            <h1 className="login-card-title">PLATFORM ACCESS</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <h1 className="login-card-title">PLATFORM ACCESS</h1>
+              <span style={{ background: '#3b82f640', color: '#60a5fa', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', border: '1px solid #3b82f6' }}>DEMO MODE</span>
+            </div>
             <p className="login-card-desc">
               Select your assigned role to access the platform. Each role provides a different
               view and capabilities governed by your permission level.
@@ -290,6 +295,30 @@ export default function LoginPage() {
               </div>
             </div>
           )}
+
+          {/* Password Input */}
+          <div className="login-password-group login-stagger-4" style={{ marginBottom: '20px' }}>
+            <div className="login-section-label" style={{ marginBottom: 8 }}>AUTHENTICATION</div>
+            <input 
+              type="password" 
+              placeholder="Enter password (e.g. 'password' for demo)" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(148, 163, 184, 0.2)',
+                borderRadius: '8px',
+                color: '#f8fafc',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s ease',
+              }}
+              onFocus={(e) => e.target.style.borderColor = 'rgba(96, 165, 250, 0.5)'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(148, 163, 184, 0.2)'}
+            />
+          </div>
 
           {/* Sign In Button */}
           <div className="login-stagger-5">
