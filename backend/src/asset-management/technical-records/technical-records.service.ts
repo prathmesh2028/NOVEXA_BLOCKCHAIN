@@ -55,16 +55,7 @@ export class TechnicalRecordsService {
         has_next: skip + pageSize < total,
       };
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.warn('Database offline, returning empty technical records list');
-        return {
-          items: [],
-          total: 0,
-          page,
-          page_size: pageSize,
-          has_next: false,
-        };
-      }
+      this.logger.error(`Database failure in listTechnicalRecords: ${e.message}`, e.stack);
       throw e;
     }
   }
@@ -94,9 +85,7 @@ export class TechnicalRecordsService {
       };
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      if (process.env.APP_ENV === 'demo') {
-        throw new NotFoundException(`Technical record ${id} not found in demo mode`);
-      }
+      this.logger.error(`Database failure in getTechnicalRecord: ${e.message}`, e.stack);
       throw e;
     }
   }
@@ -157,20 +146,7 @@ export class TechnicalRecordsService {
       };
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.warn('Database offline, returning mock technical record');
-        return {
-          id: `mock-tr-${Date.now()}`,
-          asset_id: data.assetId,
-          asset_type: 'Unknown',
-          asset_model: 'Unknown',
-          record_type: data.recordType,
-          data: data.data,
-          classification: data.classification || 'INTERNAL',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-      }
+      this.logger.error(`Database failure in createTechnicalRecord: ${e.message}`, e.stack);
       throw e;
     }
   }

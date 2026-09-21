@@ -2,10 +2,31 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from './auth.service';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
+import * as bcrypt from 'bcryptjs';
+
 describe('AuthService (Authentication & Password Management)', () => {
   let service: AuthService;
   let mockPrisma: any;
   let mockConfig: any;
+  const passwordHash = bcrypt.hashSync('password', 10);
+  const mockAdminUser = {
+    id: 'USR-001',
+    email: 'admin@kavachtrust.gov.in',
+    name: 'Arjun Mehta',
+    status: 'ACTIVE',
+    passwordHash,
+    roles: [{ role: 'ADMIN' }],
+    actor: { did: 'did:bel:actor:001' },
+  };
+  const mockNftUser = {
+    id: 'USR-002',
+    email: 'nft@kavachtrust.gov.in',
+    name: 'Priya Sharma',
+    status: 'ACTIVE',
+    passwordHash,
+    roles: [{ role: 'NFT_CREATOR' }],
+    actor: { did: 'did:bel:actor:002' },
+  };
 
   beforeEach(() => {
     process.env.APP_ENV = 'demo';
@@ -13,7 +34,15 @@ describe('AuthService (Authentication & Password Management)', () => {
 
     mockPrisma = {
       user: {
-        findUnique: vi.fn().mockRejectedValue(new Error('Database offline')),
+        findUnique: vi.fn().mockImplementation(async ({ where }) => {
+          if (where.id === 'USR-001' || where.email === 'admin@kavachtrust.gov.in' || where.email === 'a.mehta@bel-defence.in') {
+            return { ...mockAdminUser, email: where.email || mockAdminUser.email };
+          }
+          if (where.email === 'nft@kavachtrust.gov.in' || where.email === 'p.sharma@bel-defence.in') {
+            return mockNftUser;
+          }
+          return null;
+        }),
         update: vi.fn().mockResolvedValue({}),
       },
     };
@@ -54,7 +83,7 @@ describe('AuthService (Authentication & Password Management)', () => {
       const [, payloadB64] = res.access_token.split('.');
       const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
       expect(payload.sub).toBeDefined();
-      expect(payload.email).toBe('admin@kavachtrust.gov.in');
+      expect(payload.email).toBe('a.mehta@bel-defence.in');
       expect(Array.isArray(payload.roles)).toBe(true);
       expect(payload.iss).toBe('kavachtrust');
     });
@@ -97,7 +126,7 @@ describe('AuthService (Authentication & Password Management)', () => {
       const { access_token } = await service.login('admin@kavachtrust.gov.in', 'password');
       const payload = await service.validateToken(access_token);
       expect(payload.sub).toBeDefined();
-      expect(payload.email).toBe('admin@kavachtrust.gov.in');
+      expect(payload.email).toBe('a.mehta@bel-defence.in');
     });
 
     it('throws UnauthorizedException for a tampered token', async () => {
