@@ -26,8 +26,8 @@ import VerificationCenterPage from "./pages/verification/VerificationCenterPage"
 import SearchPage from "./pages/search/SearchPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import StubPage from "./pages/StubPage";
 import RoleGuard from "./components/auth/RoleGuard";
+import SupplyChainDashboardPage from "./pages/supply-chain/SupplyChainDashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -51,7 +51,8 @@ export const router = createBrowserRouter([
       { path: "search", Component: SearchPage },
       { path: "settings", Component: SettingsPage },
       { path: "my-assets", Component: MyAssetsPage },
-      
+      { path: "supply-chain", Component: SupplyChainDashboardPage },
+
       // Admin Only
       {
         path: "",
@@ -61,7 +62,7 @@ export const router = createBrowserRouter([
           { path: "roles", Component: RolesPage },
         ]
       },
-      
+
       // NFT Creator & Admin
       {
         path: "",
@@ -75,7 +76,7 @@ export const router = createBrowserRouter([
           { path: "eligible-assets", Component: EligibleAssetsPage },
         ]
       },
-      
+
       // Technician & Admin
       {
         path: "",
@@ -87,24 +88,23 @@ export const router = createBrowserRouter([
           { path: "technical-records", Component: TechnicalRecordsPage },
         ]
       },
-      
+
       // Auditor & Admin
       {
         path: "",
         Component: () => <RoleGuard allowedRoles={["admin", "auditor"]} />,
         children: [
+          // Canonical audit route — audit-trail and system-activity redirect here
           { path: "audit", Component: AuditPage },
-          { path: "audit-trail", Component: AuditPage },
-          { path: "system-activity", Component: AuditPage },
+          { path: "audit-trail", Component: () => <Navigate to="/app/audit" replace /> },
+          { path: "system-activity", Component: () => <Navigate to="/app/audit" replace /> },
           { path: "verification", Component: VerificationCenterPage },
           { path: "evidence-integrity", Component: EvidenceIntegrityPage },
         ]
       },
 
-      {
-        path: "history",
-        Component: () => <StubPage title="History" icon="◷" description="Timeline of all platform activities including asset registration, evidence uploads, lifecycle changes, and certification events." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
-      },
+      // History — redirect to audit trail (no stub page)
+      { path: "history", Component: () => <Navigate to="/app/audit" replace /> },
     ],
   },
   { path: "*", Component: NotFoundPage },

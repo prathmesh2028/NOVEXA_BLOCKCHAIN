@@ -3,7 +3,7 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import StatCard from "../../components/ui/StatCard";
 import { useState, useEffect } from "react";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 import { certificationService, CertificationResponse } from "../../services/certifications";
 import { dashboardService } from "../../services/dashboard";
 

@@ -5,7 +5,7 @@ import StatusBadge from "../../components/ui/StatusBadge";
 import LifecycleStepper from "../../components/ui/LifecycleStepper";
 import AuditTimeline from "../../components/ui/AuditTimeline";
 import VerificationPanel from "../../components/ui/VerificationPanel";
-import { ASSETS, EVIDENCE_LIST, AUDIT_EVENTS, CERTIFICATIONS, BLOCKCHAIN_TXS, formatDateTime, shortHash } from "../../data/mockData";
+import { formatDateTime, shortHash } from "../../data/utils";
 import { assetService } from "../../services/assets";
 import { api } from "../../services/api";
 
@@ -34,42 +34,38 @@ export default function AssetDetailPage() {
       
     api.get<any>(`/evidence?asset_id=${id}`)
       .then(res => setEvidence(res.items || []))
-      .catch(() => setEvidence(EVIDENCE_LIST.filter(e => e.assetId === id)));
+      .catch(err => { console.warn('Evidence fetch failed', err); setEvidence([]); });
 
     api.get<any>(`/audit/events?resource_id=${id}`)
       .then(res => setAuditEvents(res.items || []))
-      .catch(() => setAuditEvents(AUDIT_EVENTS.filter(e => e.assetId === id)));
+      .catch(err => { console.warn('Audit fetch failed', err); setAuditEvents([]); });
 
     api.get<any>(`/certifications?asset_id=${id}`)
-      .then(res => setCertification(res.items?.[0] || CERTIFICATIONS.find(c => c.assetId === id)))
-      .catch(() => setCertification(CERTIFICATIONS.find(c => c.assetId === id)));
+      .then(res => setCertification(res.items?.[0] || null))
+      .catch(err => { console.warn('Cert fetch failed', err); setCertification(null); });
 
     api.get<any>(`/blockchain/transactions?asset_id=${id}`)
       .then(res => setBlockchainTxs(res.items || []))
-      .catch(() => setBlockchainTxs(BLOCKCHAIN_TXS.filter(t => t.assetId === id)));
+      .catch(err => { console.warn('Blockchain fetch failed', err); setBlockchainTxs([]); });
   }, [id]);
 
-  const mockFallback = ASSETS.find((a) => a.id === id);
-
   const asset = backendAsset ? {
-    ...mockFallback,
-    ...backendAsset,
     id: backendAsset.asset_id || backendAsset.id,
-    batchId: backendAsset.batch_id || mockFallback?.batchId,
-    type: backendAsset.type || mockFallback?.type,
-    model: backendAsset.model || mockFallback?.model,
-    serialNumber: backendAsset.serial_number || mockFallback?.serialNumber,
-    supplier: backendAsset.supplier || mockFallback?.supplier,
-    lifecycle: backendAsset.lifecycle_state || mockFallback?.lifecycle,
-    verification: backendAsset.verification_status || mockFallback?.verification,
-    evidenceCount: backendAsset.evidence_count ?? mockFallback?.evidenceCount ?? 0,
-    certId: backendAsset.cert_id || mockFallback?.certId,
-    certStatus: backendAsset.cert_status || mockFallback?.certStatus,
-    registeredBy: backendAsset.registered_by_name || mockFallback?.registeredBy,
-    registeredAt: backendAsset.created_at || mockFallback?.registeredAt,
-    updatedAt: backendAsset.updated_at || mockFallback?.updatedAt,
-    description: backendAsset.description || mockFallback?.description,
-  } : mockFallback;
+    batchId: backendAsset.batch_id,
+    type: backendAsset.type,
+    model: backendAsset.model,
+    serialNumber: backendAsset.serial_number,
+    supplier: backendAsset.supplier,
+    lifecycle: backendAsset.lifecycle_state,
+    verification: backendAsset.verification_status,
+    evidenceCount: backendAsset.evidence_count ?? 0,
+    certId: backendAsset.cert_id,
+    certStatus: backendAsset.cert_status,
+    registeredBy: backendAsset.registered_by_name,
+    registeredAt: backendAsset.created_at,
+    updatedAt: backendAsset.updated_at,
+    description: backendAsset.description,
+  } : null;
 
   if (!asset) {
     return (

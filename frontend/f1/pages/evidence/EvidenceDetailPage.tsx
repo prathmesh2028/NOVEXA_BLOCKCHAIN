@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { EVIDENCE_LIST, ASSETS, formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 import { evidenceService } from "../../services/evidence";
 
 export default function EvidenceDetailPage() {
@@ -16,23 +16,20 @@ export default function EvidenceDetailPage() {
       .catch(err => console.warn("Could not fetch evidence from backend:", err));
   }, [id]);
 
-  const mockFallback = EVIDENCE_LIST.find((e) => e.id === id);
   const evidence = backendEvidence ? {
-    ...mockFallback,
-    ...backendEvidence,
     id: backendEvidence.evidence_id || backendEvidence.id,
-    assetId: backendEvidence.asset_id || mockFallback?.assetId,
-    filename: backendEvidence.filename || mockFallback?.filename,
-    type: backendEvidence.type || mockFallback?.type,
-    mimeType: backendEvidence.mime_type || mockFallback?.mimeType,
-    sizeKb: backendEvidence.size_kb || mockFallback?.sizeKb,
-    status: backendEvidence.status || mockFallback?.status,
-    hash: backendEvidence.hash || mockFallback?.hash,
-    event: backendEvidence.event || mockFallback?.event,
-    integrityVerified: backendEvidence.integrity_verified ?? mockFallback?.integrityVerified ?? true,
-    blockchainTx: backendEvidence.blockchain_tx || mockFallback?.blockchainTx,
-    createdAt: backendEvidence.created_at || mockFallback?.createdAt,
-  } : mockFallback;
+    assetId: backendEvidence.asset_id,
+    filename: backendEvidence.filename,
+    type: backendEvidence.type,
+    mimeType: backendEvidence.mime_type,
+    sizeKb: backendEvidence.size_kb,
+    status: backendEvidence.status,
+    hash: backendEvidence.hash,
+    event: backendEvidence.event,
+    integrityVerified: backendEvidence.integrity_verified ?? true,
+    blockchainTx: backendEvidence.blockchain_tx,
+    createdAt: backendEvidence.created_at,
+  } : null;
 
   if (!evidence) {
     return (
@@ -43,8 +40,7 @@ export default function EvidenceDetailPage() {
     );
   }
 
-  const asset = ASSETS.find((a) => a.id === evidence.assetId);
-
+  // evidence.assetId is used for linking to asset detail
   return (
     <div className="page-fade">
       <PageHeader

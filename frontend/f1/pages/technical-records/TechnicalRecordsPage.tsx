@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 import { technicalRecordsService, TechnicalRecordResponse } from "../../services/technical-records";
 
 export default function TechnicalRecordsPage() {
@@ -145,9 +145,9 @@ export default function TechnicalRecordsPage() {
                     <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b" }}>{formatDateTime(record.created_at)}</td>
                     <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b" }}>{formatDateTime(record.updated_at)}</td>
                     <td style={{ padding: "12px 14px" }}>
-                      <button className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem" }}>
-                        View →
-                      </button>
+                      <Link to={`/app/assets/${record.asset_id}`} className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem", textDecoration: "none", display: "inline-block" }}>
+                        View Asset →
+                      </Link>
                     </td>
                   </tr>
                 ))

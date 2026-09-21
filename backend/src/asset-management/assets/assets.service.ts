@@ -123,50 +123,7 @@ export class AssetsService {
       assets = dbAssets;
       total = dbTotal;
     } catch (e: any) {
-      if (process.env.APP_ENV !== 'demo') throw e;
-      const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS;
-      let filtered = [...fallback];
-      if (params.search) {
-        const q = params.search.toLowerCase().trim();
-        filtered = filtered.filter(a =>
-          a.id.toLowerCase().includes(q) ||
-          (a.serialNumber && a.serialNumber.toLowerCase().includes(q)) ||
-          (a.type && a.type.toLowerCase().includes(q)) ||
-          (a.model && a.model.toLowerCase().includes(q)) ||
-          (a.batchId && a.batchId.toLowerCase().includes(q)) ||
-          (a.supplier && a.supplier.toLowerCase().includes(q))
-        );
-      }
-      if (params.lifecycle && params.lifecycle !== 'ALL') {
-        filtered = filtered.filter(a => a.lifecycle === params.lifecycle);
-      }
-      const totalCount = filtered.length;
-      const paginated = filtered.slice(skip, skip + pageSize);
-      return {
-        items: paginated.map(a => ({
-          id: a.id,
-          asset_id: a.id,
-          batch_id: a.batchId,
-          type: a.type,
-          model: a.model,
-          serial_number: a.serialNumber,
-          lifecycle_state: a.lifecycle,
-          verification_status: a.verification,
-          evidence_count: a.evidenceCount,
-          evidence_status: a.evidenceStatus,
-          cert_status: a.certStatus,
-          cert_id: a.certId,
-          supplier: a.supplier,
-          description: a.description,
-          registered_by_name: a.registeredBy,
-          created_at: a.registeredAt,
-          updated_at: a.updatedAt,
-        })),
-        total: totalCount,
-        page,
-        page_size: pageSize,
-        has_next: skip + pageSize < totalCount,
-      };
+      throw e;
     }
 
     return {
@@ -203,30 +160,7 @@ export class AssetsService {
       return this.mapAsset(asset);
     } catch (e: any) {
       if (e instanceof NotFoundException || e instanceof ForbiddenException) throw e;
-      if (process.env.APP_ENV !== 'demo') throw e;
-      const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS.find(a => a.id === id);
-      if (fallback) {
-        return {
-          id: fallback.id,
-          asset_id: fallback.id,
-          batch_id: fallback.batchId,
-          type: fallback.type,
-          model: fallback.model,
-          serial_number: fallback.serialNumber,
-          lifecycle_state: fallback.lifecycle,
-          verification_status: fallback.verification,
-          evidence_count: fallback.evidenceCount,
-          evidence_status: fallback.evidenceStatus,
-          cert_status: fallback.certStatus,
-          cert_id: fallback.certId,
-          supplier: fallback.supplier,
-          description: fallback.description,
-          registered_by_name: fallback.registeredBy,
-          created_at: fallback.registeredAt,
-          updated_at: fallback.updatedAt,
-        };
-      }
-      throw new NotFoundException(`Asset ${id} not found`);
+      throw e;
     }
   }
 
@@ -282,32 +216,10 @@ export class AssetsService {
 
       return this.mapAsset(asset);
     } catch (e: any) {
-      if (process.env.APP_ENV !== 'demo') {
-        throw e;
-      }
-      this.logger.warn('Database offline, returning mock created asset', e.message);
-      // Mock return for when DB is down in demo mode
-      return {
-        id: `mock-asset-${Date.now()}`,
-        asset_id: data.assetId,
-        batch_id: data.batchId,
-        type: data.type,
-        model: data.model,
-        serial_number: data.serialNumber,
-        lifecycle_state: 'SUPPLIER_DECLARED',
-        verification_status: 'PENDING',
-        evidence_count: 0,
-        evidence_status: 'Processing',
-        cert_status: 'NOT_CERTIFIED',
-        cert_id: null,
-        supplier: data.supplier,
-        description: data.description,
-        registered_by_name: data.registeredByName,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      throw e;
     }
   }
+
 
   /**
    * Eligible Assets:
@@ -370,50 +282,10 @@ export class AssetsService {
         },
       };
     } catch (e: any) {
-      if (process.env.APP_ENV !== 'demo') throw e;
-      // Fallback: filter fallback data
-      const fallback = (await import('../../core/common/fallback-data')).FALLBACK_ASSETS;
-      let eligible = fallback.filter(
-        (a) => a.lifecycle === 'ACCEPTED_FOR_ASSEMBLY',
-      );
-      if (eligible.length === 0) {
-        eligible = fallback.filter((a) => a.lifecycle === 'INSPECTION_RECORDED' || a.lifecycle === 'ACCEPTED_FOR_ASSEMBLY');
-      }
-      return {
-        items: eligible.map((a) => ({
-          id: a.id,
-          asset_id: a.id,
-          batch_id: a.batchId,
-          type: a.type,
-          model: a.model,
-          serial_number: a.serialNumber,
-          lifecycle_state: a.lifecycle,
-          verification_status: a.verification,
-          evidence_count: a.evidenceCount,
-          evidence_status: a.evidenceStatus,
-          cert_status: a.certStatus,
-          cert_id: a.certId || null,
-          supplier: a.supplier,
-          description: a.description,
-          registered_by_name: a.registeredBy,
-          created_at: a.registeredAt,
-          updated_at: a.updatedAt,
-          verified_evidence_count: a.evidenceCount,
-          total_evidence_count: a.evidenceCount,
-          eligible_reason: 'ACCEPTED_FOR_ASSEMBLY with verified evidence',
-        })),
-        total: eligible.length,
-        page,
-        page_size: pageSize,
-        has_next: false,
-        eligibility_criteria: {
-          lifecycle_state: 'ACCEPTED_FOR_ASSEMBLY',
-          requires_verified_evidence: true,
-          excludes_already_certified: true,
-        },
-      };
+      throw e;
     }
   }
+
 
   async getAssetQr(id: string, user?: any) {
     const asset = await this.getAsset(id, user);

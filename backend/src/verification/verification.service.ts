@@ -79,56 +79,7 @@ export class VerificationService {
 
       return { asset_id: asset.assetId, checks, overall };
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.warn(`Database offline, returning fallback verification: ${e.message}`);
-        
-        const { FALLBACK_ASSETS, FALLBACK_CERTIFICATIONS, FALLBACK_EVIDENCE } = await import('../core/common/fallback-data');
-        const mockAsset = FALLBACK_ASSETS.find(a => a.id === assetId || a.id === assetId);
-        
-        if (!mockAsset) {
-          return { asset_id: assetId, checks: [{ domain: 'asset', status: 'MISSING', reason: 'Asset not found' }], overall: 'MISSING' };
-        }
-
-        checks.push({
-          domain: 'identity',
-          status: 'VALID',
-          reason: 'Registered by identified actor',
-        });
-
-        const assetEvidence = FALLBACK_EVIDENCE.filter(e => e.assetId === assetId);
-        checks.push({
-          domain: 'evidence',
-          status: assetEvidence.length > 0 ? 'VALID' : 'MISSING',
-          reason: `${assetEvidence.length}/${assetEvidence.length} evidence items verified`,
-        });
-
-        checks.push({
-          domain: 'inspection',
-          status: 'VALID',
-          reason: `1 inspection(s) recorded`,
-        });
-
-        checks.push({
-          domain: 'lifecycle',
-          status: 'VALID',
-          reason: `Current state: ${mockAsset.lifecycle}`,
-        });
-
-        const cert = FALLBACK_CERTIFICATIONS.find(c => c.assetId === assetId);
-        checks.push({
-          domain: 'certification',
-          status: cert ? 'VALID' : 'NOT_APPLICABLE',
-          reason: cert ? `Certified: ${cert.id}` : 'Not certified',
-        });
-
-        checks.push({
-          domain: 'blockchain',
-          status: cert?.txHash ? 'VALID' : 'UNVERIFIED',
-          reason: cert?.txHash ? `On-chain: ${cert.txHash}` : 'No blockchain anchor',
-        });
-
-        return { asset_id: mockAsset.id, checks, overall: 'VALID' };
-      }
+      this.logger.error(`Verification failed: ${e.message}`);
       throw e;
     }
   }
