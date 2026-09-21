@@ -4,6 +4,46 @@ import { useAuth } from "../../context/AuthContext";
 import RoleBadge from "../../components/ui/RoleBadge";
 import { authService } from "../../services/auth";
 
+function ToggleSwitch({ enabled, onChange, label }: { enabled: boolean; onChange: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      aria-label={label}
+      onClick={onChange}
+      style={{
+        width: 42,
+        height: 22,
+        background: enabled ? "#2563eb" : "#1e3a60",
+        borderRadius: "11px",
+        cursor: "pointer",
+        position: "relative",
+        transition: "background 0.2s ease, border-color 0.2s ease",
+        border: `1px solid ${enabled ? "#3b82f6" : "#334155"}`,
+        padding: 0,
+        display: "inline-block",
+        outline: "none",
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          width: 16,
+          height: 16,
+          background: "#ffffff",
+          borderRadius: "50%",
+          position: "absolute",
+          top: 2,
+          left: enabled ? 22 : 2,
+          transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+        }}
+      />
+    </button>
+  );
+}
+
 export default function SettingsPage() {
   const { user, role } = useAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -12,6 +52,32 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordStatus, setPasswordStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [securitySettings, setSecuritySettings] = useState<Record<string, boolean>>({
+    "Two-Factor Authentication (2FA)": true,
+    "Session auto-lock (15 min)": true,
+    "Audit telemetry recording": true,
+  });
+  const [notifications, setNotifications] = useState<Record<string, boolean>>({
+    "Certification updates": true,
+    "System alerts": true,
+    "Evidence integrity events": true,
+    "Blockchain confirmations": false,
+    "Audit events": false,
+  });
+
+  const toggleNotification = (key: string) => {
+    setNotifications((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const toggleSecurity = (key: string) => {
+    setSecuritySettings((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   if (!user || !role) return null;
 
@@ -108,63 +174,61 @@ export default function SettingsPage() {
         {/* Security */}
         <div className="panel" style={{ padding: 24 }}>
           <div className="section-label" style={{ marginBottom: 16 }}>SECURITY</div>
-          {[
-            { label: "Password", value: "••••••••••", action: "Change", onClick: () => setShowPasswordModal(true) },
-            { label: "2FA", value: "Enabled ✓", action: "Manage" },
-            { label: "Active sessions", value: "1 session", action: "View" },
-          ].map((row) => (
-            <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #152b4a" }}>
-              <div>
-                <div style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#e2e8f0" }}>{row.label}</div>
-                <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{row.value}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #152b4a" }}>
+            <div>
+              <div style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#e2e8f0" }}>Password</div>
+              <div style={{ fontSize: "0.75rem", color: "#64748b" }}>••••••••••</div>
+            </div>
+            <button
+              className="btn-ghost"
+              style={{ fontSize: "0.75rem" }}
+              onClick={() => setShowPasswordModal(true)}
+            >
+              Change
+            </button>
+          </div>
+
+          {Object.entries(securitySettings).map(([label, enabled]) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #152b4a" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: "0.8125rem", color: enabled ? "#e2e8f0" : "#94a3b8" }}>{label}</span>
+                <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: enabled ? "#22c55e" : "#64748b" }}>
+                  {enabled ? "ON" : "OFF"}
+                </span>
               </div>
-              <button
-                className="btn-ghost"
-                style={{ fontSize: "0.75rem" }}
-                onClick={(row as any).onClick}
-              >
-                {row.action}
-              </button>
+              <ToggleSwitch
+                enabled={enabled}
+                onChange={() => toggleSecurity(label)}
+                label={label}
+              />
             </div>
           ))}
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #152b4a" }}>
+            <div>
+              <div style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#e2e8f0" }}>Active sessions</div>
+              <div style={{ fontSize: "0.75rem", color: "#64748b" }}>1 session (Current workstation)</div>
+            </div>
+            <button className="btn-ghost" style={{ fontSize: "0.75rem" }}>View</button>
+          </div>
         </div>
 
         {/* Notifications */}
         <div className="panel" style={{ padding: 24 }}>
           <div className="section-label" style={{ marginBottom: 16 }}>NOTIFICATIONS</div>
-          {[
-            { label: "Certification updates", enabled: true },
-            { label: "System alerts", enabled: true },
-            { label: "Evidence integrity events", enabled: true },
-            { label: "Blockchain confirmations", enabled: false },
-            { label: "Audit events", enabled: false },
-          ].map((pref) => (
-            <div key={pref.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #152b4a" }}>
-              <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{pref.label}</span>
-              <div
-                style={{
-                  width: 36,
-                  height: 20,
-                  background: pref.enabled ? "#2563eb" : "#1e3a60",
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  position: "relative",
-                  transition: "background 0.2s",
-                }}
-              >
-                <div
-                  style={{
-                    width: 14,
-                    height: 14,
-                    background: "#fff",
-                    borderRadius: "50%",
-                    position: "absolute",
-                    top: 3,
-                    left: pref.enabled ? 19 : 3,
-                    transition: "left 0.2s",
-                  }}
-                />
+          {Object.entries(notifications).map(([label, enabled]) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #152b4a" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: "0.8125rem", color: enabled ? "#e2e8f0" : "#94a3b8" }}>{label}</span>
+                <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: enabled ? "#22c55e" : "#64748b" }}>
+                  {enabled ? "ON" : "OFF"}
+                </span>
               </div>
+              <ToggleSwitch
+                enabled={enabled}
+                onChange={() => toggleNotification(label)}
+                label={label}
+              />
             </div>
           ))}
         </div>
@@ -174,7 +238,7 @@ export default function SettingsPage() {
           <div className="section-label" style={{ marginBottom: 16 }}>WALLET</div>
           <div style={{ padding: "12px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "5px", marginBottom: 14 }}>
             <div style={{ fontSize: "0.75rem", color: "#22c55e", fontWeight: 600, marginBottom: 4 }}>● CONNECTED</div>
-            <div className="meta-id" style={{ color: "#94a3b8" }}>0x1F2B...89A3</div>
+            <div className="meta-id" style={{ color: "#94a3b8" }}>{user.actor?.wallet_address || "0x1F2B...89A3"}</div>
           </div>
           <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>Network: BEL-TRUST-CHAIN (Synthetic Demo)</div>
         </div>

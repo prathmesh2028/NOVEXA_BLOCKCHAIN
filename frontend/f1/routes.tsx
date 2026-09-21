@@ -28,6 +28,7 @@ import SettingsPage from "./pages/settings/SettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import RoleGuard from "./components/auth/RoleGuard";
 import SupplyChainDashboardPage from "./pages/supply-chain/SupplyChainDashboardPage";
+import HistoryPage from "./pages/history/HistoryPage";
 
 export const router = createBrowserRouter([
   {
@@ -63,16 +64,24 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // NFT Creator & Admin
+      // Certifications & Blockchain — accessible by Admin, NFT Creator, and Auditor
+      {
+        path: "",
+        Component: () => <RoleGuard allowedRoles={["admin", "nft-creator", "auditor"]} />,
+        children: [
+          { path: "certifications", Component: CertificationsPage },
+          { path: "certifications/:id", Component: CertificationDetailPage },
+          { path: "blockchain", Component: BlockchainPage },
+          { path: "blockchain-proof", Component: BlockchainProofPage },
+        ]
+      },
+
+      // NFT Creator Queue & Eligible Assets
       {
         path: "",
         Component: () => <RoleGuard allowedRoles={["admin", "nft-creator"]} />,
         children: [
-          { path: "certifications", Component: CertificationsPage },
-          { path: "certifications/:id", Component: CertificationDetailPage },
           { path: "certification-queue", Component: CertificationQueuePage },
-          { path: "blockchain", Component: BlockchainPage },
-          { path: "blockchain-proof", Component: BlockchainProofPage },
           { path: "eligible-assets", Component: EligibleAssetsPage },
         ]
       },
@@ -94,17 +103,17 @@ export const router = createBrowserRouter([
         path: "",
         Component: () => <RoleGuard allowedRoles={["admin", "auditor"]} />,
         children: [
-          // Canonical audit route — audit-trail and system-activity redirect here
+          // Canonical System Activity route — audit and audit-trail redirect or alias here
+          { path: "system-activity", Component: AuditPage },
           { path: "audit", Component: AuditPage },
-          { path: "audit-trail", Component: () => <Navigate to="/app/audit" replace /> },
-          { path: "system-activity", Component: () => <Navigate to="/app/audit" replace /> },
+          { path: "audit-trail", Component: () => <Navigate to="/app/system-activity" replace /> },
           { path: "verification", Component: VerificationCenterPage },
           { path: "evidence-integrity", Component: EvidenceIntegrityPage },
         ]
       },
 
-      // History — redirect to audit trail (no stub page)
-      { path: "history", Component: () => <Navigate to="/app/audit" replace /> },
+      // History — platform event history
+      { path: "history", Component: HistoryPage },
     ],
   },
   { path: "*", Component: NotFoundPage },

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supplyChainService, ShipmentResponse } from "../../../services/supply-chain";
+import StatusBadge from "../../../components/ui/StatusBadge";
 
 export default function ShipmentsList() {
   const [shipments, setShipments] = useState<ShipmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchShipments();
@@ -21,46 +23,82 @@ export default function ShipmentsList() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-400">Loading shipments...</div>;
+  const filtered = shipments.filter(
+    (s) =>
+      !search ||
+      (s.shipment_id && s.shipment_id.toLowerCase().includes(search.toLowerCase())) ||
+      (s.lot?.lot_id && s.lot.lot_id.toLowerCase().includes(search.toLowerCase())) ||
+      (s.destination_facility?.name && s.destination_facility.name.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-white">Shipments & Custody</h2>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          Create Shipment
-        </button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+        <input
+          type="text"
+          className="internal-search-input"
+          placeholder="Filter shipments by shipment ID, lot, or destination..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ maxWidth: 360 }}
+        />
+        <button className="btn-primary">+ Dispatch Shipment</button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="internal-table-container">
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr className="border-b border-gray-700 text-gray-400">
-              <th className="p-3">Shipment ID</th>
-              <th className="p-3">Lot</th>
-              <th className="p-3">Origin</th>
-              <th className="p-3">Destination</th>
-              <th className="p-3">Status</th>
+            <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
+              {["Shipment ID", "Production Lot", "Origin Facility", "Destination Facility", "Custody Status"].map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    padding: "10px 14px",
+                    textAlign: "left",
+                    fontSize: "0.6875rem",
+                    color: "var(--muted)",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {shipments.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan={5} className="p-3 text-center text-gray-500">
-                  No shipments found.
+                <td colSpan={5} style={{ padding: "36px", textAlign: "center", color: "var(--muted)" }}>
+                  Loading custody transfers...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ padding: "36px", textAlign: "center", color: "var(--muted)" }}>
+                  No shipments found matching filter criteria.
                 </td>
               </tr>
             ) : (
-              shipments.map((shipment) => (
-                <tr key={shipment.id} className="border-b border-gray-800 hover:bg-gray-800">
-                  <td className="p-3 text-white font-medium">{shipment.shipment_id || shipment.id}</td>
-                  <td className="p-3 text-gray-400">{shipment.lot?.lot_id || "N/A"}</td>
-                  <td className="p-3 text-gray-400">{shipment.origin_facility?.name || "N/A"}</td>
-                  <td className="p-3 text-gray-400">{shipment.destination_facility?.name || "N/A"}</td>
-                  <td className="p-3">
-                    <span className="bg-yellow-900 text-yellow-300 text-xs px-2 py-1 rounded">
-                      {shipment.status || "PENDING"}
+              filtered.map((shipment) => (
+                <tr key={shipment.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                  <td style={{ padding: "12px 14px" }}>
+                    <span className="meta-id" style={{ color: "#f59e0b", fontWeight: 600 }}>
+                      {shipment.shipment_id || shipment.id}
                     </span>
+                  </td>
+                  <td style={{ padding: "12px 14px", fontWeight: 600, color: "var(--foreground)" }}>
+                    {shipment.lot?.lot_id || "LOT-PROV-001"}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "var(--muted)" }}>
+                    {shipment.origin_facility?.name || "Manufacturing Plant 01"}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "var(--foreground)" }}>
+                    {shipment.destination_facility?.name || "Depot Command Central"}
+                  </td>
+                  <td style={{ padding: "12px 14px" }}>
+                    <StatusBadge status={shipment.status || "PENDING"} size="sm" />
                   </td>
                 </tr>
               ))
