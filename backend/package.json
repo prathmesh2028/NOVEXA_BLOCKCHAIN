@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "kavachtrust-backend",
   "version": "2.0.0",
   "description": "KavachTrust Backend â€” NestJS + Prisma + PostgreSQL",

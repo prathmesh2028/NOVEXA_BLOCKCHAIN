@@ -115,30 +115,6 @@ export class EvidenceService {
       evidence = dbEvidence;
       total = dbTotal;
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_EVIDENCE;
-        return {
-          items: fallback.map(ev => ({
-            id: ev.id,
-            evidence_id: ev.id,
-            asset_id: ev.assetId,
-            filename: ev.filename,
-            type: ev.type,
-            mime_type: ev.mimeType,
-            size_kb: ev.sizeKb,
-            status: ev.status,
-            hash: ev.hash,
-            event: ev.event,
-            integrity_verified: ev.integrityVerified,
-            blockchain_tx: ev.blockchainTx,
-            created_at: ev.uploadedAt,
-          })),
-          total: fallback.length,
-          page,
-          page_size: pageSize,
-          has_next: false,
-        };
-      }
       throw e;
     }
 
@@ -166,26 +142,6 @@ export class EvidenceService {
       return this.mapEvidence(evidence);
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      if (process.env.APP_ENV === 'demo') {
-        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_EVIDENCE.find(ev => ev.id === id);
-        if (fallback) {
-          return {
-            id: fallback.id,
-            evidence_id: fallback.id,
-            asset_id: fallback.assetId,
-            filename: fallback.filename,
-            type: fallback.type,
-            mime_type: fallback.mimeType,
-            size_kb: fallback.sizeKb,
-            status: fallback.status,
-            hash: fallback.hash,
-            event: fallback.event,
-            integrity_verified: fallback.integrityVerified,
-            blockchain_tx: fallback.blockchainTx,
-            created_at: fallback.uploadedAt,
-          };
-        }
-      }
       throw e;
     }
   }
@@ -315,26 +271,6 @@ export class EvidenceService {
       return transactionResult;
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.warn(`Database operation failed during evidence upload, generating fallback record: ${e.message}`);
-        return {
-          id: evidenceId,
-          evidence_id: evidenceId,
-          asset_id: data.assetId,
-          filename: data.filename,
-          type: data.type,
-          mime_type: data.mimeType,
-          size_kb: data.sizeKb,
-          status: 'COMPLETE',
-          hash,
-          event: data.event,
-          integrity_verified: true,
-          blockchain_tx: null,
-          created_at: new Date().toISOString(),
-        };
-      }
-      
       this.logger.error(`Evidence upload failed: ${e.message}`);
       throw e;
     }
@@ -376,32 +312,6 @@ export class EvidenceService {
 
       return this.buildIntegrityReport(assetId, evidence as any[]);
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const { FALLBACK_EVIDENCE } = await import('../../core/common/fallback-data');
-        let items = FALLBACK_EVIDENCE.filter((ev) => ev.assetId === assetId);
-        if (items.length === 0 && FALLBACK_EVIDENCE.length > 0) {
-          items = FALLBACK_EVIDENCE.filter((ev) => ev.assetId === 'EF-2026-00421');
-        }
-        const verified = items.filter((ev) => ev.integrityVerified).length;
-        const failed = items.filter((ev) => !ev.integrityVerified).length;
-        return {
-          asset_id: assetId,
-          total: items.length,
-          verified,
-          failed,
-          items: items.map((ev) => ({
-            id: ev.id,
-            filename: ev.filename,
-            type: ev.type,
-            stored_hash: ev.hash,
-            integrity_verified: ev.integrityVerified,
-            status: ev.integrityVerified ? 'VERIFIED' : 'FAILED',
-            event: ev.event,
-            uploaded_at: ev.uploadedAt,
-          })),
-          overall_integrity: items.length === 0 ? 'NO_EVIDENCE' : failed > 0 ? 'FAILED' : verified === items.length ? 'VERIFIED' : 'PARTIAL',
-        };
-      }
       throw e;
     }
   }

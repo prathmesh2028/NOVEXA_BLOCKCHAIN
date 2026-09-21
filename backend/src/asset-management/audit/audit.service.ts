@@ -133,16 +133,6 @@ export class AuditService {
       events = dbEvents;
       total = dbTotal;
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_AUDIT_EVENTS;
-        return {
-          items: fallback,
-          total: fallback.length,
-          page,
-          page_size: pageSize,
-          has_next: false,
-        };
-      }
       throw e;
     }
 

@@ -47,10 +47,15 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     this.stop();
   }
 
+  private reconciliationHandle: ReturnType<typeof setInterval> | null = null;
+
   start() {
     if (this.running) return;
     this.running = true;
     this.logger.log(`Worker ${this.workerId} started`);
+
+    // Run reconciliation on startup
+    this.reconcileStrandedTransactions().catch(e => this.logger.error(`Initial reconciliation failed: ${e.message}`));
 
     this.intervalHandle = setInterval(async () => {
       try {
@@ -59,6 +64,15 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         this.logger.error(`Worker poll error: ${e.message}`);
       }
     }, 5000);
+
+    // Schedule reconciliation every 60 seconds
+    this.reconciliationHandle = setInterval(async () => {
+      try {
+        await this.reconcileStrandedTransactions();
+      } catch (e: any) {
+        this.logger.error(`Reconciliation error: ${e.message}`);
+      }
+    }, 60000);
   }
 
   stop() {
@@ -66,8 +80,75 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
       clearInterval(this.intervalHandle);
       this.intervalHandle = null;
     }
+    if (this.reconciliationHandle) {
+      clearInterval(this.reconciliationHandle);
+      this.reconciliationHandle = null;
+    }
     this.running = false;
     this.logger.log(`Worker ${this.workerId} stopped`);
+  }
+
+  /**
+   * Recovers transactions that were left hanging due to a worker crash or RPC timeout.
+   */
+  private async reconcileStrandedTransactions() {
+    this.logger.log('Running reconciliation for stranded transactions...');
+    
+    // 1. Recover stranded BlockchainTransactions (SUBMITTED but no receipt, or MINED but waiting for confirmations)
+    const strandedTxs = await this.prisma.blockchainTransaction.findMany({
+      where: {
+        status: { in: ['SUBMITTED', 'PENDING'] }, // PENDING means pending confirmations in this context sometimes, but SUBMITTED is the main one
+        updatedAt: { lt: new Date(Date.now() - 30000) } // older than 30s
+      }
+    });
+
+    for (const tx of strandedTxs) {
+      if (tx.txHash) {
+        this.logger.log(`Reconciling stranded transaction ${tx.txHash}`);
+        try {
+          const receipt = await this.blockchainAdapter.getTransactionReceipt(tx.txHash);
+          if (receipt) {
+            // Receipt found, we can update status based on receipt
+            const blockNumber = Number(receipt.blockNumber);
+            const gasUsed = Number(receipt.gasUsed || 0);
+            if (receipt.status === 'reverted') {
+              await this.prisma.blockchainTransaction.update({
+                where: { id: tx.id },
+                data: { status: 'REVERTED', errorMessage: 'Reverted on-chain during reconciliation' }
+              });
+            } else {
+               await this.prisma.blockchainTransaction.update({
+                  where: { id: tx.id },
+                  data: { status: 'MINED', blockNumber, gasUsed }
+               });
+            }
+          } else {
+             // Still no receipt
+             this.logger.log(`Tx ${tx.txHash} still pending receipt on chain`);
+          }
+        } catch (e: any) {
+          this.logger.error(`Failed to reconcile tx ${tx.txHash}: ${e.message}`);
+        }
+      }
+    }
+
+    // 2. Recover stuck OutboxEvents (PROCESSING for > 5 minutes)
+    const stuckEvents = await this.prisma.outboxEvent.updateMany({
+      where: {
+        status: 'PROCESSING',
+        claimedAt: { lt: new Date(Date.now() - 5 * 60000) }
+      },
+      data: {
+        status: 'PENDING',
+        claimedBy: null,
+        claimedAt: null,
+        nextAttemptAt: new Date()
+      }
+    });
+
+    if (stuckEvents.count > 0) {
+      this.logger.warn(`Recovered ${stuckEvents.count} stuck outbox events`);
+    }
   }
 
   private async processEvents() {
@@ -230,14 +311,22 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (result.status === 'FAILED' || !result.txHash) {
-      await this.prisma.blockchainTransaction.update({
-        where: { id: txRecord.id },
-        data: {
-          status: 'FAILED',
-          errorMessage: 'Transaction submission failed: RPC unavailable or node rejected transaction',
-        },
-      });
-      throw new Error('Blockchain submission failed — node offline or transaction rejected');
+      if (isDemo) {
+        this.logger.warn(`[DEMO MODE] Blockchain submission failed. Simulating successful transaction for asset ${payload.assetId}`);
+        result = {
+          status: 'SUCCESS',
+          txHash: `0xDEMO_${Math.random().toString(36).substring(7)}`,
+        };
+      } else {
+        await this.prisma.blockchainTransaction.update({
+          where: { id: txRecord.id },
+          data: {
+            status: 'FAILED',
+            errorMessage: 'Transaction submission failed: RPC unavailable or node rejected transaction',
+          },
+        });
+        throw new Error('Blockchain submission failed — node offline or transaction rejected');
+      }
     }
 
     let tokenId: string | null = null;
@@ -254,8 +343,15 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
       },
     });
 
-      // 2. Fetch transaction receipt
-      const receipt = await this.blockchainAdapter.getTransactionReceipt(result.txHash);
+      let receipt: any = await this.blockchainAdapter.getTransactionReceipt(result.txHash);
+      if (!receipt && isDemo && result.txHash.startsWith('0xDEMO_')) {
+        receipt = {
+          status: 'success',
+          blockNumber: 999999,
+          gasUsed: 21000,
+        };
+      }
+
       if (!receipt) {
         this.logger.log(`Transaction ${result.txHash} submitted, awaiting receipt in next cycle`);
         return { status: 'PENDING_RECEIPT' };
@@ -280,16 +376,19 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
       gasUsed = Number(receipt.gasUsed || 0);
 
       // 4. Decode CertificationMinted event
-      const decodedEvent = this.blockchainAdapter.decodeCertificationMintedEvent(receipt);
-      if (!decodedEvent || decodedEvent.tokenId === undefined) {
-        await this.prisma.blockchainTransaction.update({
-          where: { id: txRecord.id },
-          data: { status: 'MISMATCH', errorMessage: 'CertificationMinted event not found in receipt' },
-        });
-        throw new Error(`CertificationMinted event not found in receipt for ${result.txHash}`);
+      if (isDemo && result.txHash.startsWith('0xDEMO_')) {
+        tokenId = '9999';
+      } else {
+        const decodedEvent = this.blockchainAdapter.decodeCertificationMintedEvent(receipt);
+        if (!decodedEvent || decodedEvent.tokenId === undefined) {
+          await this.prisma.blockchainTransaction.update({
+            where: { id: txRecord.id },
+            data: { status: 'MISMATCH', errorMessage: 'CertificationMinted event not found in receipt' },
+          });
+          throw new Error(`CertificationMinted event not found in receipt for ${result.txHash}`);
+        }
+        tokenId = decodedEvent.tokenId.toString();
       }
-
-      tokenId = decodedEvent.tokenId.toString();
 
       // 5. Track confirmations
       const latestBlock = await this.blockchainAdapter.getBlockNumber() || blockNumber;

@@ -81,10 +81,6 @@ export class BlockchainAdapter {
     value?: bigint;
   }): Promise<{ txHash: string; status: string }> {
     if (!this.connected) {
-      if (this.config.blockchainMode === 'demo' || process.env.APP_ENV === 'demo') {
-        this.logger.warn('Blockchain not connected — DEMO mode simulating transaction submission');
-        return { txHash: `0xDEMO-mocktx${Date.now()}`, status: 'SIMULATED' };
-      }
       this.logger.error('Blockchain not connected — failing transaction submission');
       return { txHash: '', status: 'FAILED' };
     }

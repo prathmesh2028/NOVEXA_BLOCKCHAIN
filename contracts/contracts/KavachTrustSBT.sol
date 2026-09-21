@@ -21,6 +21,7 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
         string batchId;
         string evidenceHash; // SHA-256 of the verification evidence
         uint256 issuedAt;
+        uint256 revokedAt;
     }
 
     mapping(uint256 => CertificationData) public certifications;
@@ -31,6 +32,11 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
         string batchId,
         string evidenceHash,
         uint256 issuedAt
+    );
+
+    event CertificationRevoked(
+        uint256 indexed tokenId,
+        uint256 revokedAt
     );
 
     constructor() ERC721("KavachTrust Certification", "KTC") Ownable(msg.sender) {
@@ -57,7 +63,8 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
             assetId: assetId,
             batchId: batchId,
             evidenceHash: evidenceHash,
-            issuedAt: block.timestamp
+            issuedAt: block.timestamp,
+            revokedAt: 0
         });
 
         _safeMint(to, tokenId);
@@ -66,6 +73,20 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
         emit CertificationMinted(tokenId, assetId, batchId, evidenceHash, block.timestamp);
 
         return tokenId;
+    }
+
+    /**
+     * @dev Revokes a certification by setting its revokedAt timestamp.
+     * Only the owner (the KavachTrust backend) can revoke.
+     * @param tokenId The ID of the token to revoke.
+     */
+    function revokeCertification(uint256 tokenId) external onlyOwner {
+        _requireOwned(tokenId);
+        require(certifications[tokenId].revokedAt == 0, "Certification already revoked");
+
+        certifications[tokenId].revokedAt = block.timestamp;
+
+        emit CertificationRevoked(tokenId, block.timestamp);
     }
 
     /**
@@ -94,12 +115,13 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
             string memory assetId,
             string memory batchId,
             string memory evidenceHash,
-            uint256 issuedAt
+            uint256 issuedAt,
+            uint256 revokedAt
         )
     {
         _requireOwned(tokenId);
         CertificationData memory cert = certifications[tokenId];
-        return (cert.assetId, cert.batchId, cert.evidenceHash, cert.issuedAt);
+        return (cert.assetId, cert.batchId, cert.evidenceHash, cert.issuedAt, cert.revokedAt);
     }
 
     /**

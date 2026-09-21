@@ -38,6 +38,7 @@ export interface KavachTrustSBTInterface extends Interface {
       | "owner"
       | "ownerOf"
       | "renounceOwnership"
+      | "revokeCertification"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
@@ -53,6 +54,7 @@ export interface KavachTrustSBTInterface extends Interface {
       | "Approval"
       | "ApprovalForAll"
       | "CertificationMinted"
+      | "CertificationRevoked"
       | "Locked"
       | "OwnershipTransferred"
       | "Transfer"
@@ -100,6 +102,10 @@ export interface KavachTrustSBTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "revokeCertification",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256)",
@@ -159,6 +165,10 @@ export interface KavachTrustSBTInterface extends Interface {
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "revokeCertification",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -250,6 +260,19 @@ export namespace CertificationMintedEvent {
     batchId: string;
     evidenceHash: string;
     issuedAt: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace CertificationRevokedEvent {
+  export type InputTuple = [tokenId: BigNumberish, revokedAt: BigNumberish];
+  export type OutputTuple = [tokenId: bigint, revokedAt: bigint];
+  export interface OutputObject {
+    tokenId: bigint;
+    revokedAt: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -366,11 +389,12 @@ export interface KavachTrustSBT extends BaseContract {
   certifications: TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, string, string, bigint] & {
+      [string, string, string, bigint, bigint] & {
         assetId: string;
         batchId: string;
         evidenceHash: string;
         issuedAt: bigint;
+        revokedAt: bigint;
       }
     ],
     "view"
@@ -381,11 +405,12 @@ export interface KavachTrustSBT extends BaseContract {
   getCertification: TypedContractMethod<
     [tokenId: BigNumberish],
     [
-      [string, string, string, bigint] & {
+      [string, string, string, bigint, bigint] & {
         assetId: string;
         batchId: string;
         evidenceHash: string;
         issuedAt: bigint;
+        revokedAt: bigint;
       }
     ],
     "view"
@@ -412,6 +437,12 @@ export interface KavachTrustSBT extends BaseContract {
   ownerOf: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
+
+  revokeCertification: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   "safeTransferFrom(address,address,uint256)": TypedContractMethod<
     [from: AddressLike, to: AddressLike, tokenId: BigNumberish],
@@ -477,11 +508,12 @@ export interface KavachTrustSBT extends BaseContract {
   ): TypedContractMethod<
     [arg0: BigNumberish],
     [
-      [string, string, string, bigint] & {
+      [string, string, string, bigint, bigint] & {
         assetId: string;
         batchId: string;
         evidenceHash: string;
         issuedAt: bigint;
+        revokedAt: bigint;
       }
     ],
     "view"
@@ -494,11 +526,12 @@ export interface KavachTrustSBT extends BaseContract {
   ): TypedContractMethod<
     [tokenId: BigNumberish],
     [
-      [string, string, string, bigint] & {
+      [string, string, string, bigint, bigint] & {
         assetId: string;
         batchId: string;
         evidenceHash: string;
         issuedAt: bigint;
+        revokedAt: bigint;
       }
     ],
     "view"
@@ -532,6 +565,9 @@ export interface KavachTrustSBT extends BaseContract {
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "revokeCertification"
+  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "safeTransferFrom(address,address,uint256)"
   ): TypedContractMethod<
@@ -600,6 +636,13 @@ export interface KavachTrustSBT extends BaseContract {
     CertificationMintedEvent.OutputObject
   >;
   getEvent(
+    key: "CertificationRevoked"
+  ): TypedContractEvent<
+    CertificationRevokedEvent.InputTuple,
+    CertificationRevokedEvent.OutputTuple,
+    CertificationRevokedEvent.OutputObject
+  >;
+  getEvent(
     key: "Locked"
   ): TypedContractEvent<
     LockedEvent.InputTuple,
@@ -660,6 +703,17 @@ export interface KavachTrustSBT extends BaseContract {
       CertificationMintedEvent.InputTuple,
       CertificationMintedEvent.OutputTuple,
       CertificationMintedEvent.OutputObject
+    >;
+
+    "CertificationRevoked(uint256,uint256)": TypedContractEvent<
+      CertificationRevokedEvent.InputTuple,
+      CertificationRevokedEvent.OutputTuple,
+      CertificationRevokedEvent.OutputObject
+    >;
+    CertificationRevoked: TypedContractEvent<
+      CertificationRevokedEvent.InputTuple,
+      CertificationRevokedEvent.OutputTuple,
+      CertificationRevokedEvent.OutputObject
     >;
 
     "Locked(uint256)": TypedContractEvent<

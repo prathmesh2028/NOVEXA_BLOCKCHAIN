@@ -16,6 +16,7 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/audit", label: "Audit Logs", icon: "≡" },
       { to: "/app/system-activity", label: "System Activity", icon: "◎" },
       { to: "/app/settings", label: "Settings", icon: "⚙" },
+      { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
     ],
   },
   "nft-creator": {
@@ -39,6 +40,7 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/evidence", label: "Evidence", icon: "◫" },
       { to: "/app/inspections", label: "Inspections", icon: "◌" },
       { to: "/app/lifecycle", label: "Lifecycle", icon: "◷" },
+      { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
     ],
   },
   auditor: {

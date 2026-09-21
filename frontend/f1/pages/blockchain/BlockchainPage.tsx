@@ -3,7 +3,7 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import StatCard from "../../components/ui/StatCard";
 import { useState, useEffect } from "react";
-import { formatDateTime, shortHash } from "../../data/mockData";
+import { formatDateTime, shortHash } from "../../data/utils";
 import { blockchainService, BlockchainTransactionResponse } from "../../services/blockchain";
 import { dashboardService } from "../../services/dashboard";
 
