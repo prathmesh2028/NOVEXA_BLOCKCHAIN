@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { AuditService } from '../../asset-management/audit/audit.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -170,6 +170,59 @@ export class CertificationsService {
       });
     } catch (e: any) {
       if (e instanceof BadRequestException || e instanceof ConflictException) throw e;
+      throw e;
+    }
+  }
+
+  async revokeCertification(id: string, revokedBy: string, reason?: string) {
+    try {
+      const cert = await this.prisma.certification.findFirst({
+        where: { OR: [{ id }, { certId: id }] },
+        include: { asset: true },
+      });
+
+      if (!cert) {
+        throw new NotFoundException(`Certification ${id} not found`);
+      }
+
+      if (cert.status === 'REVOKED') {
+        throw new BadRequestException(`Certification ${cert.certId} is already revoked`);
+      }
+
+      return await this.prisma.$transaction(async (tx) => {
+        const updated = await tx.certification.update({
+          where: { id: cert.id },
+          data: {
+            status: 'REVOKED',
+            revokedAt: new Date(),
+            revokedBy,
+            revokeReason: reason || 'Revoked by authority',
+          },
+        });
+
+        await tx.asset.update({
+          where: { id: cert.assetId },
+          data: { certStatus: 'REVOKED' },
+        });
+
+        await this.auditService.recordEvent(
+          {
+            eventType: 'CERTIFICATION_REVOKED',
+            actorId: revokedBy,
+            action: `Certification ${cert.certId} revoked`,
+            resourceType: 'Certification',
+            resourceId: cert.id,
+            result: 'SUCCESS',
+            details: `Revocation reason: ${reason || 'Revoked by authority'}`,
+          },
+          tx,
+        );
+
+        this.logger.log(`Certification ${cert.certId} revoked by ${revokedBy}`);
+        return this.mapCert(updated);
+      });
+    } catch (e: any) {
+      if (e instanceof NotFoundException || e instanceof BadRequestException) throw e;
       throw e;
     }
   }

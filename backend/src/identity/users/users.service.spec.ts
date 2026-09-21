@@ -74,25 +74,7 @@ describe('UsersService', () => {
       ).rejects.toThrow(ConflictException);
     });
 
-    it('returns mock user when database is offline in DEMO mode', async () => {
-      process.env.APP_ENV = 'demo';
-      mockPrisma.user.create.mockRejectedValue(new Error('Connection refused'));
-
-      const result = await service.inviteUser({
-        email: 'offline@example.com',
-        name: 'Offline User',
-        role: AppRole.NFT_CREATOR,
-      });
-
-      // Demo/offline fallback — returns synthetic response, not thrown error
-      expect(result.email).toBe('offline@example.com');
-      expect(result.status).toBe('PENDING');
-      expect(result.roles).toContain(AppRole.NFT_CREATOR);
-    });
-
-    it('throws database error when database is offline in NON-DEMO mode', async () => {
-      process.env.APP_ENV = 'production';
-      process.env.NODE_ENV = 'production';
+    it('throws database error when database is offline during invite', async () => {
       mockPrisma.user.create.mockRejectedValue(new Error('Connection refused'));
 
       await expect(
@@ -130,45 +112,64 @@ describe('UsersService', () => {
       expect(result.items[0].roles).toContain('ADMIN');
     });
 
-    it('falls back to FALLBACK_USERS when database is offline in DEMO mode', async () => {
-      process.env.APP_ENV = 'demo';
-      mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
-      mockPrisma.user.count.mockRejectedValue(new Error('DB offline'));
+    it('filters by search term in database query', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([
+        {
+          id: 'uuid-1',
+          email: 'arjun@example.com',
+          name: 'Arjun Mehta',
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          roles: [{ role: 'ADMIN' }],
+          actor: null,
+        },
+      ]);
+      mockPrisma.user.count.mockResolvedValue(1);
 
-      const result = await service.listUsers({});
-
-      // Should return non-ALT canonical users from fallback-data
-      expect(result.items.length).toBeGreaterThan(0);
-      for (const user of result.items) {
-        expect(user.id).not.toMatch(/-ALT$/);
-      }
+      const result = await service.listUsers({ search: 'Arjun' });
+      expect(mockPrisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: [
+              { name: { contains: 'Arjun', mode: 'insensitive' } },
+              { email: { contains: 'Arjun', mode: 'insensitive' } },
+            ],
+          }),
+        }),
+      );
+      expect(result.items).toHaveLength(1);
     });
 
-    it('throws database error when database is offline in NON-DEMO mode', async () => {
-      process.env.APP_ENV = 'production';
-      process.env.NODE_ENV = 'production';
+    it('filters by role in database query', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([
+        {
+          id: 'uuid-1',
+          email: 'admin@example.com',
+          name: 'Admin User',
+          status: 'ACTIVE',
+          createdAt: new Date(),
+          roles: [{ role: 'ADMIN' }],
+          actor: null,
+        },
+      ]);
+      mockPrisma.user.count.mockResolvedValue(1);
+
+      const result = await service.listUsers({ role: 'ADMIN' });
+      expect(mockPrisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            roles: { some: { role: 'ADMIN' } },
+          }),
+        }),
+      );
+      expect(result.items[0].roles).toContain('ADMIN');
+    });
+
+    it('throws database error when database is offline', async () => {
       mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
       mockPrisma.user.count.mockRejectedValue(new Error('DB offline'));
 
       await expect(service.listUsers({})).rejects.toThrow('DB offline');
-    });
-
-    it('filters by search term on fallback data in DEMO mode', async () => {
-      process.env.APP_ENV = 'demo';
-      mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
-
-      const result = await service.listUsers({ search: 'Arjun' });
-
-      expect(result.items.every((u: any) => u.name.includes('Arjun'))).toBe(true);
-    });
-
-    it('filters by role on fallback data in DEMO mode', async () => {
-      process.env.APP_ENV = 'demo';
-      mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
-
-      const result = await service.listUsers({ role: 'ADMIN' });
-
-      expect(result.items.every((u: any) => u.roles.includes('ADMIN'))).toBe(true);
     });
   });
 });

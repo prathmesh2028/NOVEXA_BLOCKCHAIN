@@ -60,4 +60,14 @@ export class CertificationsController {
       issuedByDid: req.user.did,
     });
   }
+
+  @Post(':id/revoke')
+  @CasbinPolicy('/api/v1/certifications', 'POST')
+  async revokeCertification(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+    @Req() req: any,
+  ) {
+    return this.certificationsService.revokeCertification(id, req.user.sub, body?.reason);
+  }
 }
