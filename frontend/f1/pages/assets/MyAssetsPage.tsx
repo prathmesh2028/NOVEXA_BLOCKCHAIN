@@ -4,7 +4,7 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import RoleBadge from "../../components/ui/RoleBadge";
 import { assetService, AssetResponse } from "../../services/assets";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 
 export default function MyAssetsPage() {
   const [assets, setAssets] = useState<AssetResponse[]>([]);

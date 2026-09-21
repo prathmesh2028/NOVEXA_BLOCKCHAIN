@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 
 export default function InspectionsPage() {
   const [inspections, setInspections] = useState<any[]>([]);

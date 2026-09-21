@@ -53,6 +53,12 @@ export class UsersService {
         throw new ConflictException(`A user with email '${data.email}' already exists`);
       }
 
+      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
+      if (!isDemoMode) {
+        this.logger.error(`Database failure during user invitation: ${e?.message}`, e?.stack);
+        throw e;
+      }
+
       // Demo/offline fallback — return a synthetic success response
       this.logger.warn(`Database unavailable, returning mock user (code: ${e?.code})`);
       const mockId = `user-${Date.now()}`;
@@ -112,45 +118,10 @@ export class UsersService {
       users = dbUsers;
       total = dbTotal;
     } catch (e: any) {
-      const fallback = (await import('../../core/common/fallback-data')).FALLBACK_USERS;
-      // Exclude ALT variants — only return canonical users (no -ALT suffix IDs)
-      const canonical = fallback.filter(
-        (u) => !u.id.endsWith('-ALT'),
-      );
-
-      // Apply search filter if provided
-      let filtered = canonical;
-      if (params.search) {
-        const q = params.search.toLowerCase();
-        filtered = filtered.filter(
-          (u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
-        );
-      }
-      if (params.role) {
-        filtered = filtered.filter((u) => u.roles.includes(params.role!));
-      }
-      if (params.status) {
-        filtered = filtered.filter((u) => u.status === params.status);
-      }
-
-      return {
-        items: filtered.map((u) => ({
-          id: u.id,
-          email: u.email,
-          name: u.name,
-          status: u.status,
-          roles: u.roles,
-          did: u.actor?.did || null,
-          identity_status: u.actor?.identity_status || null,
-          last_active: u.lastActive || u.last_active,
-          created_at: u.createdAt || u.created_at,
-        })),
-        total: filtered.length,
-        page,
-        page_size: pageSize,
-        has_next: false,
-      };
+      this.logger.error(`Database failure in listUsers: ${e?.message}`, e?.stack);
+      throw e;
     }
+
 
     return {
       items: users.map(u => ({

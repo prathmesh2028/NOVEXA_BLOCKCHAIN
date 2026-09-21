@@ -24,7 +24,7 @@ export interface LoginResponse {
 }
 
 export const authService = {
-  login: async (email: string, password: string = 'password') => {
+  login: async (email: string, password: string) => {
     const data = await api.post<LoginResponse>('/auth/login', { email, password });
     localStorage.setItem('kavach_token', data.access_token);
     return data;

@@ -23,6 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ApprovalsModule } from './asset-management/approvals/approvals.module';
 import { PhysicalBindingsModule } from './asset-management/physical-bindings/physical-bindings.module';
 import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
+import { SupplyChainModule } from './supply-chain/supply-chain.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
     NotificationsModule,
     ApprovalsModule,
     PhysicalBindingsModule,
+    SupplyChainModule,
   ],
 })
 export class AppModule implements NestModule {

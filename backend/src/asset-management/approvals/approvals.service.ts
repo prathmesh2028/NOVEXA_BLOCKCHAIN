@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException, Optional, Inject } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
-import { NotificationPort } from '../../notifications/notification.port';
+import { INotificationPort, NOTIFICATION_PORT } from '../../notifications/notification.port';
 import { AuditService } from '../audit/audit.service';
 import { AppRole, ApprovalStage, ApprovalStatus } from '@prisma/client';
 import * as crypto from 'crypto';
@@ -31,30 +31,15 @@ export class ApprovalsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    @Inject('NotificationPort') private readonly notificationsService: NotificationPort,
+    @Inject(NOTIFICATION_PORT) private readonly notificationsService: INotificationPort,
     @Optional() @Inject(AuditService) private readonly auditService?: AuditService,
   ) {}
 
   async requestApproval(data: RequestApprovalDto) {
-    const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-
     // 1. Validate asset exists
-    let asset: any = null;
-    try {
-      asset = await this.prisma.asset.findFirst({
-        where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
-      });
-    } catch (e: any) {
-      if (!isDemoMode) throw e;
-    }
-
-    if (!asset && isDemoMode) {
-      const { FALLBACK_ASSETS } = await import('../../core/common/fallback-data');
-      const found = FALLBACK_ASSETS.find(a => a.id === data.assetId || (a as any).assetId === data.assetId);
-      if (found) {
-        asset = { id: found.id, assetId: found.id, lifecycleState: found.lifecycle, model: found.model };
-      }
-    }
+    const asset = await this.prisma.asset.findFirst({
+      where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
+    });
 
     if (!asset) {
       throw new NotFoundException(`Asset ${data.assetId} not found`);
@@ -65,23 +50,14 @@ export class ApprovalsService {
     const entityId = data.entityId || asset.id;
 
     // 2. Check for duplicate pending approval on the same entity and stage
-    let existingPending: any = null;
-    try {
-      existingPending = await this.prisma.approval.findFirst({
-        where: {
-          assetId: asset.id,
-          entityId,
-          stage,
-          status: 'PENDING',
-        },
-      });
-    } catch (e: any) {
-      if (!isDemoMode) throw e;
-      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
-      existingPending = FALLBACK_APPROVALS_ITEMS.find(
-        a => (a.assetId === asset.id || a.asset?.assetId === asset.id) && a.stage === stage && a.status === 'PENDING',
-      );
-    }
+    const existingPending = await this.prisma.approval.findFirst({
+      where: {
+        assetId: asset.id,
+        entityId,
+        stage,
+        status: 'PENDING',
+      },
+    });
 
     if (existingPending) {
       throw new ConflictException(
@@ -89,13 +65,7 @@ export class ApprovalsService {
       );
     }
 
-    let count = 0;
-    try {
-      count = await this.prisma.approval.count();
-    } catch (e) {
-      if (!isDemoMode) throw e;
-      count = 6;
-    }
+    const count = await this.prisma.approval.count();
     const approvalId = `APR-${new Date().getFullYear()}-${String(count + 1).padStart(5, '0')}`;
 
     try {
@@ -163,53 +133,8 @@ export class ApprovalsService {
         return approval;
       });
     } catch (e: any) {
-      if (!isDemoMode) {
-        this.logger.error(`Database failure in requestApproval: ${e.message}`, e.stack);
-        throw e;
-      }
-
-      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
-      const fallbackApproval: any = {
-        id: `apr-fallback-${Date.now()}`,
-        approvalId,
-        assetId: asset.id,
-        entityType,
-        entityId,
-        stage,
-        status: 'PENDING',
-        requestedById: data.requestedById,
-        requestedByName: data.requestedByName || 'Technician',
-        requestedByRole: data.requestedByRole || 'TECHNICIAN',
-        comments: data.comments || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        asset: {
-          id: asset.id,
-          assetId: asset.assetId,
-          serialNumber: asset.serialNumber || 'SN-DEMO',
-          lifecycleState: asset.lifecycleState || 'QUALITY_INSPECTION_PENDING',
-          model: asset.model || 'Defence Standard',
-        },
-      };
-
-      FALLBACK_APPROVALS_ITEMS.unshift(fallbackApproval);
-
-      try {
-        await this.notificationsService.createNotification({
-          recipientRole: 'NFT_CREATOR',
-          title: `Approval Required: ${approvalId}`,
-          message: `Asset ${asset.assetId} submitted for ${stage} by ${data.requestedByName || 'Technician'}.`,
-          type: 'APPROVAL_REQUIRED',
-          severity: 'WARNING',
-          link: `/app/approvals/${fallbackApproval.id}`,
-          metadata: { approvalId, assetId: asset.assetId, stage },
-        });
-      } catch (notifErr) {
-        // Safe swallow
-      }
-
-      this.logger.log(`[DEMO MODE] Approval ${approvalId} created in-memory for asset ${asset.assetId}`);
-      return fallbackApproval;
+      this.logger.error(`Database failure in requestApproval: ${e.message}`, e.stack);
+      throw e;
     }
   }
 
@@ -261,31 +186,8 @@ export class ApprovalsService {
         hasNext: skip + pageSize < total,
       };
     } catch (e: any) {
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        this.logger.error(`Database failure in listApprovals: ${e.message}`, e.stack);
-        throw e;
-      }
-      this.logger.warn(
-        'Database offline in DEMO mode — returning demo fallback approvals',
-      );
-      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
-      let filtered = [...FALLBACK_APPROVALS_ITEMS];
-      if (params.status) filtered = filtered.filter(a => a.status === params.status);
-      if (params.stage) filtered = filtered.filter(a => a.stage === params.stage);
-      if (params.assetId) {
-        filtered = filtered.filter(a => a.assetId === params.assetId || a.asset?.assetId === params.assetId);
-      }
-      const total = filtered.length;
-      return {
-        items: filtered.slice(skip, skip + pageSize),
-        total,
-        page,
-        pageSize,
-        hasNext: skip + pageSize < total,
-        demo_mode: true,
-        demo_note: '[DEMO MODE] Database offline — served from synthetic fallback data',
-      };
+      this.logger.error(`Database failure in listApprovals: ${e.message}`, e.stack);
+      throw e;
     }
   }
 
@@ -311,35 +213,15 @@ export class ApprovalsService {
       return approval;
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        this.logger.error(`Database failure in getApproval: ${e.message}`, e.stack);
-        throw e;
-      }
-      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
-      const found = FALLBACK_APPROVALS_ITEMS.find(a => a.id === id || a.approvalId === id);
-      if (!found) {
-        throw new NotFoundException(`Approval ${id} not found`);
-      }
-      return found;
+      this.logger.error(`Database failure in getApproval: ${e.message}`, e.stack);
+      throw e;
     }
   }
 
   async decideApproval(id: string, decision: DecideApprovalDto) {
-    let approval: any = null;
-    try {
-      approval = await this.prisma.approval.findUnique({ where: { id }, include: { asset: true } });
-      if (!approval) {
-        approval = await this.prisma.approval.findUnique({ where: { approvalId: id }, include: { asset: true } });
-      }
-    } catch (e) {
-      // Handled below if offline
-    }
-
-    const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-    if (!approval && isDemoMode) {
-      const { FALLBACK_APPROVALS_ITEMS } = await import('../../core/common/fallback-data');
-      approval = FALLBACK_APPROVALS_ITEMS.find(a => a.id === id || a.approvalId === id);
+    let approval = await this.prisma.approval.findUnique({ where: { id }, include: { asset: true } });
+    if (!approval) {
+      approval = await this.prisma.approval.findUnique({ where: { approvalId: id }, include: { asset: true } });
     }
 
     if (!approval) {
@@ -434,33 +316,8 @@ export class ApprovalsService {
         return updated;
       });
     } catch (e: any) {
-      if (!isDemoMode) {
-        this.logger.error(`Database failure in decideApproval: ${e.message}`, e.stack);
-        throw e;
-      }
-      approval.status = decision.status;
-      approval.approverId = decision.approverId;
-      approval.approverName = decision.approverName;
-      approval.approverRole = decision.approverRole;
-      approval.comments = decision.comments;
-      approval.decidedAt = new Date();
-
-      try {
-        await this.notificationsService.createNotification({
-          recipientId: approval.requestedById || 'USR-003',
-          title: `Approval ${decision.status}: ${approval.approvalId}`,
-          message: `Your approval request for ${approval.asset?.assetId || approval.assetId || 'Asset'} was ${decision.status.toLowerCase()} by ${decision.approverName || decision.approverRole}.`,
-          type: 'APPROVAL_DECIDED',
-          severity: decision.status === 'APPROVED' ? 'INFO' : 'CRITICAL',
-          link: `/app/approvals/${approval.id}`,
-          metadata: { approvalId: approval.approvalId, status: decision.status },
-        });
-      } catch (notifErr) {
-        // Safe swallow
-      }
-
-      this.logger.log(`[DEMO MODE] Approval ${approval.approvalId} decided: ${decision.status} by ${decision.approverId}`);
-      return approval;
+      this.logger.error(`Database failure in decideApproval: ${e.message}`, e.stack);
+      throw e;
     }
   }
 }
