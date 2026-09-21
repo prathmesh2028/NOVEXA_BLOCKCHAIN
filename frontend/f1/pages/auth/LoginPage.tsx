@@ -6,8 +6,8 @@ import "./LoginPage.css";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("demo");
+  const [password, setPassword] = useState("demo");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,6 +28,11 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
+
+  const fillCredentials = (eMail: string, pass: string) => {
+    setEmail(eMail);
+    setPassword(pass);
+  };
 
   return (
     <div className="login-page">
@@ -182,9 +187,104 @@ export default function LoginPage() {
               <h1 className="login-card-title">PLATFORM ACCESS</h1>
             </div>
             <p className="login-card-desc">
-              Enter your credentials to access the platform. Your role and permissions
-              are determined by your account configuration.
+              Enter your credentials to access the platform. Use <code style={{ color: "#60a5fa" }}>demo</code> / <code style={{ color: "#60a5fa" }}>demo</code> for instant access.
             </p>
+          </div>
+
+          {/* ─── 4 DEMO USER ACCOUNTS SELECTOR ─── */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: "#60a5fa", letterSpacing: "0.08em", marginBottom: 10 }}>
+              SELECT DEMO USER ACCOUNT (4 ROLES AVAILABLE):
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              {/* User 1: Admin */}
+              <div
+                onClick={() => {
+                  setEmail("a.mehta@bel-defence.in");
+                  setPassword("password");
+                }}
+                style={{
+                  padding: "10px",
+                  borderRadius: "8px",
+                  background: email === "a.mehta@bel-defence.in" ? "rgba(96, 165, 250, 0.2)" : "rgba(15, 23, 42, 0.6)",
+                  border: email === "a.mehta@bel-defence.in" ? "1px solid #60a5fa" : "1px solid rgba(148, 163, 184, 0.2)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#f8fafc" }}>Arjun Mehta</span>
+                  <span style={{ fontSize: "10px", fontWeight: 700, background: "rgba(239, 68, 68, 0.2)", color: "#fca5a5", padding: "2px 6px", borderRadius: "4px" }}>ADMIN</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>a.mehta@bel-defence.in</div>
+              </div>
+
+              {/* User 2: NFT Creator */}
+              <div
+                onClick={() => {
+                  setEmail("p.sharma@bel-defence.in");
+                  setPassword("password");
+                }}
+                style={{
+                  padding: "10px",
+                  borderRadius: "8px",
+                  background: email === "p.sharma@bel-defence.in" ? "rgba(96, 165, 250, 0.2)" : "rgba(15, 23, 42, 0.6)",
+                  border: email === "p.sharma@bel-defence.in" ? "1px solid #60a5fa" : "1px solid rgba(148, 163, 184, 0.2)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#f8fafc" }}>Priya Sharma</span>
+                  <span style={{ fontSize: "10px", fontWeight: 700, background: "rgba(168, 85, 247, 0.2)", color: "#d8b4fe", padding: "2px 6px", borderRadius: "4px" }}>CREATOR</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>p.sharma@bel-defence.in</div>
+              </div>
+
+              {/* User 3: Technician */}
+              <div
+                onClick={() => {
+                  setEmail("r.kumar@bel-defence.in");
+                  setPassword("password");
+                }}
+                style={{
+                  padding: "10px",
+                  borderRadius: "8px",
+                  background: email === "r.kumar@bel-defence.in" ? "rgba(96, 165, 250, 0.2)" : "rgba(15, 23, 42, 0.6)",
+                  border: email === "r.kumar@bel-defence.in" ? "1px solid #60a5fa" : "1px solid rgba(148, 163, 184, 0.2)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#f8fafc" }}>Rajesh Kumar</span>
+                  <span style={{ fontSize: "10px", fontWeight: 700, background: "rgba(59, 130, 246, 0.2)", color: "#93c5fd", padding: "2px 6px", borderRadius: "4px" }}>TECH</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>r.kumar@bel-defence.in</div>
+              </div>
+
+              {/* User 4: Auditor */}
+              <div
+                onClick={() => {
+                  setEmail("d.nair@bel-defence.in");
+                  setPassword("password");
+                }}
+                style={{
+                  padding: "10px",
+                  borderRadius: "8px",
+                  background: email === "d.nair@bel-defence.in" ? "rgba(96, 165, 250, 0.2)" : "rgba(15, 23, 42, 0.6)",
+                  border: email === "d.nair@bel-defence.in" ? "1px solid #60a5fa" : "1px solid rgba(148, 163, 184, 0.2)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#f8fafc" }}>Deepa Nair</span>
+                  <span style={{ fontSize: "10px", fontWeight: 700, background: "rgba(34, 197, 94, 0.2)", color: "#86efac", padding: "2px 6px", borderRadius: "4px" }}>AUDITOR</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>d.nair@bel-defence.in</div>
+              </div>
+            </div>
           </div>
 
           <form onSubmit={handleSignIn} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -205,13 +305,13 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Email */}
+            {/* Email / Username */}
             <div className="login-stagger-2">
-              <div className="login-section-label" style={{ marginBottom: 8 }}>EMAIL ADDRESS</div>
+              <div className="login-section-label" style={{ marginBottom: 8 }}>USERNAME / EMAIL ADDRESS</div>
               <input
-                type="email"
+                type="text"
                 id="login-email"
-                autoComplete="email"
+                autoComplete="username"
                 placeholder="you@kavachtrust.bel.in"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
