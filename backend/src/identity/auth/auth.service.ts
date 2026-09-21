@@ -46,15 +46,20 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<TokenResponse> {
     let targetEmail = email ? email.trim() : '';
-    if (
-      targetEmail.toLowerCase() === 'demo' ||
-      targetEmail.toLowerCase() === 'demo@kavachtrust.com' ||
-      targetEmail.toLowerCase() === 'admin'
-    ) {
-      targetEmail = 'a.mehta@bel-defence.in';
+    const aliasMap: Record<string, string> = {
+      'demo': 'a.mehta@bel-defence.in',
+      'demo@kavachtrust.com': 'a.mehta@bel-defence.in',
+      'admin': 'a.mehta@bel-defence.in',
+      'admin@kavachtrust.gov.in': 'a.mehta@bel-defence.in',
+      'nft@kavachtrust.gov.in': 'p.sharma@bel-defence.in',
+      'tech@kavachtrust.gov.in': 'r.kumar@bel-defence.in',
+      'auditor@kavachtrust.gov.in': 'd.nair@bel-defence.in',
+    };
+    if (aliasMap[targetEmail.toLowerCase()]) {
+      targetEmail = aliasMap[targetEmail.toLowerCase()];
     }
 
-    let user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email: targetEmail },
       include: {
         roles: true,
@@ -63,39 +68,24 @@ export class AuthService {
     });
 
     if (!user) {
-      const roleMap: Record<string, { name: string; role: 'ADMIN' | 'NFT_CREATOR' | 'TECHNICIAN' | 'AUDITOR' }> = {
-        'a.mehta@bel-defence.in': { name: 'Arjun Mehta', role: 'ADMIN' },
-        'p.sharma@bel-defence.in': { name: 'Priya Sharma', role: 'NFT_CREATOR' },
-        'r.kumar@bel-defence.in': { name: 'Rajesh Kumar', role: 'TECHNICIAN' },
-        'd.nair@bel-defence.in': { name: 'Deepa Nair', role: 'AUDITOR' },
-      };
-
-      const preset = roleMap[targetEmail] || { name: 'Demo User', role: 'ADMIN' };
-      const defaultHash = await bcrypt.hash('password', 10);
-
-      user = await this.prisma.user.create({
-        data: {
-          email: targetEmail,
-          name: preset.name,
-          passwordHash: defaultHash,
-          status: 'ACTIVE',
-          roles: {
-            create: { role: preset.role },
-          },
-        },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid =
-      password === 'demo' ||
-      password === 'password' ||
-      (user.passwordHash
-        ? await bcrypt.compare(password, user.passwordHash)
-        : false);
+    let isPasswordValid = user.passwordHash
+      ? await bcrypt.compare(password, user.passwordHash)
+      : false;
+
+    if (!isPasswordValid && (password === 'demo' || password === 'password')) {
+      const canonicalEmails = [
+        'a.mehta@bel-defence.in',
+        'p.sharma@bel-defence.in',
+        'r.kumar@bel-defence.in',
+        'd.nair@bel-defence.in',
+      ];
+      if (canonicalEmails.includes(user.email)) {
+        isPasswordValid = true;
+      }
+    }
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');

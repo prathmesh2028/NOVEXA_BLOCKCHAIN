@@ -1,11 +1,14 @@
 p, ADMIN, /*, (GET)|(POST)|(PUT)|(DELETE)|(PATCH)
-p, NFT_CREATOR, /api/v1/certifications*, (GET)|(POST)
+p, NFT_CREATOR, /api/v1/certifications*, (GET)|(POST)|(PATCH)
 p, NFT_CREATOR, /api/v1/assets*, GET
 p, NFT_CREATOR, /api/v1/evidence*, GET
 p, NFT_CREATOR, /api/v1/approvals*, (GET)|(POST)|(PATCH)
 p, NFT_CREATOR, /api/v1/notifications*, (GET)|(POST)|(PATCH)
 p, NFT_CREATOR, /api/v1/blockchain*, GET
 p, NFT_CREATOR, /api/v1/verification*, GET
+p, NFT_CREATOR, /api/v1/dashboard*, GET
+p, NFT_CREATOR, /api/v1/search*, GET
+p, NFT_CREATOR, /api/v1/supply-chain*, GET
 p, TECHNICIAN, /api/v1/assets*, (GET)|(POST)|(PUT)
 p, TECHNICIAN, /api/v1/batches*, GET
 p, TECHNICIAN, /api/v1/evidence*, (GET)|(POST)
@@ -17,6 +20,9 @@ p, TECHNICIAN, /api/v1/approvals*, (GET)|(POST)
 p, TECHNICIAN, /api/v1/notifications*, (GET)|(POST)|(PATCH)
 p, TECHNICIAN, /api/v1/blockchain*, GET
 p, TECHNICIAN, /api/v1/verification*, GET
+p, TECHNICIAN, /api/v1/dashboard*, GET
+p, TECHNICIAN, /api/v1/search*, GET
+p, TECHNICIAN, /api/v1/supply-chain*, (GET)|(POST)|(PATCH)
 p, AUDITOR, /*, GET
 p, AUDITOR, /api/v1/notifications*, (GET)|(POST)|(PATCH)
 
