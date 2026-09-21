@@ -121,7 +121,7 @@ export default function EvidencePage() {
                 </tr>
               ) : evidence.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>No evidence records found.</td>
+                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>No records found</td>
                 </tr>
               ) : (
                 evidence.map((e) => (

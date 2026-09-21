@@ -4,18 +4,18 @@ import AuditTimeline from "../../components/ui/AuditTimeline";
 import { auditService, AuditEventResponse } from "../../services/audit";
 import { supplyChainService, SupplyChainEventResponse } from "../../services/supply-chain";
 
-export default function AuditPage() {
+export default function HistoryPage() {
   const [filter, setFilter] = useState("ALL");
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
 
-  const fetchEvents = async () => {
+  const fetchHistory = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch both audit events and supply chain events to provide comprehensive system activity
+      // Fetch platform audit and supply-chain events
       const [auditRes, scRes] = await Promise.allSettled([
         auditService.listAuditEvents({ page_size: 100 }),
         supplyChainService.listEvents({ page_size: 50 }),
@@ -48,7 +48,7 @@ export default function AuditPage() {
             timestamp: e.created_at,
             actor: e.actor || "SUPPLY_CHAIN",
             role: "SYSTEM",
-            action: e.event_type || "SUPPLY_CHAIN_UPDATE",
+            action: e.event_type || "SUPPLY_CHAIN_EVENT",
             resource: `${e.entity_type}: ${e.entity_id}`,
             result: "SUCCESS",
             details: e.description,
@@ -58,19 +58,19 @@ export default function AuditPage() {
         });
       }
 
-      // Sort chronological descending
+      // Sort by timestamp descending
       items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       setEvents(items);
     } catch (err: any) {
-      console.error("System Activity load error:", err);
-      setError(err.message || "Failed to load system activity records");
+      console.error("Failed to load history:", err);
+      setError(err.message || "Failed to load history events");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchHistory();
   }, []);
 
   const filtered = filter === "ALL"
@@ -82,11 +82,14 @@ export default function AuditPage() {
   return (
     <div className="page-fade">
       <PageHeader
-        title="System Activity"
-        subtitle="Chronological record of platform actions, security events, and supply-chain updates"
-        breadcrumbs={[{ label: "Dashboard", to: "/app/dashboard" }, { label: "System Activity" }]}
+        title="History"
+        subtitle="Chronological historical log of platform events, asset certifications, and lifecycle transitions"
+        breadcrumbs={[
+          { label: "Dashboard", to: "/app/dashboard" },
+          { label: "History" },
+        ]}
         actions={
-          <button className="btn-ghost" onClick={fetchEvents}>
+          <button className="btn-ghost" onClick={fetchHistory}>
             ↻ Refresh
           </button>
         }
@@ -104,8 +107,8 @@ export default function AuditPage() {
           lineHeight: 1.5,
         }}
       >
-        <strong style={{ color: "#60a5fa" }}>ⓘ Tamper-evident system activity log: </strong>
-        All system activity events are cryptographically linked to blockchain records. Any attempt to modify or delete historical events is detectable.
+        <strong style={{ color: "#60a5fa" }}>Historical Record: </strong>
+        Tamper-resistant timeline of all verified asset milestones, certification states, and custody transfers.
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
@@ -138,25 +141,24 @@ export default function AuditPage() {
 
       {loading ? (
         <div className="panel" style={{ padding: 40, textAlign: "center", color: "#475569" }}>
-          Loading system activity events...
+          Loading history events...
         </div>
       ) : error ? (
         <div className="panel" style={{ padding: 40, textAlign: "center" }}>
           <div style={{ color: "#ef4444", marginBottom: 12 }}>{error}</div>
-          <button className="btn-secondary" onClick={fetchEvents}>Retry</button>
+          <button className="btn-secondary" onClick={fetchHistory}>Retry</button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="panel" style={{ padding: 40, textAlign: "center" }}>
-          <div style={{ color: "#475569" }}>No system activity events match this filter</div>
+          <div style={{ color: "#475569" }}>No history events match this filter</div>
         </div>
       ) : (
         <AuditTimeline events={filtered} />
       )}
 
       <div style={{ marginTop: 20, fontSize: "0.75rem", color: "#475569" }}>
-        Showing {filtered.length} of {events.length || total} system activity records (Powered by Backend API)
+        Showing {filtered.length} of {events.length || total} platform history events (Powered by Backend API)
       </div>
     </div>
   );
 }
-

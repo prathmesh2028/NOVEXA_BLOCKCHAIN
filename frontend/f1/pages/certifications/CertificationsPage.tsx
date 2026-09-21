@@ -13,27 +13,62 @@ export default function CertificationsPage() {
   const [total, setTotal] = useState(0);
   const [pending, setPending] = useState(0);
   const [confirmed, setConfirmed] = useState(0);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [assetIdInput, setAssetIdInput] = useState("");
+  const [batchIdInput, setBatchIdInput] = useState("");
+  const [createStatus, setCreateStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [listRes, summaryRes] = await Promise.all([
+        certificationService.listCertifications({ page_size: 100 }),
+        dashboardService.getSummary()
+      ]);
+      setCerts(listRes.items);
+      setTotal(listRes.total);
+      setPending(summaryRes.pending_certifications);
+      setConfirmed(summaryRes.confirmed_certifications);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [listRes, summaryRes] = await Promise.all([
-          certificationService.listCertifications({ page_size: 100 }),
-          dashboardService.getSummary()
-        ]);
-        setCerts(listRes.items);
-        setTotal(listRes.total);
-        setPending(summaryRes.pending_certifications);
-        setConfirmed(summaryRes.confirmed_certifications);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assetIdInput.trim()) return;
+
+    setIsSubmitting(true);
+    setCreateStatus(null);
+    try {
+      await certificationService.createCertification({
+        asset_id: assetIdInput.trim(),
+        batch_id: batchIdInput.trim() || undefined,
+      });
+      setCreateStatus({ type: "success", message: "Certification created successfully!" });
+      setAssetIdInput("");
+      setBatchIdInput("");
+      fetchData();
+      setTimeout(() => {
+        setShowCreateModal(false);
+        setCreateStatus(null);
+      }, 1500);
+    } catch (err: any) {
+      setCreateStatus({
+        type: "error",
+        message: err.data?.message || err.message || "Failed to create certification",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="page-fade">
@@ -41,6 +76,16 @@ export default function CertificationsPage() {
         title="Certifications"
         subtitle="Non-transferable blockchain certification records for defence assets"
         breadcrumbs={[{ label: "Dashboard", to: "/app/dashboard" }, { label: "Certifications" }]}
+        actions={
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+              + Create Certification
+            </button>
+            <button className="btn-ghost" onClick={fetchData}>
+              ↻ Refresh
+            </button>
+          </div>
+        }
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
@@ -110,6 +155,110 @@ export default function CertificationsPage() {
         These certifications are locked state records. They cannot be bought, sold, or transferred.
         Each represents the verified certification state of a defence asset at a specific point in time.
       </div>
+
+      {/* Create Certification Modal */}
+      {showCreateModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(3, 7, 18, 0.75)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div className="panel" style={{ width: "100%", maxWidth: 460, padding: 24, border: "1px solid #1e3a60" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <div style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0" }}>Create Certification</div>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setCreateStatus(null);
+                }}
+                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1.2rem" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {createStatus && (
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 4,
+                    fontSize: "0.8125rem",
+                    background: createStatus.type === "success" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+                    border: `1px solid ${createStatus.type === "success" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
+                    color: createStatus.type === "success" ? "#22c55e" : "#ef4444",
+                  }}
+                >
+                  {createStatus.message}
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
+                  Asset ID *
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  style={{ width: "100%", padding: "8px 12px", background: "#0c1828", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+                  value={assetIdInput}
+                  onChange={(e) => setAssetIdInput(e.target.value)}
+                  placeholder="e.g. EF-2026-00421"
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
+                  Batch ID (Optional)
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  style={{ width: "100%", padding: "8px 12px", background: "#0c1828", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+                  value={batchIdInput}
+                  onChange={(e) => setBatchIdInput(e.target.value)}
+                  placeholder="e.g. BATCH-2026-Q1"
+                />
+              </div>
+
+              <div style={{ padding: "10px 12px", background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 4, fontSize: "0.75rem", color: "#94a3b8" }}>
+                Creating a certification initiates cryptographic verification and Soulbound Token generation on BEL-TRUST-CHAIN.
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateStatus(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={isSubmitting || !assetIdInput.trim()}
+                >
+                  {isSubmitting ? "Creating..." : "Create Certification"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

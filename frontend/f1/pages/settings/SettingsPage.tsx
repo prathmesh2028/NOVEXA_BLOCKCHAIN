@@ -11,7 +11,20 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordStatus, setPasswordStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notifications, setNotifications] = useState<Record<string, boolean>>({
+    "Certification updates": true,
+    "System alerts": true,
+    "Evidence integrity events": true,
+    "Blockchain confirmations": false,
+    "Audit events": false,
+  });
+
+  const toggleNotification = (key: string) => {
+    setNotifications((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   if (!user || !role) return null;
 
@@ -132,39 +145,47 @@ export default function SettingsPage() {
         {/* Notifications */}
         <div className="panel" style={{ padding: 24 }}>
           <div className="section-label" style={{ marginBottom: 16 }}>NOTIFICATIONS</div>
-          {[
-            { label: "Certification updates", enabled: true },
-            { label: "System alerts", enabled: true },
-            { label: "Evidence integrity events", enabled: true },
-            { label: "Blockchain confirmations", enabled: false },
-            { label: "Audit events", enabled: false },
-          ].map((pref) => (
-            <div key={pref.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #152b4a" }}>
-              <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{pref.label}</span>
-              <div
+          {Object.entries(notifications).map(([label, enabled]) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #152b4a" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: "0.8125rem", color: enabled ? "#e2e8f0" : "#94a3b8" }}>{label}</span>
+                <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: enabled ? "#22c55e" : "#64748b" }}>
+                  {enabled ? "ON" : "OFF"}
+                </span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enabled}
+                onClick={() => toggleNotification(label)}
                 style={{
-                  width: 36,
-                  height: 20,
-                  background: pref.enabled ? "#2563eb" : "#1e3a60",
-                  borderRadius: "10px",
+                  width: 40,
+                  height: 22,
+                  background: enabled ? "#2563eb" : "#1e3a60",
+                  borderRadius: "11px",
                   cursor: "pointer",
                   position: "relative",
-                  transition: "background 0.2s",
+                  transition: "background 0.2s ease",
+                  border: "none",
+                  padding: 0,
+                  display: "inline-block",
+                  outline: "none",
                 }}
               >
                 <div
                   style={{
-                    width: 14,
-                    height: 14,
+                    width: 16,
+                    height: 16,
                     background: "#fff",
                     borderRadius: "50%",
                     position: "absolute",
                     top: 3,
-                    left: pref.enabled ? 19 : 3,
-                    transition: "left 0.2s",
+                    left: enabled ? 21 : 3,
+                    transition: "left 0.2s ease",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
                   }}
                 />
-              </div>
+              </button>
             </div>
           ))}
         </div>
