@@ -250,22 +250,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
       });
     } catch (e: any) {
       if (e instanceof BadRequestException || e instanceof ForbiddenException || e instanceof ConflictException) throw e;
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.warn(`Database offline, returning mock transition event: ${e.message}`);
-        return {
-          id: `mock-event-${Date.now()}`,
-          assetId: params.assetId,
-          fromState: 'SUPPLIER_DECLARED',
-          toState: params.toState,
-          actorId: params.actorId,
-          actorDid: params.actorDid || null,
-          actorRole: params.actorRole,
-          reason: params.reason || null,
-          evidenceIds: params.evidenceIds || [],
-          idempotencyKey: params.idempotencyKey || null,
-          createdAt: new Date(),
-        };
-      }
+      this.logger.error(`Database failure in transition: ${e.message}`, e.stack);
       throw e;
     }
   }

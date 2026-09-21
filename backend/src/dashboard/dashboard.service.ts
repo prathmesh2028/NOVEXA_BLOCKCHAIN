@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../core/database/prisma.service';
 
 @Injectable()
 export class DashboardService {
+  private readonly logger = new Logger(DashboardService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getSummary() {
@@ -43,29 +45,8 @@ export class DashboardService {
         failed_verifications: failedVerifications,
       };
     } catch (e: any) {
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        throw e;
-      }
-      return {
-        total_assets: 5,
-        active_users: 8,
-        pending_users: 1,
-        total_certifications: 2,
-        pending_certifications: 1,
-        confirmed_certifications: 1,
-        total_blockchain_txs: 3,
-        total_audit_events: 7,
-        lifecycle_breakdown: {
-          UNREGISTERED: 0,
-          SUPPLIER_DECLARED: 1,
-          RECEIVED: 1,
-          INSPECTION_RECORDED: 1,
-          ACCEPTED_FOR_ASSEMBLY: 1,
-          REJECTED_QUARANTINED: 1,
-        },
-        failed_verifications: 1,
-      };
+      this.logger.error(`Database failure in getMetrics: ${e.message}`, e.stack);
+      throw e;
     }
   }
 }

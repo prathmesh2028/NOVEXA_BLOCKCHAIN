@@ -498,7 +498,45 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async handleEvidenceAnchor(event: any) {
-    this.logger.log(`Evidence anchor request for ${event.payload?.evidenceId}`);
-    return { status: 'COMPLETED' };
+    const payload = event.payload;
+    this.logger.log(`Evidence anchor request for ${payload?.evidenceId}`);
+    if (!payload?.evidenceId) {
+      return { status: 'COMPLETED' };
+    }
+
+    try {
+      const evidence = await this.prisma.evidence.findFirst({
+        where: { OR: [{ id: payload.evidenceId }, { evidenceId: payload.evidenceId }] },
+      });
+
+      if (!evidence) {
+        this.logger.warn(`Evidence ${payload.evidenceId} not found for anchoring`);
+        return { status: 'COMPLETED' };
+      }
+
+      await this.prisma.evidence.update({
+        where: { id: evidence.id },
+        data: {
+          integrityVerified: true,
+          ...(payload.blockchainTx ? { blockchainTx: payload.blockchainTx } : {}),
+        },
+      });
+
+      if (this.auditService?.recordEvent) {
+        await this.auditService.recordEvent({
+          eventType: 'EVIDENCE_ANCHOR_PROCESSED',
+          action: 'Evidence anchor processed',
+          resourceType: 'Evidence',
+          resourceId: evidence.id,
+          result: 'SUCCESS',
+          details: `Evidence ${evidence.evidenceId} anchor processed with hash ${evidence.hash}`,
+        });
+      }
+
+      return { status: 'COMPLETED' };
+    } catch (e: any) {
+      this.logger.error(`Evidence anchor failed: ${e.message}`);
+      throw e;
+    }
   }
 }
