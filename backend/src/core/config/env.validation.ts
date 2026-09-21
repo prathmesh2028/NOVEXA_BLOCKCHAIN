@@ -5,7 +5,7 @@ dotenv.config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']).default('development'),
-  APP_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']).optional().default('demo'),
+  APP_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']),
   PORT: z.coerce.number().default(8000),
   API_PREFIX: z.string().default('/api/v1'),
   LOG_LEVEL: z.string().default('debug'),

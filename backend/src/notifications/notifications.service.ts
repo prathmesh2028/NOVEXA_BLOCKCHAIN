@@ -91,30 +91,8 @@ export class NotificationsService implements INotificationPort {
         hasNext: skip + pageSize < total,
       };
     } catch (e: any) {
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        this.logger.error(`Database failure in listNotifications: ${e.message}`, e.stack);
-        throw e;
-      }
-      this.logger.warn(
-        'Database offline in DEMO mode — returning fallback notifications',
-      );
-      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
-      let filtered = FALLBACK_NOTIFICATIONS;
-      if (params.isRead !== undefined) {
-        filtered = filtered.filter(n => n.isRead === params.isRead);
-      }
-      if (params.roles && params.roles.length > 0) {
-        filtered = filtered.filter(n => !n.recipientRole || params.roles?.includes(n.recipientRole as any));
-      }
-      return {
-        items: filtered.slice(skip, skip + pageSize),
-        total: filtered.length,
-        page,
-        pageSize,
-        hasNext: skip + pageSize < filtered.length,
-        demo_mode: true,
-      };
+      this.logger.error(`Database failure in listNotifications: ${e.message}`, e.stack);
+      throw e;
     }
   }
 
@@ -135,18 +113,8 @@ export class NotificationsService implements INotificationPort {
     try {
       return await this.prisma.notification.count({ where });
     } catch (e: any) {
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        this.logger.error(`Database failure in getUnreadCount: ${e.message}`, e.stack);
-        throw e;
-      }
-      this.logger.warn('Database offline in DEMO mode — unread count calculated from fallback notifications');
-      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
-      let filtered = FALLBACK_NOTIFICATIONS.filter(n => !n.isRead);
-      if (roles && roles.length > 0) {
-        filtered = filtered.filter(n => !n.recipientRole || roles.includes(n.recipientRole as any));
-      }
-      return filtered.length;
+      this.logger.error(`Database failure in getUnreadCount: ${e.message}`, e.stack);
+      throw e;
     }
   }
 
@@ -179,18 +147,7 @@ export class NotificationsService implements INotificationPort {
       });
     } catch (e: any) {
       if (e instanceof NotFoundException || e instanceof ForbiddenException) throw e;
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        throw e;
-      }
-      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
-      const found = FALLBACK_NOTIFICATIONS.find(n => n.id === id);
-      if (!found) {
-        throw new NotFoundException(`Notification ${id} not found`);
-      }
-      found.isRead = true;
-      found.readAt = new Date();
-      return found;
+      throw e;
     }
   }
 
@@ -219,20 +176,7 @@ export class NotificationsService implements INotificationPort {
 
       return { updatedCount: result.count };
     } catch (e: any) {
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        throw e;
-      }
-      const { FALLBACK_NOTIFICATIONS } = await import('../core/common/fallback-data');
-      let count = 0;
-      for (const n of FALLBACK_NOTIFICATIONS) {
-        if (!n.isRead) {
-          n.isRead = true;
-          n.readAt = new Date();
-          count++;
-        }
-      }
-      return { updatedCount: count };
+      throw e;
     }
   }
 }

@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import VerificationPanel from "../../components/ui/VerificationPanel";
-import { ASSETS, EVIDENCE_LIST, CERTIFICATIONS, BLOCKCHAIN_TXS } from "../../data/mockData";
 import { verificationService } from "../../services/verification";
 import { assetService } from "../../services/assets";
+import { evidenceService } from "../../services/evidence";
+import { certificationService } from "../../services/certifications";
+import { blockchainService } from "../../services/blockchain";
 
 export default function VerificationCenterPage() {
   const [searchParams] = useSearchParams();
@@ -13,7 +15,10 @@ export default function VerificationCenterPage() {
     asset: any;
     ran: boolean;
     backendVerif?: any;
-  }>({ asset: null, ran: false });
+    evidence: any[];
+    cert: any;
+    txs: any[];
+  }>({ asset: null, ran: false, evidence: [], cert: null, txs: [] });
 
   const runVerification = useCallback(async (searchQuery?: string) => {
     const q = (searchQuery || query).trim().toUpperCase();
@@ -21,12 +26,15 @@ export default function VerificationCenterPage() {
 
     let foundAsset: any = null;
     let backendVerif: any = null;
+    let evidence: any[] = [];
+    let cert: any = null;
+    let txs: any[] = [];
 
     try {
       // 1. Try real backend verification API
       backendVerif = await verificationService.verifyAsset(q);
     } catch (e) {
-      console.warn("Backend verification API failed, using fallback:", e);
+      console.warn("Backend verification API failed:", e);
     }
 
     try {
@@ -45,16 +53,38 @@ export default function VerificationCenterPage() {
         };
       }
     } catch (e) {
-      // Fallback to local
+      console.warn("Backend asset API failed:", e);
+    }
+
+    if (foundAsset) {
+      try {
+        evidence = await evidenceService.listEvidence({ assetId: foundAsset.id });
+      } catch (e) {
+        console.warn("Backend evidence API failed:", e);
+      }
+
+      try {
+        if (foundAsset.certId) {
+          cert = await certificationService.getCertification(foundAsset.certId);
+        }
+      } catch (e) {
+        console.warn("Backend certification API failed:", e);
+      }
+
+      try {
+        const txList = await blockchainService.listTransactions({ assetId: foundAsset.id });
+        txs = txList.items || [];
+      } catch (e) {
+        console.warn("Backend blockchain API failed:", e);
+      }
     }
 
     if (!foundAsset) {
-      foundAsset = ASSETS.find(
-        (a) => a.id.toUpperCase() === q || a.batchId.toUpperCase() === q
-      ) ?? null;
+      setResult({ asset: null, ran: true, backendVerif, evidence: [], cert: null, txs: [] });
+      return;
     }
 
-    setResult({ asset: foundAsset, ran: true, backendVerif });
+    setResult({ asset: foundAsset, ran: true, backendVerif, evidence, cert, txs });
   }, [query]);
 
   useEffect(() => {
@@ -64,10 +94,6 @@ export default function VerificationCenterPage() {
       runVerification(idParam);
     }
   }, [searchParams, runVerification]);
-
-  const evidence = result.asset ? EVIDENCE_LIST.filter((e) => e.assetId === result.asset?.id) : [];
-  const cert = result.asset ? CERTIFICATIONS.find((c) => c.id === result.asset?.certId) : null;
-  const txs = result.asset ? BLOCKCHAIN_TXS.filter((t) => t.assetId === result.asset?.id) : [];
 
   // Build items using real backend checks if available, with graceful fallback
   let verItems: any[] = [];
@@ -87,7 +113,7 @@ export default function VerificationCenterPage() {
         {
           label: "Evidence Integrity",
           status: statusToUi(checkMap.get('evidence')?.status || 'VALID'),
-          detail: checkMap.get('evidence')?.reason || `${evidence.filter((e) => e.integrityVerified).length}/${evidence.length} files fingerprint-verified`,
+          detail: checkMap.get('evidence')?.reason || `${result.evidence.filter((e) => e.integrityVerified).length}/${result.evidence.length} files fingerprint-verified`,
         },
         {
           label: "Lifecycle Sequence",
@@ -96,13 +122,13 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Certification",
-          status: statusToUi(checkMap.get('certification')?.status || (cert?.status === 'CONFIRMED' ? 'VALID' : 'UNVERIFIED')),
-          detail: checkMap.get('certification')?.reason || (cert ? `Token: ${cert.tokenId}` : "No certification record"),
+          status: statusToUi(checkMap.get('certification')?.status || (result.cert?.status === 'CONFIRMED' ? 'VALID' : 'UNVERIFIED')),
+          detail: checkMap.get('certification')?.reason || (result.cert ? `Token: ${result.cert.tokenId}` : "No certification record"),
         },
         {
           label: "Blockchain Proof",
-          status: statusToUi(checkMap.get('blockchain')?.status || (txs.some((t) => t.status === 'CONFIRMED') ? 'VALID' : 'UNVERIFIED')),
-          detail: checkMap.get('blockchain')?.reason || (txs.length > 0 ? `${txs.filter((t) => t.status === 'CONFIRMED').length} confirmed transaction(s)` : "No on-chain records"),
+          status: statusToUi(checkMap.get('blockchain')?.status || (result.txs.some((t) => t.status === 'CONFIRMED') ? 'VALID' : 'UNVERIFIED')),
+          detail: checkMap.get('blockchain')?.reason || (result.txs.length > 0 ? `${result.txs.filter((t) => t.status === 'CONFIRMED').length} confirmed transaction(s)` : "No on-chain records"),
         },
         {
           label: "Audit Trail Integrity",
@@ -122,8 +148,8 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Evidence Integrity",
-          status: (evidence.length > 0 && evidence.every((e) => e.integrityVerified) ? "VERIFIED" : evidence.some((e) => !e.integrityVerified && e.status === "Complete") ? "FAILED" : "PENDING") as any,
-          detail: `${evidence.filter((e) => e.integrityVerified).length}/${evidence.length} files fingerprint-verified`,
+          status: (result.evidence.length > 0 && result.evidence.every((e) => e.integrityVerified) ? "VERIFIED" : result.evidence.some((e) => !e.integrityVerified && e.status === "Complete") ? "FAILED" : "PENDING") as any,
+          detail: `${result.evidence.filter((e) => e.integrityVerified).length}/${result.evidence.length} files fingerprint-verified`,
         },
         {
           label: "Lifecycle Sequence",
@@ -132,13 +158,13 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Certification",
-          status: (cert?.status === "CONFIRMED" ? "VERIFIED" : cert?.status === "PENDING" ? "PENDING" : "UNAVAILABLE") as any,
-          detail: cert ? `Token: ${cert.tokenId}` : "No certification record",
+          status: (result.cert?.status === "CONFIRMED" ? "VERIFIED" : result.cert?.status === "PENDING" ? "PENDING" : "UNAVAILABLE") as any,
+          detail: result.cert ? `Token: ${result.cert.tokenId}` : "No certification record",
         },
         {
           label: "Blockchain Proof",
-          status: (txs.some((t) => t.status === "CONFIRMED") ? "VERIFIED" : txs.length > 0 ? "PENDING" : "UNAVAILABLE") as any,
-          detail: txs.length > 0 ? `${txs.filter((t) => t.status === "CONFIRMED").length} confirmed transaction(s)` : "No on-chain records",
+          status: (result.txs.some((t) => t.status === "CONFIRMED") ? "VERIFIED" : result.txs.length > 0 ? "PENDING" : "UNAVAILABLE") as any,
+          detail: result.txs.length > 0 ? `${result.txs.filter((t) => t.status === "CONFIRMED").length} confirmed transaction(s)` : "No on-chain records",
         },
         {
           label: "Audit Trail Integrity",

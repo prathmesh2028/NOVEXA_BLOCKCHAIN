@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { LifecycleState, VerificationStatus, EvidenceStatus, CertStatus } from '../data/mockData';
+import type { LifecycleState, VerificationStatus, EvidenceStatus, CertStatus } from '../data/types';
 
 export interface AssetResponse {
   id: string;

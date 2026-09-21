@@ -26,7 +26,8 @@ import VerificationCenterPage from "./pages/verification/VerificationCenterPage"
 import SearchPage from "./pages/search/SearchPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import StubPage from "./pages/StubPage";
+import RoleGuard from "./components/auth/RoleGuard";
+import SupplyChainDashboardPage from "./pages/supply-chain/SupplyChainDashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -45,65 +46,65 @@ export const router = createBrowserRouter([
       { path: "dashboard", Component: DashboardPage },
       { path: "assets", Component: AssetsPage },
       { path: "assets/:id", Component: AssetDetailPage },
-      { path: "certifications", Component: CertificationsPage },
-      { path: "certifications/:id", Component: CertificationDetailPage },
-      { path: "blockchain", Component: BlockchainPage },
-      { path: "audit", Component: AuditPage },
-      { path: "users", Component: UsersPage },
-      { path: "roles", Component: RolesPage },
       { path: "evidence", Component: EvidencePage },
       { path: "evidence/:id", Component: EvidenceDetailPage },
-      { path: "verification", Component: VerificationCenterPage },
       { path: "search", Component: SearchPage },
       { path: "settings", Component: SettingsPage },
+      { path: "my-assets", Component: MyAssetsPage },
+      { path: "supply-chain", Component: SupplyChainDashboardPage },
+
+      // Admin Only
       {
-        path: "system-activity",
-        Component: AuditPage,
+        path: "",
+        Component: () => <RoleGuard allowedRoles={["admin"]} />,
+        children: [
+          { path: "users", Component: UsersPage },
+          { path: "roles", Component: RolesPage },
+        ]
       },
+
+      // NFT Creator & Admin
       {
-        path: "eligible-assets",
-        Component: EligibleAssetsPage,
+        path: "",
+        Component: () => <RoleGuard allowedRoles={["admin", "nft-creator"]} />,
+        children: [
+          { path: "certifications", Component: CertificationsPage },
+          { path: "certifications/:id", Component: CertificationDetailPage },
+          { path: "certification-queue", Component: CertificationQueuePage },
+          { path: "blockchain", Component: BlockchainPage },
+          { path: "blockchain-proof", Component: BlockchainProofPage },
+          { path: "eligible-assets", Component: EligibleAssetsPage },
+        ]
       },
+
+      // Technician & Admin
       {
-        path: "certification-queue",
-        Component: CertificationQueuePage,
+        path: "",
+        Component: () => <RoleGuard allowedRoles={["admin", "technician"]} />,
+        children: [
+          { path: "register", Component: RegisterAssetPage },
+          { path: "inspections", Component: InspectionsPage },
+          { path: "lifecycle", Component: LifecyclePage },
+          { path: "technical-records", Component: TechnicalRecordsPage },
+        ]
       },
+
+      // Auditor & Admin
       {
-        path: "history",
-        Component: () => <StubPage title="History" icon="◷" description="Timeline of all platform activities including asset registration, evidence uploads, lifecycle changes, and certification events." parent={{ label: "Dashboard", to: "/app/dashboard" }} />,
+        path: "",
+        Component: () => <RoleGuard allowedRoles={["admin", "auditor"]} />,
+        children: [
+          // Canonical audit route — audit-trail and system-activity redirect here
+          { path: "audit", Component: AuditPage },
+          { path: "audit-trail", Component: () => <Navigate to="/app/audit" replace /> },
+          { path: "system-activity", Component: () => <Navigate to="/app/audit" replace /> },
+          { path: "verification", Component: VerificationCenterPage },
+          { path: "evidence-integrity", Component: EvidenceIntegrityPage },
+        ]
       },
-      {
-        path: "my-assets",
-        Component: MyAssetsPage,
-      },
-      {
-        path: "register",
-        Component: RegisterAssetPage,
-      },
-      {
-        path: "technical-records",
-        Component: TechnicalRecordsPage,
-      },
-      {
-        path: "inspections",
-        Component: InspectionsPage,
-      },
-      {
-        path: "lifecycle",
-        Component: LifecyclePage,
-      },
-      {
-        path: "evidence-integrity",
-        Component: EvidenceIntegrityPage,
-      },
-      {
-        path: "blockchain-proof",
-        Component: BlockchainProofPage,
-      },
-      {
-        path: "audit-trail",
-        Component: AuditPage,
-      },
+
+      // History — redirect to audit trail (no stub page)
+      { path: "history", Component: () => <Navigate to="/app/audit" replace /> },
     ],
   },
   { path: "*", Component: NotFoundPage },

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 import { useAuth } from "../../context/AuthContext";
 import { assetService, AssetResponse } from "../../services/assets";
 

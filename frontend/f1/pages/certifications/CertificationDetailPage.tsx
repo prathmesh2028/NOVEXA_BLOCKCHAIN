@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { CERTIFICATIONS, EVIDENCE_LIST, ASSETS, formatDateTime, shortHash } from "../../data/mockData";
+import { formatDateTime, shortHash } from "../../data/utils";
 import { certificationService } from "../../services/certifications";
 
 export default function CertificationDetailPage() {
@@ -16,24 +16,21 @@ export default function CertificationDetailPage() {
       .catch(err => console.warn("Could not fetch certification from backend:", err));
   }, [id]);
 
-  const mockFallback = CERTIFICATIONS.find((c) => c.id === id);
   const cert = backendCert ? {
-    ...mockFallback,
-    ...backendCert,
     id: backendCert.cert_id || backendCert.id,
-    assetId: backendCert.asset_id || mockFallback?.assetId,
-    batchId: backendCert.batch_id || mockFallback?.batchId,
-    tokenId: backendCert.token_id || mockFallback?.tokenId,
-    contractAddress: backendCert.contract_address || mockFallback?.contractAddress,
-    network: backendCert.network || mockFallback?.network,
-    txHash: backendCert.tx_hash || mockFallback?.txHash,
-    blockNumber: backendCert.block_number || mockFallback?.blockNumber,
-    status: backendCert.status || mockFallback?.status,
-    issuedBy: backendCert.issued_by || mockFallback?.issuedBy,
-    issuedAt: backendCert.issued_at || mockFallback?.issuedAt,
-    confirmedAt: backendCert.confirmed_at || mockFallback?.confirmedAt,
-    confirmations: backendCert.confirmations ?? mockFallback?.confirmations ?? 0,
-  } : mockFallback;
+    assetId: backendCert.asset_id,
+    batchId: backendCert.batch_id,
+    tokenId: backendCert.token_id,
+    contractAddress: backendCert.contract_address,
+    network: backendCert.network,
+    txHash: backendCert.tx_hash,
+    blockNumber: backendCert.block_number,
+    status: backendCert.status,
+    issuedBy: backendCert.issued_by,
+    issuedAt: backendCert.issued_at,
+    confirmedAt: backendCert.confirmed_at,
+    confirmations: backendCert.confirmations ?? 0,
+  } : null;
 
   if (!cert) {
     return (
@@ -45,9 +42,7 @@ export default function CertificationDetailPage() {
     );
   }
 
-  const asset = ASSETS.find((a) => a.id === cert.assetId);
-  const evidence = EVIDENCE_LIST.filter((e) => e.assetId === cert.assetId);
-
+  // cert.assetId is used for linking to asset detail
   return (
     <div className="page-fade">
       <PageHeader
