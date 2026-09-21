@@ -4,91 +4,72 @@ import type { Role } from './RoleContext';
 
 interface AuthContextType {
   user: UserMeResponse | null;
-  role: Role | null; // Keep this for backwards compatibility during migration
+  role: Role | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  error: string | null;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const DEFAULT_USER: UserMeResponse = {
-    id: "USR-001",
-    name: "Arjun Mehta (Admin)",
-    email: "admin@kavachtrust.bel.in",
-    status: "ACTIVE",
-    roles: ["ADMIN"],
-    actor: {
-      id: "ACT-001",
-      did: "did:bel:actor:001",
-      credential_status: "ACTIVE",
-      identity_status: "VERIFIED",
-      wallet_address: "0x8A42b10967362E34CbeBf5EaF87E5d39Ce3719F2",
-    },
-  };
-
   const [user, setUser] = useState<UserMeResponse | null>(() => {
-    // Check if previously stored mock or real token exists
     const stored = localStorage.getItem('kavach_user');
     if (stored) {
       try {
         return JSON.parse(stored);
       } catch (e) {}
     }
-    return DEFAULT_USER;
+    return null;
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Derive the active role from the user's backend roles
-  const activeRole = (user?.roles?.[0]?.toLowerCase().replace('_', '-') as Role) || 'admin';
+  const activeRole = user?.roles?.[0]
+    ? (user.roles[0].toLowerCase().replace('_', '-') as Role)
+    : null;
   const isAuthenticated = !!user;
 
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('kavach_token');
-      if (token) {
-        try {
-          const userData = await authService.getMe();
-          setUser(userData);
-          localStorage.setItem('kavach_user', JSON.stringify(userData));
-        } catch (error) {
-          console.warn("Could not fetch remote profile, staying on local session", error);
-        }
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const userData = await authService.getMe();
+        setUser(userData);
+        localStorage.setItem('kavach_user', JSON.stringify(userData));
+      } catch (err) {
+        // Token is invalid or expired — clear session
+        console.warn('Session validation failed, clearing local session', err);
+        localStorage.removeItem('kavach_token');
+        localStorage.removeItem('kavach_user');
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     initAuth();
   }, []);
 
-  const login = async (email: string, password?: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      if (password) {
-        await authService.login(email, password);
-        const userData = await authService.getMe();
-        setUser(userData);
-        localStorage.setItem('kavach_user', JSON.stringify(userData));
-      } else {
-        // Direct bypass
-        const mockUser: UserMeResponse = {
-          ...DEFAULT_USER,
-          email,
-          roles: [email.includes('tech') ? 'TECHNICIAN' : email.includes('nft') ? 'NFT_CREATOR' : email.includes('audit') ? 'AUDITOR' : 'ADMIN'],
-        };
-        setUser(mockUser);
-        localStorage.setItem('kavach_user', JSON.stringify(mockUser));
-      }
-    } catch (error) {
-      console.warn("Backend login failed, using direct simulated session:", error);
-      const mockUser: UserMeResponse = {
-        ...DEFAULT_USER,
-        email,
-        roles: [email.includes('tech') ? 'TECHNICIAN' : email.includes('nft') ? 'NFT_CREATOR' : email.includes('audit') ? 'AUDITOR' : 'ADMIN'],
-      };
-      setUser(mockUser);
-      localStorage.setItem('kavach_user', JSON.stringify(mockUser));
+      await authService.login(email, password);
+      const userData = await authService.getMe();
+      setUser(userData);
+      localStorage.setItem('kavach_user', JSON.stringify(userData));
+    } catch (err: any) {
+      const msg = err?.message || err?.data?.detail || 'Authentication failed. Check credentials.';
+      setError(msg);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -98,17 +79,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     authService.logout();
     localStorage.removeItem('kavach_user');
     setUser(null);
+    setError(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, role: activeRole, isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, role: activeRole, isAuthenticated, isLoading, login, logout, error }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Export useAuth hook. 
-// Note: We'll eventually replace useRole with useAuth across the app.
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

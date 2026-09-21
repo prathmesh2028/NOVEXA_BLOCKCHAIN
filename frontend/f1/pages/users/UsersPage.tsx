@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import RoleBadge from "../../components/ui/RoleBadge";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 import { usersService, UserResponse } from "../../services/users";
 
 export default function UsersPage() {
@@ -120,9 +120,14 @@ export default function UsersPage() {
                     <td style={{ padding: "12px 14px" }}><StatusBadge status={u.status} size="sm" /></td>
                     <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "#64748b" }}>{formatDateTime(u.last_active)}</td>
                     <td style={{ padding: "12px 14px" }}>
-                      <button className="btn-ghost" style={{ padding: "4px 10px", fontSize: "0.75rem" }}>
-                        Manage →
-                      </button>
+                      <a
+                        href={`mailto:${u.email}`}
+                        className="btn-ghost"
+                        style={{ padding: "4px 10px", fontSize: "0.75rem", textDecoration: "none", display: "inline-block" }}
+                        title={`Contact ${u.name}`}
+                      >
+                        Contact →
+                      </a>
                     </td>
                   </tr>
                 ))

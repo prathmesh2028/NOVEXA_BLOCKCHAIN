@@ -45,52 +45,13 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string): Promise<TokenResponse> {
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({
-        where: { email },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
-
-      // If user wasn't found by direct email, check aliases (e.g. a.mehta@bel-defence.in vs admin@kavachtrust.bel.in)
-      if (!user) {
-        const { DEMO_EMAIL_ALIASES } = await import('../../core/common/fallback-data');
-        const aliased = Object.entries(DEMO_EMAIL_ALIASES).find(([k, v]) => k === email || v === email);
-        if (aliased) {
-          const possibleEmails = [aliased[0], aliased[1], 'a.mehta@bel-defence.in', 'p.sharma@bel-defence.in', 'r.kumar@bel-defence.in', 'd.nair@bel-defence.in'];
-          for (const alt of possibleEmails) {
-            user = await this.prisma.user.findUnique({
-              where: { email: alt },
-              include: { roles: true, actor: true },
-            });
-            if (user) break;
-          }
-        }
-      }
-    } catch (e: any) {
-      this.logger.warn(`Database query issue during login (${e.message}), checking demo fallback users...`);
-    }
-
-    // If still no user found in database or DB table empty, use DEMO fallback users
-    if (!user) {
-      const { FALLBACK_USERS, DEMO_EMAIL_ALIASES } = await import('../../core/common/fallback-data');
-      const resolvedEmail = DEMO_EMAIL_ALIASES[email] || email;
-      const fallback = FALLBACK_USERS.find(u => u.email === resolvedEmail || u.email === email || DEMO_EMAIL_ALIASES[u.email] === resolvedEmail);
-      if (fallback) {
-        user = {
-          id: fallback.id,
-          email: fallback.email,
-          name: fallback.name,
-          status: fallback.status,
-          passwordHash: await bcrypt.hash(password || 'password', 10),
-          roles: fallback.roles.map(r => ({ role: r })),
-          actor: fallback.actor,
-        };
-      }
-    }
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        roles: true,
+        actor: true,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -98,9 +59,9 @@ export class AuthService {
 
     const isPasswordValid = user.passwordHash 
       ? await bcrypt.compare(password, user.passwordHash)
-      : true;
+      : false;
       
-    if (!isPasswordValid && password !== 'password') {
+    if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -109,14 +70,10 @@ export class AuthService {
     }
 
     // Update last active
-    try {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { lastActive: new Date() },
-      });
-    } catch (e) {
-      // Ignored if offline
-    }
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastActive: new Date() },
+    });
 
     const roles = user.roles.map((r: any) => r.role);
     const payload: JwtPayload = {
@@ -153,32 +110,13 @@ export class AuthService {
   }
 
   async getMe(userId: string): Promise<UserMeResponse> {
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
-    } catch (e) {
-      // Ignored - fallback will resolve
-    }
-
-    if (!user) {
-      const fallback = (await import('../../core/common/fallback-data')).FALLBACK_USERS.find(u => u.id === userId || u.email === userId);
-      if (fallback) {
-        return {
-          id: fallback.id,
-          email: fallback.email,
-          name: fallback.name,
-          status: fallback.status,
-          roles: fallback.roles,
-          actor: fallback.actor,
-        };
-      }
-    }
+    const user: any = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        roles: true,
+        actor: true,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -208,28 +146,7 @@ export class AuthService {
       throw new BadRequestException('new_password must be at least 8 characters long');
     }
 
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({ where: { id: userId } });
-    } catch (e: any) {
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) throw e;
-    }
-
-    const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-    if (!user && isDemoMode) {
-      const { FALLBACK_USERS } = await import('../../core/common/fallback-data');
-      const fallback = FALLBACK_USERS.find(u => u.id === userId || u.email === userId);
-      if (fallback) {
-        const valid = currentPassword === 'password' || (fallback as any).customPassword === currentPassword;
-        if (!valid) {
-          throw new UnauthorizedException('Current password is incorrect');
-        }
-        (fallback as any).customPassword = newPassword;
-        this.logger.log(`[DEMO MODE] Password updated for user ${fallback.email}`);
-        return { message: 'Password updated successfully' };
-      }
-    }
+    const user: any = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException('User not found');
