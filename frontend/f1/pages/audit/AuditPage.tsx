@@ -77,6 +77,8 @@ export default function AuditPage() {
     ? events
     : filter === "SUPPLY_CHAIN"
     ? events.filter((e) => e.category === "SUPPLY_CHAIN")
+    : filter === "AUDIT"
+    ? events.filter((e) => e.category === "AUDIT")
     : events.filter((e) => e.result === filter);
 
   return (
@@ -110,11 +112,12 @@ export default function AuditPage() {
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
         {[
-          { key: "ALL", label: "All Events" },
+          { key: "ALL", label: "All Activity" },
+          { key: "SUPPLY_CHAIN", label: "Supply Chain" },
+          { key: "AUDIT", label: "Audit Records" },
           { key: "SUCCESS", label: "Success" },
           { key: "WARNING", label: "Warning" },
           { key: "FAILED", label: "Failed" },
-          { key: "SUPPLY_CHAIN", label: "Supply Chain" },
         ].map((f) => (
           <button
             key={f.key}

@@ -37,17 +37,29 @@ export default function BlockchainPage() {
     fetchData();
   }, []);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const confirmedCount = txs.filter((t) => t.status === "CONFIRMED" || t.status === "SUCCESS").length;
   const pendingCount = txs.filter((t) => t.status === "PENDING").length;
   const failedCount = txs.filter((t) => t.status === "FAILED" || t.status === "ERROR").length;
 
-  const filteredTxs = statusFilter === "ALL"
-    ? txs
-    : statusFilter === "CONFIRMED"
-    ? txs.filter((t) => t.status === "CONFIRMED" || t.status === "SUCCESS")
-    : statusFilter === "PENDING"
-    ? txs.filter((t) => t.status === "PENDING")
-    : txs.filter((t) => t.status === "FAILED" || t.status === "ERROR");
+  const filteredTxs = txs.filter((tx) => {
+    const matchesStatus = statusFilter === "ALL"
+      ? true
+      : statusFilter === "CONFIRMED"
+      ? tx.status === "CONFIRMED" || tx.status === "SUCCESS"
+      : statusFilter === "PENDING"
+      ? tx.status === "PENDING"
+      : tx.status === "FAILED" || tx.status === "ERROR";
+
+    const s = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm ||
+      (tx.tx_hash && tx.tx_hash.toLowerCase().includes(s)) ||
+      (tx.action && tx.action.toLowerCase().includes(s)) ||
+      (tx.token_id && tx.token_id.toLowerCase().includes(s));
+
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <div className="page-fade">
@@ -99,32 +111,45 @@ export default function BlockchainPage() {
         <StatCard label="Failed" value={failedCount.toString()} icon="✕" accent="#ef4444" />
       </div>
 
-      {/* Filter Tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        {[
-          { key: "ALL", label: `All (${txs.length})` },
-          { key: "CONFIRMED", label: `Confirmed (${confirmedCount})` },
-          { key: "PENDING", label: `Pending (${pendingCount})` },
-          { key: "FAILED", label: `Failed (${failedCount})` },
-        ].map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setStatusFilter(f.key)}
-            style={{
-              padding: "6px 14px",
-              background: statusFilter === f.key ? "rgba(37,99,235,0.2)" : "transparent",
-              border: `1px solid ${statusFilter === f.key ? "#2563eb" : "#1e3a60"}`,
-              borderRadius: "4px",
-              color: statusFilter === f.key ? "#e2e8f0" : "#64748b",
-              fontSize: "0.8125rem",
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Filter and Search Tabs */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[
+            { key: "ALL", label: `All (${txs.length})` },
+            { key: "CONFIRMED", label: `Confirmed (${confirmedCount})` },
+            { key: "PENDING", label: `Pending (${pendingCount})` },
+            { key: "FAILED", label: `Failed (${failedCount})` },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              style={{
+                padding: "6px 14px",
+                background: statusFilter === f.key ? "rgba(37,99,235,0.2)" : "transparent",
+                border: `1px solid ${statusFilter === f.key ? "#2563eb" : "#1e3a60"}`,
+                borderRadius: "4px",
+                color: statusFilter === f.key ? "#e2e8f0" : "#64748b",
+                fontSize: "0.8125rem",
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ minWidth: 260 }}>
+          <input
+            type="text"
+            className="input"
+            style={{ width: "100%", padding: "6px 12px", fontSize: "0.8125rem", background: "#08131f", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+            placeholder="Search tx hash, action, or token ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="panel" style={{ overflow: "hidden" }}>

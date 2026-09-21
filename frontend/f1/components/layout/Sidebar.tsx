@@ -73,11 +73,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       style={{
         width: collapsed ? 56 : 220,
         minHeight: "100vh",
-        background: "#08131f",
-        borderRight: "1px solid #152b4a",
+        background: "var(--sidebar-bg, #08131f)",
+        borderRight: "1px solid var(--border-subtle, #152b4a)",
         display: "flex",
         flexDirection: "column",
-        transition: "width 0.2s ease",
+        transition: "width 0.2s ease, background 0.2s ease, border-color 0.2s ease",
         flexShrink: 0,
         position: "relative",
         zIndex: 20,
@@ -87,7 +87,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div
         style={{
           padding: "16px 14px 14px",
-          borderBottom: "1px solid #152b4a",
+          borderBottom: "1px solid var(--border-subtle, #152b4a)",
           display: "flex",
           alignItems: "center",
           gap: "10px",
@@ -120,7 +120,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               style={{
                 fontSize: "0.95rem",
                 fontWeight: 700,
-                color: "#e2e8f0",
+                color: "var(--foreground, #e2e8f0)",
                 letterSpacing: "0.04em",
                 lineHeight: 1.1,
               }}
@@ -191,7 +191,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div
         style={{
           padding: collapsed ? "10px 8px" : "12px 14px",
-          borderTop: "1px solid #152b4a",
+          borderTop: "1px solid var(--border-subtle, #152b4a)",
         }}
       >
         {!collapsed ? (

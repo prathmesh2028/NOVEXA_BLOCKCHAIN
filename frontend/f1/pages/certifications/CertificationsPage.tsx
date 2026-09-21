@@ -70,6 +70,19 @@ export default function CertificationsPage() {
     }
   };
 
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredCerts = certs.filter((c) => {
+    const matchesStatus = statusFilter === "ALL" || c.status === statusFilter;
+    const s = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm ||
+      (c.cert_id && c.cert_id.toLowerCase().includes(s)) ||
+      (c.asset_id && c.asset_id.toLowerCase().includes(s)) ||
+      (c.batch_id && c.batch_id.toLowerCase().includes(s));
+    return matchesStatus && matchesSearch;
+  });
+
   return (
     <div className="page-fade">
       <PageHeader
@@ -88,11 +101,51 @@ export default function CertificationsPage() {
         }
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 20 }}>
         <StatCard label="Total Issued" value={total.toString()} icon="◆" accent="#22c55e" />
         <StatCard label="Pending Confirmation" value={pending.toString()} icon="◐" accent="#f59e0b" />
         <StatCard label="Confirmed On-Chain" value={confirmed.toString()} icon="⬡" accent="#22c55e" />
         <StatCard label="Failed / Revoked" value="0" icon="✕" />
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: 8 }}>
+          {[
+            { key: "ALL", label: `All (${certs.length})` },
+            { key: "CONFIRMED", label: `Confirmed (${certs.filter((c) => c.status === "CONFIRMED").length})` },
+            { key: "PENDING", label: `Pending (${certs.filter((c) => c.status === "PENDING").length})` },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              style={{
+                padding: "6px 14px",
+                background: statusFilter === f.key ? "rgba(37,99,235,0.2)" : "transparent",
+                border: `1px solid ${statusFilter === f.key ? "#2563eb" : "#1e3a60"}`,
+                borderRadius: "4px",
+                color: statusFilter === f.key ? "#e2e8f0" : "#64748b",
+                fontSize: "0.8125rem",
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ minWidth: 260 }}>
+          <input
+            type="text"
+            className="input"
+            style={{ width: "100%", padding: "6px 12px", fontSize: "0.8125rem", background: "#08131f", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+            placeholder="Search cert ID, asset ID, or batch..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="panel" style={{ overflow: "hidden" }}>
@@ -116,8 +169,12 @@ export default function CertificationsPage() {
                 <tr>
                   <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>No certifications found.</td>
                 </tr>
+              ) : filteredCerts.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#475569" }}>No certifications match your filter criteria.</td>
+                </tr>
               ) : (
-                certs.map((c) => (
+                filteredCerts.map((c) => (
                   <tr key={c.id} style={{ borderBottom: "1px solid #152b4a" }} className="table-row">
                     <td style={{ padding: "12px 14px" }}>
                       <Link to={`/app/certifications/${c.id}`} style={{ textDecoration: "none" }}>
@@ -145,8 +202,9 @@ export default function CertificationsPage() {
             </tbody>
           </table>
         </div>
-        <div style={{ padding: "12px 14px", borderTop: "1px solid #152b4a", fontSize: "0.75rem", color: "#475569" }}>
-          Showing {certs.length} of {total} certification records (Powered by Backend API)
+        <div style={{ padding: "12px 14px", borderTop: "1px solid #152b4a", fontSize: "0.75rem", color: "#475569", display: "flex", justifyContent: "space-between" }}>
+          <span>Showing {filteredCerts.length} of {certs.length} certification records</span>
+          <span>BEL-TRUST-CHAIN ERC-5192 Records</span>
         </div>
       </div>
 
