@@ -11,7 +11,7 @@ export class InspectionsController {
 
   @Post('record')
   @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @RequireRoles('QUALITY_INSPECTOR', 'SYSTEM_ADMIN')
   async recordInspection(@Body() body: any, @Req() req: any) {
     return this.inspectionsService.recordInspection({
       assetId: body.asset_id,

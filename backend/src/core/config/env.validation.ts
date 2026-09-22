@@ -10,7 +10,25 @@ const envSchema = z.object({
   API_PREFIX: z.string().default('/api/v1'),
   LOG_LEVEL: z.string().default('debug'),
   DATABASE_URL: z.string().min(1),
-  JWT_SECRET: z.string().min(16),
+  JWT_SECRET: z.string().min(16).refine(
+    (secret) => {
+      // In production, reject known dev defaults
+      if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+        const devDefaults = [
+          'super-secret-key-change-in-production-2026',
+          'dev-secret-key',
+          'test-secret-key',
+          'change-me-in-production',
+          'secret',
+        ];
+        return !devDefaults.includes(secret);
+      }
+      return true;
+    },
+    {
+      message: 'JWT_SECRET must not be a known development default in production',
+    }
+  ),
   JWT_ISSUER: z.string().default('kavachtrust'),
   JWT_AUDIENCE: z.string().default('kavachtrust-api'),
   JWT_EXPIRY: z.string().default('24h'),

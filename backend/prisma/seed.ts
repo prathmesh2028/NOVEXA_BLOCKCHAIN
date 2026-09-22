@@ -77,11 +77,11 @@ async function main() {
 
   // ── Roles ──
   const roleData = [
-    { userId: admin.id, role: 'ADMIN' as const },
-    { userId: nftCreator.id, role: 'NFT_CREATOR' as const },
-    { userId: technician.id, role: 'TECHNICIAN' as const },
+    { userId: admin.id, role: 'SYSTEM_ADMIN' as const },
+    { userId: nftCreator.id, role: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER' as const },
+    { userId: technician.id, role: 'QUALITY_INSPECTOR' as const },
     { userId: auditor.id, role: 'AUDITOR' as const },
-    { userId: pendingUser.id, role: 'TECHNICIAN' as const },
+    { userId: pendingUser.id, role: 'QUALITY_INSPECTOR' as const },
   ];
 
   for (const r of roleData) {
@@ -274,11 +274,11 @@ async function main() {
 
   // ── Expected Transitions ──
   const transitions = [
-    { fromState: 'UNREGISTERED' as const, toState: 'SUPPLIER_DECLARED' as const, allowedRole: 'TECHNICIAN' as const, permission: 'asset:declare', description: 'Supplier declares component' },
-    { fromState: 'SUPPLIER_DECLARED' as const, toState: 'RECEIVED' as const, allowedRole: 'TECHNICIAN' as const, permission: 'asset:receive', description: 'Component received at facility' },
-    { fromState: 'RECEIVED' as const, toState: 'INSPECTION_RECORDED' as const, allowedRole: 'TECHNICIAN' as const, permission: 'asset:inspect', requiresEvidence: true, requiresInspection: true, description: 'Inspection completed' },
-    { fromState: 'INSPECTION_RECORDED' as const, toState: 'ACCEPTED_FOR_ASSEMBLY' as const, allowedRole: 'TECHNICIAN' as const, permission: 'asset:accept', requiresEvidence: true, description: 'Accepted for assembly' },
-    { fromState: 'INSPECTION_RECORDED' as const, toState: 'REJECTED_QUARANTINED' as const, allowedRole: 'TECHNICIAN' as const, permission: 'asset:reject', requiresEvidence: true, description: 'Rejected and quarantined' },
+    { fromState: 'UNREGISTERED' as const, toState: 'SUPPLIER_DECLARED' as const, allowedRole: 'QUALITY_INSPECTOR' as const, permission: 'asset:declare', description: 'Supplier declares component' },
+    { fromState: 'SUPPLIER_DECLARED' as const, toState: 'RECEIVED' as const, allowedRole: 'QUALITY_INSPECTOR' as const, permission: 'asset:receive', description: 'Component received at facility' },
+    { fromState: 'RECEIVED' as const, toState: 'INSPECTION_RECORDED' as const, allowedRole: 'QUALITY_INSPECTOR' as const, permission: 'asset:inspect', requiresEvidence: true, requiresInspection: true, description: 'Inspection completed' },
+    { fromState: 'INSPECTION_RECORDED' as const, toState: 'ACCEPTED_FOR_ASSEMBLY' as const, allowedRole: 'QUALITY_INSPECTOR' as const, permission: 'asset:accept', requiresEvidence: true, description: 'Accepted for assembly' },
+    { fromState: 'INSPECTION_RECORDED' as const, toState: 'REJECTED_QUARANTINED' as const, allowedRole: 'QUALITY_INSPECTOR' as const, permission: 'asset:reject', requiresEvidence: true, description: 'Rejected and quarantined' },
   ];
 
   for (const t of transitions) {

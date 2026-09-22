@@ -92,7 +92,7 @@ export class ApprovalsService {
               eventType: 'APPROVAL_REQUESTED',
               actorId: data.requestedById,
               actorName: data.requestedByName,
-              actorRole: data.requestedByRole || 'TECHNICIAN',
+              actorRole: data.requestedByRole || 'QUALITY_INSPECTOR',
               action: `Approval requested: ${approvalId} (${stage})`,
               resourceType: 'Approval',
               resourceId: approval.id,
@@ -108,7 +108,7 @@ export class ApprovalsService {
               eventType: 'APPROVAL_REQUESTED',
               actorId: data.requestedById,
               actorName: data.requestedByName,
-              actorRole: data.requestedByRole || 'TECHNICIAN',
+              actorRole: data.requestedByRole || 'QUALITY_INSPECTOR',
               action: `Approval requested: ${approvalId} (${stage})`,
               resourceType: 'Approval',
               resourceId: approval.id,
@@ -118,9 +118,9 @@ export class ApprovalsService {
           });
         }
 
-        // Emit real notification to NFT_CREATOR and ADMIN roles
+        // Emit real notification to QUALITY_INSPECTOR and SYSTEM_ADMIN roles
         await this.notificationsService.createNotification({
-          recipientRole: 'NFT_CREATOR',
+          recipientRole: 'QUALITY_INSPECTOR',
           title: `Approval Required: ${approvalId}`,
           message: `Asset ${asset.assetId} submitted for ${stage} by ${data.requestedByName || 'Technician'}.`,
           type: 'APPROVAL_REQUIRED',

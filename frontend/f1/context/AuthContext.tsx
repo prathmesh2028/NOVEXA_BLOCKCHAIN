@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, UserMeResponse } from '../services/auth';
-import type { Role } from './RoleContext';
+
+export type Role = "system-admin" | "procurement-supply-chain-officer" | "quality-inspector" | "auditor";
 
 interface AuthContextType {
   user: UserMeResponse | null;
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Derive the active role from the user's backend roles
   const activeRole = user?.roles?.[0]
-    ? (user.roles[0].toLowerCase().replace('_', '-') as Role)
+    ? (user.roles[0].toLowerCase().replaceAll('_', '-') as Role)
     : null;
   const isAuthenticated = !!user;
 

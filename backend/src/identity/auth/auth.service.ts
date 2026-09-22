@@ -47,18 +47,6 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<TokenResponse> {
     let targetEmail = email ? email.trim() : '';
-    const aliasMap: Record<string, string> = {
-      'demo': 'a.mehta@bel-defence.in',
-      'demo@kavachtrust.com': 'a.mehta@bel-defence.in',
-      'admin': 'a.mehta@bel-defence.in',
-      'admin@kavachtrust.gov.in': 'a.mehta@bel-defence.in',
-      'nft@kavachtrust.gov.in': 'p.sharma@bel-defence.in',
-      'tech@kavachtrust.gov.in': 'r.kumar@bel-defence.in',
-      'auditor@kavachtrust.gov.in': 'd.nair@bel-defence.in',
-    };
-    if (aliasMap[targetEmail.toLowerCase()]) {
-      targetEmail = aliasMap[targetEmail.toLowerCase()];
-    }
 
     const user = await this.prisma.user.findUnique({
       where: { email: targetEmail },

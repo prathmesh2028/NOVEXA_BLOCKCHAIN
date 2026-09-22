@@ -21,7 +21,7 @@ export class EvidenceService {
   }
 
   private async enforceAssetAccess(assetId: string, user: any) {
-    if (!user || user.roles.includes('ADMIN') || user.roles.includes('AUDITOR')) return;
+    if (!user || user.roles.includes('SYSTEM_ADMIN') || user.roles.includes('AUDITOR')) return;
     const asset = await this.prisma.asset.findFirst({
       where: { OR: [{ id: assetId }, { assetId: assetId }] },
     });
@@ -77,7 +77,7 @@ export class EvidenceService {
     if (params.asset_id) where.assetId = params.asset_id;
     if (params.event_type) where.event = params.event_type;
 
-    if (params.user && !params.user.roles.includes('ADMIN') && !params.user.roles.includes('AUDITOR')) {
+    if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
       const userDomain = this.getSupplierDomain(params.user.email);
       if (userDomain) {
         const usersInDomain = await this.prisma.user.findMany({

@@ -21,7 +21,7 @@ export class PhysicalBindingsController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @RequireRoles('QUALITY_INSPECTOR', 'SYSTEM_ADMIN')
   async createBinding(@Body() body: any, @Req() req: any) {
     return this.bindingsService.createBinding({
       assetId: body.asset_id || body.assetId,
@@ -45,7 +45,7 @@ export class PhysicalBindingsController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @RequireRoles('QUALITY_INSPECTOR', 'SYSTEM_ADMIN')
   async deleteBinding(@Param('id') id: string, @Req() req: any) {
     return this.bindingsService.deleteBinding(id, req.user?.sub, req.user?.name);
   }

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { JwtAuthGuard } from '../identity/auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../identity/auth/guards/casbin.guard';
@@ -9,7 +9,7 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get()
-  async search(@Query('q') q: string) {
-    return this.searchService.search(q || '');
+  async search(@Query('q') q: string, @Req() req: any) {
+    return this.searchService.search(q || '', req.user);
   }
 }

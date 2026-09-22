@@ -256,17 +256,8 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
       recipient = process.env.DEFAULT_NFT_RECIPIENT;
     }
 
-    const isDemo = this.configService?.blockchainMode !== undefined
-      ? this.configService.blockchainMode === 'demo'
-      : (process.env.BLOCKCHAIN_MODE === 'demo');
-
     if (!recipient || !isAddress(recipient)) {
-      if (isDemo) {
-        recipient = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
-        this.logger.warn(`[DEMO MODE] Using demo recipient ${recipient} for asset ${payload.assetId}`);
-      } else {
-        throw new Error(`Failed to resolve valid blockchain recipient address for asset ${payload.assetId}`);
-      }
+      throw new Error(`Failed to resolve valid blockchain recipient address for asset ${payload.assetId}`);
     }
 
     const encodedData = encodeFunctionData({
@@ -311,22 +302,14 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     });
 
     if (result.status === 'FAILED' || !result.txHash) {
-      if (isDemo) {
-        this.logger.warn(`[DEMO MODE] Blockchain submission failed. Simulating successful transaction for asset ${payload.assetId}`);
-        result = {
-          status: 'SUCCESS',
-          txHash: `0xDEMO_${Math.random().toString(36).substring(7)}`,
-        };
-      } else {
-        await this.prisma.blockchainTransaction.update({
-          where: { id: txRecord.id },
-          data: {
-            status: 'FAILED',
-            errorMessage: 'Transaction submission failed: RPC unavailable or node rejected transaction',
-          },
-        });
-        throw new Error('Blockchain submission failed — node offline or transaction rejected');
-      }
+      await this.prisma.blockchainTransaction.update({
+        where: { id: txRecord.id },
+        data: {
+          status: 'FAILED',
+          errorMessage: 'Transaction submission failed: RPC unavailable or node rejected transaction',
+        },
+      });
+      throw new Error('Blockchain submission failed — node offline or transaction rejected');
     }
 
     let tokenId: string | null = null;
@@ -344,13 +327,6 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     });
 
       let receipt: any = await this.blockchainAdapter.getTransactionReceipt(result.txHash);
-      if (!receipt && isDemo && result.txHash.startsWith('0xDEMO_')) {
-        receipt = {
-          status: 'success',
-          blockNumber: 999999,
-          gasUsed: 21000,
-        };
-      }
 
       if (!receipt) {
         this.logger.log(`Transaction ${result.txHash} submitted, awaiting receipt in next cycle`);
@@ -376,19 +352,15 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
       gasUsed = Number(receipt.gasUsed || 0);
 
       // 4. Decode CertificationMinted event
-      if (isDemo && result.txHash.startsWith('0xDEMO_')) {
-        tokenId = '9999';
-      } else {
-        const decodedEvent = this.blockchainAdapter.decodeCertificationMintedEvent(receipt);
-        if (!decodedEvent || decodedEvent.tokenId === undefined) {
-          await this.prisma.blockchainTransaction.update({
-            where: { id: txRecord.id },
-            data: { status: 'MISMATCH', errorMessage: 'CertificationMinted event not found in receipt' },
-          });
-          throw new Error(`CertificationMinted event not found in receipt for ${result.txHash}`);
-        }
-        tokenId = decodedEvent.tokenId.toString();
+      const decodedEvent = this.blockchainAdapter.decodeCertificationMintedEvent(receipt);
+      if (!decodedEvent || decodedEvent.tokenId === undefined) {
+        await this.prisma.blockchainTransaction.update({
+          where: { id: txRecord.id },
+          data: { status: 'MISMATCH', errorMessage: 'CertificationMinted event not found in receipt' },
+        });
+        throw new Error(`CertificationMinted event not found in receipt for ${result.txHash}`);
       }
+      tokenId = decodedEvent.tokenId.toString();
 
       // 5. Track confirmations
       const latestBlock = await this.blockchainAdapter.getBlockNumber() || blockNumber;
@@ -462,7 +434,6 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
               assetId: payload.assetId,
               txHash: result.txHash,
               confirmations,
-              isSimulated: isDemo,
             },
           },
           tx,
@@ -483,9 +454,9 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
 
       if (this.notificationsService?.createNotification) {
         await this.notificationsService.createNotification({
-          recipientRole: 'NFT_CREATOR',
-          title: `Passport Minted: ${cert.certId}`,
-          message: `Soulbound NFT Passport minted successfully for asset ${payload.assetId} (Token ID: ${tokenId}, Tx: ${result.txHash.slice(0, 10)}...).`,
+          recipientRole: 'QUALITY_INSPECTOR',
+          title: `Certification Minted: ${cert.certId}`,
+          message: `Certification minted successfully for asset ${payload.assetId} (Token ID: ${tokenId}, Tx: ${result.txHash.slice(0, 10)}...).`,
           type: 'CERTIFICATION_MINTED',
           severity: 'INFO',
           link: `/app/certifications`,

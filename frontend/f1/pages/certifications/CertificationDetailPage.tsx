@@ -1,24 +1,28 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
-import { formatDate, formatDateTime, shortHash } from "../../data/utils";
-import {
-  getCertificationById,
-  CertificationRecord,
-  CertificationStatus,
-  CertVerificationStatus,
-} from "./certificationData";
+import { formatDateTime, shortHash } from "../../data/utils";
+import { certificationService, CertificationResponse } from "../../services/certifications";
 
 export default function CertificationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [showDocModal, setShowDocModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "all" | "asset_authority" | "proof" | "timeline"
-  >("all");
 
-  const cert = useMemo(() => {
-    return id ? getCertificationById(id) : undefined;
+  const [cert, setCert] = useState<CertificationResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    certificationService.getCertification(id)
+      .then(setCert)
+      .catch((err) => {
+        console.error("Failed to load certification:", err);
+        setError(err.message || "Failed to load certification");
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
   const copyToClipboard = (text: string, fieldName: string) => {
@@ -29,112 +33,74 @@ export default function CertificationDetailPage() {
     }
   };
 
-  // Status badge helper
-  const renderStatusBadge = (status: CertificationStatus) => {
-    const config: Record<
-      CertificationStatus,
-      { bg: string; text: string; border: string; dot: string }
-    > = {
-      Valid: {
-        bg: "rgba(34, 197, 94, 0.14)",
-        text: "#22c55e",
-        border: "rgba(34, 197, 94, 0.35)",
-        dot: "#22c55e",
-      },
-      Expiring: {
-        bg: "rgba(245, 158, 11, 0.14)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.35)",
-        dot: "#f59e0b",
-      },
-      Expired: {
-        bg: "rgba(239, 68, 68, 0.14)",
-        text: "#ef4444",
-        border: "rgba(239, 68, 68, 0.35)",
-        dot: "#ef4444",
-      },
-    };
-
-    const c = config[status] || config["Valid"];
-
+  // Loading state
+  if (loading) {
     return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "6px",
-          padding: "4px 10px",
-          borderRadius: "4px",
-          fontSize: "0.8125rem",
-          fontWeight: 600,
-          background: c.bg,
-          color: c.text,
-          border: `1px solid ${c.border}`,
-        }}
-      >
-        <span
-          style={{
-            width: 7,
-            height: 7,
-            borderRadius: "50%",
-            background: c.dot,
-          }}
-        />
-        {status}
-      </span>
+      <div className="page-fade" style={{ maxWidth: "800px", margin: "60px auto", textAlign: "center" }}>
+        <div className="panel" style={{ padding: "60px 32px", background: "#0a1320", border: "1px solid #1e3a60", borderRadius: "8px" }}>
+          <div style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Loading certification...</div>
+        </div>
+      </div>
     );
-  };
+  }
 
-  // Verification badge helper
-  const renderVerificationBadge = (vStatus: CertVerificationStatus) => {
-    const config: Record<
-      CertVerificationStatus,
-      { bg: string; text: string; border: string; icon: string }
-    > = {
-      Verified: {
-        bg: "rgba(16, 185, 129, 0.14)",
-        text: "#10b981",
-        border: "rgba(16, 185, 129, 0.35)",
-        icon: "✓",
-      },
-      "Pending Verification": {
-        bg: "rgba(245, 158, 11, 0.14)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.35)",
-        icon: "◷",
-      },
-      "Verification Required": {
-        bg: "rgba(239, 68, 68, 0.14)",
-        text: "#ef4444",
-        border: "rgba(239, 68, 68, 0.35)",
-        icon: "⚠",
-      },
-    };
-
-    const c = config[vStatus] || config["Verified"];
-
+  // Error state
+  if (error) {
     return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "6px",
-          padding: "4px 10px",
-          borderRadius: "4px",
-          fontSize: "0.8125rem",
-          fontWeight: 600,
-          background: c.bg,
-          color: c.text,
-          border: `1px solid ${c.border}`,
-        }}
-      >
-        <span>{c.icon}</span>
-        {vStatus}
-      </span>
+      <div className="page-fade" style={{ maxWidth: "800px", margin: "60px auto", textAlign: "center" }}>
+        <div className="panel" style={{ padding: "60px 32px", background: "#0a1320", border: "1px solid #1e3a60", borderRadius: "8px" }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.12)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "2rem",
+              color: "#ef4444",
+              margin: "0 auto 20px",
+            }}
+          >
+            ✕
+          </div>
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "1.75rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 10,
+              letterSpacing: "0.02em",
+            }}
+          >
+            ERROR LOADING CERTIFICATION
+          </h2>
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "0.875rem",
+              marginBottom: 24,
+              lineHeight: 1.6,
+            }}
+          >
+            {error}
+          </p>
+          <Link
+            to="/app/certifications"
+            className="btn-primary"
+            style={{ padding: "10px 20px", textDecoration: "none" }}
+          >
+            Back to Certifications
+          </Link>
+        </div>
+      </div>
     );
-  };
+  }
 
-  // If certificate not found
+  // If certificate not found (after successful load but null result)
   if (!cert) {
     return (
       <div
@@ -198,134 +164,159 @@ export default function CertificationDetailPage() {
   }
 
   return (
-    <div className="page-fade" style={{ maxWidth: "1600px", margin: "0 auto" }}>
-      {/* Top Navigation & Breadcrumbs */}
+    <div className="page-fade" style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader
-        title={cert.id}
-        subtitle={`${cert.type} • ${cert.asset.assetName}`}
+        title={cert.cert_id}
+        subtitle={`Asset: ${cert.asset_id}`}
         breadcrumbs={[
           { label: "Dashboard", to: "/app/dashboard" },
           { label: "Certifications", to: "/app/certifications" },
-          { label: cert.id },
+          { label: cert.cert_id },
         ]}
         actions={
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <Link
-              to="/app/certifications"
-              className="btn-ghost"
-              style={{
-                fontSize: "0.8125rem",
-                padding: "6px 14px",
-                textDecoration: "none",
-              }}
-            >
-              ← Back to Certifications
-            </Link>
-            <button
-              onClick={() => setShowDocModal(true)}
-              className="btn-secondary"
-              style={{ fontSize: "0.8125rem", padding: "6px 14px" }}
-            >
-              📜 View Sealed Document
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="btn-ghost"
-              style={{ fontSize: "0.8125rem", padding: "6px 14px" }}
-            >
-              ⎙ Print Dossier
-            </button>
-          </div>
+          <Link
+            to="/app/certifications"
+            className="btn-ghost"
+            style={{
+              fontSize: "0.8125rem",
+              padding: "6px 14px",
+              textDecoration: "none",
+            }}
+          >
+            ← Back to Certifications
+          </Link>
         }
       />
 
-      {/* Prominent Non-Transferable Defence Advisory Banner */}
-      <div
-        style={{
-          padding: "14px 20px",
-          background: "rgba(139, 92, 246, 0.08)",
-          border: "1px solid rgba(139, 92, 246, 0.25)",
-          borderRadius: "8px",
-          marginBottom: 24,
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-        }}
-      >
-        <span style={{ color: "#a855f7", fontSize: "1.4rem" }}>⊠</span>
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontSize: "0.8125rem",
-              fontWeight: 700,
-              color: "#c084fc",
-              letterSpacing: "0.04em",
-            }}
-          >
-            NON-TRANSFERABLE DEFENCE CERTIFICATION ATTESTATION
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Certification ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.cert_id}
+            </div>
           </div>
-          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>
-            This certification is cryptographically anchored to defence asset{" "}
-            <strong style={{ color: "#e2e8f0" }}>{cert.asset.assetId}</strong> ({cert.asset.serialNumber}).
-            It cannot be transferred, reassigned, or delegated outside authorized Ministry of Defence operational units.
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Asset ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.asset_id}
+            </div>
           </div>
-        </div>
-        <div
-          style={{
-            padding: "4px 10px",
-            background: "rgba(168, 85, 247, 0.15)",
-            border: "1px solid rgba(168, 85, 247, 0.4)",
-            borderRadius: "4px",
-            fontSize: "0.7rem",
-            color: "#d8b4fe",
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {cert.document.classification}
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Batch ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.batch_id || "N/A"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Status
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: cert.status === "CONFIRMED" ? "#22c55e" : cert.status === "PENDING" ? "#f59e0b" : "#ef4444", fontWeight: 600 }}>
+              {cert.status}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* SECTION 1: CERTIFICATE OVERVIEW */}
-      {/* ========================================================================= */}
-      <div
-        className="panel"
-        style={{
-          padding: "24px 28px",
-          marginBottom: 24,
-          background: "#0a1320",
-          border: "1px solid #1e3a60",
-          borderRadius: "8px",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "4px",
-            height: "100%",
-            background: "#38bdf8",
-          }}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: "20px",
-          }}
-        >
-          {/* Main Title & ID */}
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", marginBottom: "16px" }}>
+          Blockchain Information
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
           <div>
-            <div
-              style={{
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Token ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.token_id || "Pending"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Transaction Hash
+            </div>
+            <div style={{ fontSize: "0.875rem", color: "#e2e8f0", fontWeight: 500, fontFamily: "monospace" }}>
+              {cert.tx_hash ? (
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() => copyToClipboard(cert.tx_hash!, "txHash")}
+                >
+                  {shortHash(cert.tx_hash)}
+                  {copiedField === "txHash" && " ✓"}
+                </span>
+              ) : (
+                "Pending"
+              )}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Block Number
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.block_number || "Pending"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Network
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.network || "BEL-TRUST-CHAIN"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", marginBottom: "16px" }}>
+          Issuance Information
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Issued By
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.issued_by || "N/A"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Issued At
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {formatDateTime(cert.issued_at)}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Confirmed At
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.confirmed_at ? formatDateTime(cert.confirmed_at) : "Pending"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Confirmations
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.confirmations}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
                 display: "inline-block",
                 padding: "3px 8px",
                 borderRadius: "3px",
