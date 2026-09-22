@@ -54,7 +54,7 @@ export default function HistoryPage() {
             id: `cert-${c.id || c.cert_id}`,
             timestamp: c.confirmed_at || c.issued_at,
             actor: c.issued_by || "did:bel:actor:002",
-            role: "NFT_CREATOR",
+            role: "quality-inspector",
             action: isConfirmed ? "NFT_CERTIFICATION_CONFIRMED" : "NFT_CERTIFICATION_MINTED",
             resource: `ASSET: ${c.asset_id} · ${c.cert_id}`,
             result: isConfirmed ? "SUCCESS" : c.status === "FAILED" ? "FAILED" : "WARNING",

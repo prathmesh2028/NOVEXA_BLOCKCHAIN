@@ -925,9 +925,9 @@ function NFTCreatorDashboard() {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   TECHNICIAN DASHBOARD
+   QUALITY INSPECTOR DASHBOARD
    ════════════════════════════════════════════════════════════════════ */
-function TechnicianDashboard() {
+function QualityInspectorDashboard() {
   const [myAssets, setMyAssets] = useState<AssetResponse[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [assetsLoading, setAssetsLoading] = useState(true);
@@ -1369,7 +1369,7 @@ export default function DashboardPage() {
       {/* ── Role-based dashboard body ──────────────────────────── */}
       {role === "admin"       && <AdminDashboard />}
       {role === "nft-creator" && <NFTCreatorDashboard />}
-      {role === "technician"  && <TechnicianDashboard />}
+      {role === "quality-inspector"  && <QualityInspectorDashboard />}
       {role === "auditor"     && <AuditorDashboard />}
     </div>
   );

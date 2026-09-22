@@ -19,7 +19,7 @@ export class AssetsService {
   }
 
   private async enforceAssetAccess(asset: any, user: any) {
-    if (!user || user.roles.includes('ADMIN') || user.roles.includes('AUDITOR')) return;
+    if (!user || user.roles.includes('SYSTEM_ADMIN') || user.roles.includes('AUDITOR')) return;
     if (!asset.registeredById) return;
     if (asset.registeredById === user.sub) return;
 
@@ -82,7 +82,7 @@ export class AssetsService {
 
     const where: any = {};
 
-    if (params.user && !params.user.roles.includes('ADMIN') && !params.user.roles.includes('AUDITOR')) {
+    if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
       const userDomain = this.getSupplierDomain(params.user.email);
       if (userDomain) {
         const usersInDomain = await this.prisma.user.findMany({
@@ -224,7 +224,7 @@ export class AssetsService {
   /**
    * Eligible Assets:
    * Assets in ACCEPTED_FOR_ASSEMBLY state with at least one integrity-verified evidence item.
-   * These are the pool from which NFT_CREATOR can initiate certification.
+   * These are the pool from which QUALITY_INSPECTOR can initiate certification.
    */
   async getEligibleAssets(params: { page?: number; page_size?: number; user?: any } = {}) {
     const page = params.page || 1;
@@ -237,7 +237,7 @@ export class AssetsService {
         certStatus: { not: 'CONFIRMED' }, // not already certified
       };
 
-      if (params.user && !params.user.roles.includes('ADMIN') && !params.user.roles.includes('AUDITOR')) {
+      if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
         const userDomain = this.getSupplierDomain(params.user.email);
         if (userDomain) {
           const usersInDomain = await this.prisma.user.findMany({

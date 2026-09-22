@@ -10,7 +10,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: "", name: "", role: "TECHNICIAN" });
+  const [inviteForm, setInviteForm] = useState({ email: "", name: "", role: "quality-inspector" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -40,7 +40,7 @@ export default function UsersPage() {
     try {
       await usersService.inviteUser(inviteForm);
       setShowInviteModal(false);
-      setInviteForm({ email: "", name: "", role: "TECHNICIAN" });
+      setInviteForm({ email: "", name: "", role: "quality-inspector" });
       // Refresh users list
       const res = await usersService.listUsers({ page_size: 100 });
       setUsers(res.items);
@@ -215,11 +215,10 @@ export default function UsersPage() {
                     fontSize: "0.875rem",
                   }}
                 >
-                  <option value="TECHNICIAN">Technician</option>
-                  <option value="INSPECTOR">Inspector</option>
-                  <option value="AUDITOR">Auditor</option>
-                  <option value="NFT_CREATOR">NFT Creator</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="system-admin">System Administrator</option>
+                  <option value="procurement-supply-chain-officer">Procurement & Supply Chain Officer</option>
+                  <option value="quality-inspector">Quality Inspector</option>
+                  <option value="auditor">Auditor</option>
                 </select>
               </div>
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>

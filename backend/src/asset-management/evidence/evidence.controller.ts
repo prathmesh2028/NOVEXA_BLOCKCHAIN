@@ -42,18 +42,18 @@ export class EvidenceController {
    * GET /evidence/integrity-report/:assetId
    * Returns a per-item integrity report for all evidence on an asset.
    * Checks stored hash vs integrityVerified flag.
-   * AUDITOR, ADMIN, NFT_CREATOR can read integrity reports.
+   * AUDITOR, SYSTEM_ADMIN, QUALITY_INSPECTOR can read integrity reports.
    */
   @Get('integrity-report')
   @UseGuards(RolesGuard)
-  @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
+  @RequireRoles('AUDITOR', 'SYSTEM_ADMIN', 'QUALITY_INSPECTOR', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER')
   async getIntegrityReportByQuery(@Query('asset_id') assetId?: string, @Req() req?: any) {
     return this.evidenceService.getIntegrityReport(assetId || 'EF-2026-00421', req?.user);
   }
 
   @Get('integrity-report/:assetId')
   @UseGuards(RolesGuard)
-  @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
+  @RequireRoles('AUDITOR', 'SYSTEM_ADMIN', 'QUALITY_INSPECTOR', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER')
   async getIntegrityReport(@Param('assetId') assetId: string, @Req() req?: any) {
     return this.evidenceService.getIntegrityReport(assetId, req?.user);
   }
@@ -78,11 +78,11 @@ export class EvidenceController {
    * Upload a new evidence item.
    * Body: { asset_id, filename, type, mime_type, size_kb, content_base64, event }
    * content_base64 is the file content encoded in base64 — hash computed server-side.
-   * TECHNICIAN and ADMIN only.
+   * QUALITY_INSPECTOR and SYSTEM_ADMIN only.
    */
   @Post()
   @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @RequireRoles('QUALITY_INSPECTOR', 'SYSTEM_ADMIN')
   async uploadEvidence(@Body() body: any, @Req() req: any) {
     if (!body.asset_id || !body.filename || !body.content_base64) {
       throw new BadRequestException('asset_id, filename, and content_base64 are required');
