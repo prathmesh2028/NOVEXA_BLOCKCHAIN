@@ -289,6 +289,78 @@ async function main() {
     });
   }
 
+  // ── Supply Chain Domain ──
+  const sup1 = await prisma.supplier.upsert({
+    where: { supplierId: 'SUP-BEL-001' },
+    update: {},
+    create: {
+      supplierId: 'SUP-BEL-001',
+      name: 'BEL Synthetic Procurement Div.',
+      contactInfo: { email: 'procurement@bel-synthetic.in', phone: '+91-80-28381111' },
+      status: 'ACTIVE',
+    },
+  });
+
+  const sup2 = await prisma.supplier.upsert({
+    where: { supplierId: 'SUP-HAL-002' },
+    update: {},
+    create: {
+      supplierId: 'SUP-HAL-002',
+      name: 'HAL Avionics Precision Components',
+      contactInfo: { email: 'supply@hal-synthetic.in', phone: '+91-80-22322222' },
+      status: 'ACTIVE',
+    },
+  });
+
+  const fac1 = await prisma.facility.upsert({
+    where: { facilityId: 'FAC-BLR-01' },
+    update: {},
+    create: {
+      facilityId: 'FAC-BLR-01',
+      supplierId: sup1.id,
+      name: 'BEL Bangalore Integrated Defense Complex',
+      location: 'Bangalore, Karnataka',
+      type: 'Manufacturing',
+    },
+  });
+
+  const fac2 = await prisma.facility.upsert({
+    where: { facilityId: 'FAC-HYD-02' },
+    update: {},
+    create: {
+      facilityId: 'FAC-HYD-02',
+      supplierId: sup1.id,
+      name: 'BEL Hyderabad Missile Electronics Facility',
+      location: 'Hyderabad, Telangana',
+      type: 'Assembly & Testing',
+    },
+  });
+
+  const lot1 = await prisma.lot.upsert({
+    where: { lotId: 'LOT-2026-EF-001' },
+    update: {},
+    create: {
+      lotId: 'LOT-2026-EF-001',
+      supplierId: sup1.id,
+      materialType: 'High-Grade Titanium Alloy Components',
+      quantity: 500,
+      manufacturedAt: new Date('2026-08-01T00:00:00Z'),
+    },
+  });
+
+  const shipment1 = await prisma.shipment.upsert({
+    where: { shipmentId: 'SHP-2026-0091' },
+    update: {},
+    create: {
+      shipmentId: 'SHP-2026-0091',
+      dispatchFacilityId: fac1.id,
+      receiveFacilityId: fac2.id,
+      status: 'IN_TRANSIT',
+      trackingNumber: 'TRK-IND-DEF-99881',
+      dispatchedAt: new Date('2026-09-15T08:30:00Z'),
+    },
+  });
+
   console.log('✅ Seed complete — SYNTHETIC / DEMO DATA');
   console.log(`   Users: ${await prisma.user.count()}`);
   console.log(`   Assets: ${await prisma.asset.count()}`);
@@ -296,6 +368,10 @@ async function main() {
   console.log(`   Certifications: ${await prisma.certification.count()}`);
   console.log(`   Audit Events: ${await prisma.auditEvent.count()}`);
   console.log(`   Blockchain Txs: ${await prisma.blockchainTransaction.count()}`);
+  console.log(`   Suppliers: ${await prisma.supplier.count()}`);
+  console.log(`   Facilities: ${await prisma.facility.count()}`);
+  console.log(`   Lots: ${await prisma.lot.count()}`);
+  console.log(`   Shipments: ${await prisma.shipment.count()}`);
 }
 
 main()
