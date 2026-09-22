@@ -9,6 +9,8 @@ export default function InspectionsPage() {
   const [inspections, setInspections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [resultFilter, setResultFilter] = useState("ALL");
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [recordForm, setRecordForm] = useState({
     asset_id: "",
@@ -38,7 +40,6 @@ export default function InspectionsPage() {
     e.preventDefault();
     try {
       await api.post("/inspections/record", recordForm);
-      alert("Inspection recorded successfully");
       setShowRecordModal(false);
       setRecordForm({ asset_id: "", result: "PASS", notes: "", evidence_ids: [] });
       fetchInspections();
@@ -47,89 +48,202 @@ export default function InspectionsPage() {
     }
   };
 
+  const filteredInspections = inspections.filter((ins) => {
+    const matchesSearch =
+      !searchTerm ||
+      (ins.asset_id && ins.asset_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ins.inspector_did && ins.inspector_did.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ins.notes && ins.notes.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesResult = resultFilter === "ALL" || ins.result === resultFilter;
+    return matchesSearch && matchesResult;
+  });
+
+  const passedCount = inspections.filter((i) => i.result === "PASS").length;
+  const failedCount = inspections.filter((i) => i.result === "FAIL").length;
+  const pendingCount = inspections.filter((i) => i.result !== "PASS" && i.result !== "FAIL").length;
+
   return (
-    <div className="page-fade">
+    <div className="internal-page page-fade">
       <PageHeader
-        title="Inspections"
-        subtitle="Asset inspection records and QA verification"
+        title="Quality & Inspection Deck"
+        subtitle="Defence asset physical inspections, QA verification checkpoints, and auditor sign-offs"
         breadcrumbs={[
           { label: "Dashboard", to: "/app/dashboard" },
           { label: "Inspections" },
         ]}
         actions={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 10 }}>
             <button className="btn-primary" onClick={() => setShowRecordModal(true)}>
               + Record Inspection
             </button>
-            <button className="btn-ghost" onClick={fetchInspections}>
+            <button className="btn-secondary" onClick={fetchInspections}>
               ↻ Refresh
             </button>
           </div>
         }
       />
 
+      {/* KPI Summary Cards */}
+      <div className="internal-kpi-grid stagger-in-2">
+        <div className="internal-kpi-card">
+          <div className="internal-kpi-label">TOTAL INSPECTIONS</div>
+          <div className="internal-kpi-value">{inspections.length}</div>
+          <div className="internal-kpi-sub">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563eb" }} />
+            Logged in system
+          </div>
+        </div>
+
+        <div className="internal-kpi-card">
+          <div className="internal-kpi-label">PASSED QA AUDIT</div>
+          <div className="internal-kpi-value" style={{ color: "#22c55e" }}>
+            {passedCount}
+          </div>
+          <div className="internal-kpi-sub">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
+            Cleared for assembly
+          </div>
+        </div>
+
+        <div className="internal-kpi-card">
+          <div className="internal-kpi-label">DISCREPANCIES / FAILED</div>
+          <div className="internal-kpi-value" style={{ color: failedCount > 0 ? "#ef4444" : "#64748b" }}>
+            {failedCount}
+          </div>
+          <div className="internal-kpi-sub">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: failedCount > 0 ? "#ef4444" : "#64748b" }} />
+            {failedCount > 0 ? "Requires re-inspection" : "Zero defects recorded"}
+          </div>
+        </div>
+
+        <div className="internal-kpi-card">
+          <div className="internal-kpi-label">PENDING REVIEW</div>
+          <div className="internal-kpi-value" style={{ color: "#f59e0b" }}>
+            {pendingCount}
+          </div>
+          <div className="internal-kpi-sub">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />
+            In QA queue
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="internal-filter-bar stagger-in-3">
+        <input
+          type="text"
+          className="internal-search-input"
+          placeholder="Search by Asset ID, inspector DID, or notes..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <select
+          className="internal-select"
+          value={resultFilter}
+          onChange={(e) => setResultFilter(e.target.value)}
+        >
+          <option value="ALL">All Inspection Results</option>
+          <option value="PASS">PASS Only</option>
+          <option value="FAIL">FAIL Only</option>
+          <option value="CONDITIONAL">Conditional</option>
+        </select>
+
+        <span style={{ fontSize: "0.75rem", color: "var(--muted)", marginLeft: "auto" }}>
+          Showing {filteredInspections.length} of {inspections.length} inspection records
+        </span>
+      </div>
+
+      {/* Main Inspection Table */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
-          Loading inspections...
+        <div className="internal-card" style={{ padding: "48px 20px", textAlign: "center", color: "var(--muted)" }}>
+          <div style={{ display: "inline-block", width: 24, height: 24, borderRadius: "50%", border: "2px solid #3b82f6", borderTopColor: "transparent", animation: "orbitRotateSlow 1s linear infinite", marginBottom: 8 }} />
+          <div>Retrieving QA inspection records...</div>
         </div>
       ) : error ? (
-        <div style={{ textAlign: "center", padding: "60px 20px" }}>
-          <div style={{ color: "#ef4444", marginBottom: 12 }}>{error}</div>
+        <div className="internal-card" style={{ textAlign: "center", padding: "48px 20px" }}>
+          <div style={{ color: "#ef4444", marginBottom: 12, fontWeight: 600 }}>{error}</div>
           <button className="btn-secondary" onClick={fetchInspections}>Retry</button>
         </div>
-      ) : inspections.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
-          No inspections recorded yet.
+      ) : filteredInspections.length === 0 ? (
+        <div className="internal-card internal-empty-state">
+          <div className="internal-empty-icon">✓</div>
+          <div className="internal-empty-title">NO INSPECTIONS FOUND</div>
+          <div className="internal-empty-desc">
+            No inspection records match your current filter criteria. Record a new inspection to update asset QA state.
+          </div>
         </div>
       ) : (
-        <div className="panel">
-          <table>
-            <thead>
-              <tr>
-                <th>Asset ID</th>
-                <th>Inspector</th>
-                <th>Result</th>
-                <th>Notes</th>
-                <th>Evidence Count</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inspections.map((inspection: any) => (
-                <tr key={inspection.id}>
-                  <td>
-                    <Link to={`/app/assets/${inspection.asset_id}`} className="meta-id" style={{ color: "#60a5fa" }}>
-                      {inspection.asset_id}
-                    </Link>
-                  </td>
-                  <td style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
-                    {inspection.inspector_did || "Inspector"}
-                  </td>
-                  <td>
-                    <StatusBadge status={inspection.result} />
-                  </td>
-                  <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#94a3b8" }}>
-                    {inspection.notes || "—"}
-                  </td>
-                  <td style={{ textAlign: "center" }}>{inspection.evidence_ids?.length || 0}</td>
-                  <td style={{ fontSize: "0.8125rem", color: "#64748b" }}>
-                    {formatDateTime(inspection.created_at)}
-                  </td>
-                  <td>
-                    <Link to={`/app/assets/${inspection.asset_id}`} className="btn-ghost" style={{ fontSize: "0.75rem" }}>
-                      View Asset
-                    </Link>
-                  </td>
+        <div className="internal-card stagger-in-4" style={{ padding: 0 }}>
+          <div className="internal-table-container">
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
+                  {["Target Asset", "Inspector DID", "Result Status", "Inspection Notes", "Evidence", "Timestamp", "Action"].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: "12px 16px",
+                        textAlign: "left",
+                        fontSize: "0.6875rem",
+                        color: "var(--muted)",
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredInspections.map((inspection: any) => (
+                  <tr key={inspection.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                    <td style={{ padding: "14px 16px" }}>
+                      <Link to={`/app/assets/${inspection.asset_id}`} className="meta-id" style={{ color: "#3b82f6", fontWeight: 700, textDecoration: "none" }}>
+                        {inspection.asset_id}
+                      </Link>
+                    </td>
+                    <td style={{ padding: "14px 16px", fontSize: "0.8125rem", color: "var(--muted)" }}>
+                      {inspection.inspector_did || "DID:NOVEXA-INSPECTOR-01"}
+                    </td>
+                    <td style={{ padding: "14px 16px" }}>
+                      <StatusBadge status={inspection.result} size="sm" />
+                    </td>
+                    <td style={{ padding: "14px 16px", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--foreground)" }}>
+                      {inspection.notes || "—"}
+                    </td>
+                    <td style={{ padding: "14px 16px", textAlign: "center" }}>
+                      <span style={{ padding: "2px 8px", background: "rgba(37,99,235,0.08)", borderRadius: "10px", fontSize: "0.75rem", color: "#3b82f6", fontWeight: 600 }}>
+                        {inspection.evidence_ids?.length || 0} files
+                      </span>
+                    </td>
+                    <td style={{ padding: "14px 16px", fontSize: "0.75rem", color: "var(--muted)", whiteSpace: "nowrap" }}>
+                      {formatDateTime(inspection.created_at)}
+                    </td>
+                    <td style={{ padding: "14px 16px" }}>
+                      <Link to={`/app/assets/${inspection.asset_id}`} className="btn-secondary" style={{ fontSize: "0.75rem", padding: "4px 10px" }}>
+                        View Asset
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ padding: "12px 16px", borderTop: "1px solid var(--border-subtle)", fontSize: "0.75rem", color: "var(--muted)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Cryptographic inspection logs anchored on-chain</span>
+            <span>Total {filteredInspections.length} inspections</span>
+          </div>
         </div>
       )}
 
+      {/* Record Inspection Modal */}
       {showRecordModal && (
         <div
+          className="modal-backdrop"
           style={{
             position: "fixed",
             top: 0,
@@ -144,12 +258,12 @@ export default function InspectionsPage() {
             zIndex: 1000,
           }}
         >
-          <div className="panel" style={{ width: "100%", maxWidth: 500, padding: 24 }}>
+          <div className="internal-card modal-content-animated" style={{ width: "100%", maxWidth: 500, padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <div style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0" }}>Record Inspection</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--foreground)" }}>Record Defence Inspection</div>
               <button
                 onClick={() => setShowRecordModal(false)}
-                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1.2rem" }}
+                style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.2rem" }}
               >
                 ✕
               </button>
@@ -157,12 +271,13 @@ export default function InspectionsPage() {
 
             <form onSubmit={handleRecordInspection} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
-                  Asset ID
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
+                  Target Asset ID *
                 </label>
                 <input
                   type="text"
-                  className="input"
+                  className="internal-search-input"
+                  style={{ width: "100%" }}
                   value={recordForm.asset_id}
                   onChange={(e) => setRecordForm({ ...recordForm, asset_id: e.target.value })}
                   placeholder="e.g. EF-2026-00421"
@@ -171,39 +286,41 @@ export default function InspectionsPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
-                  Result
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
+                  Inspection Result *
                 </label>
                 <select
-                  className="input"
+                  className="internal-select"
+                  style={{ width: "100%" }}
                   value={recordForm.result}
                   onChange={(e) => setRecordForm({ ...recordForm, result: e.target.value })}
                 >
-                  <option value="PASS">PASS</option>
-                  <option value="FAIL">FAIL</option>
-                  <option value="CONDITIONAL">CONDITIONAL</option>
+                  <option value="PASS">PASS — Complies with Defence QA Specs</option>
+                  <option value="FAIL">FAIL — Quarantined / Defect Detected</option>
+                  <option value="CONDITIONAL">CONDITIONAL — Requires Secondary Check</option>
                 </select>
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
-                  Notes
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
+                  Inspection Findings & Notes
                 </label>
                 <textarea
-                  className="input"
+                  className="internal-search-input"
+                  style={{ width: "100%", minHeight: 80, resize: "vertical" }}
                   value={recordForm.notes}
                   onChange={(e) => setRecordForm({ ...recordForm, notes: e.target.value })}
-                  placeholder="Inspection notes..."
+                  placeholder="Enter detailed technical findings, equipment IDs, and calibration notes..."
                   rows={3}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
-                <button type="button" className="btn-ghost" onClick={() => setShowRecordModal(false)}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+                <button type="button" className="btn-secondary" onClick={() => setShowRecordModal(false)}>
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
-                  Record
+                  Record Inspection
                 </button>
               </div>
             </form>

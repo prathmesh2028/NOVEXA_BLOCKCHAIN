@@ -1,0 +1,614 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NOVEXA DEFENCE TRUST — DASHBOARD V2 COMMAND CENTER
+   Dribbble-inspired Defense Enterprise Styling (Light & Dark Mode)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Container Layout ─────────────────────────────────────────────────────── */
+.db-v2-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ── Card Base ────────────────────────────────────────────────────────────── */
+.db-card {
+  background: #0c1828;
+  border: 1px solid #172d4c;
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.db-card:hover {
+  border-color: #1e3a60;
+  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Header Card ──────────────────────────────────────────────────────────── */
+.db-header-card {
+  background: linear-gradient(180deg, #0d1c34 0%, #08131f 100%);
+  border: 1px solid #1e3a60;
+  border-radius: 14px;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="light"] .db-header-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(37, 99, 235, 0.03);
+}
+
+/* ── Section Titles ───────────────────────────────────────────────────────── */
+.db-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.db-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.db-card-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: linear-gradient(180deg, #2563eb 0%, #3b82f6 100%);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .db-card-title {
+  color: #475569;
+}
+
+/* ── KPI Grid & Cards ─────────────────────────────────────────────────────── */
+.db-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.db-kpi-card {
+  background: #0c1828;
+  border: 1px solid #172d4c;
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.db-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.18);
+}
+
+.db-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.db-kpi-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.db-kpi-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.db-kpi-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.db-kpi-value {
+  font-size: 2.125rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #f8fafc;
+  font-family: var(--font-display, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+}
+
+.db-kpi-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* ── Mini Radial Progress Meter ───────────────────────────────────────────── */
+.db-radial-meter {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.db-radial-meter svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.db-radial-bg {
+  stroke: #172d4c;
+  stroke-width: 3.5;
+  fill: none;
+}
+
+.db-radial-fg {
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  fill: none;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.db-radial-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Row 3: Command Analytics Grid ────────────────────────────────────────── */
+.db-analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.1fr) minmax(380px, 1.3fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* ── Hero Circular Visualization Card ─────────────────────────────────────── */
+.db-trust-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.db-orbital-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  position: relative;
+}
+
+.db-orbital-svg-box {
+  width: 280px;
+  height: 280px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-orbital-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Rotating outer ring */
+.db-orbit-outer {
+  transform-origin: 140px 140px;
+  animation: orbitRotateSlow 30s linear infinite;
+}
+
+/* Counter-rotating inner ring */
+.db-orbit-inner {
+  transform-origin: 140px 140px;
+  animation: orbitRotateReverse 22s linear infinite;
+}
+
+/* Travelling node */
+.db-orbit-traveler {
+  transform-origin: 140px 140px;
+  animation: orbitNodeTravel 30s linear infinite;
+}
+
+/* Progress Arc with soft glow */
+.db-progress-arc {
+  animation: pulseArcGlow 4s ease-in-out infinite;
+}
+
+/* Central Trust Score Overlay */
+.db-orbital-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.db-trust-score {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #22c55e;
+  letter-spacing: -0.02em;
+  font-family: var(--font-display, sans-serif);
+}
+
+.db-trust-score-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.db-trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 20px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #22c55e;
+}
+
+/* Telemetry 4-Corner Box */
+.db-telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #172d4c;
+}
+
+.db-telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(15, 32, 64, 0.35);
+  border: 1px solid #172d4c;
+  border-radius: 8px;
+}
+
+.db-telemetry-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.db-telemetry-title {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.db-telemetry-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* ── Lifecycle Analytics Bars ─────────────────────────────────────────────── */
+.db-lifecycle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.db-lifecycle-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.db-lifecycle-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.db-lifecycle-name {
+  font-weight: 600;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-lifecycle-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.db-progress-track {
+  height: 8px;
+  background: #152b4a;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.db-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Row 4: Recent Activity & System Status ───────────────────────────────── */
+.db-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.4fr) minmax(320px, 1fr);
+  gap: 20px;
+}
+
+/* System Status Rows */
+.db-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.db-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(15, 32, 64, 0.3);
+  border: 1px solid #172d4c;
+  border-radius: 10px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.db-status-row:hover {
+  background: rgba(15, 32, 64, 0.6);
+  border-color: #1e3a60;
+}
+
+.db-status-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-status-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #60a5fa;
+}
+
+.db-status-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.db-status-sub {
+  font-size: 0.6875rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.db-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.db-status-dot-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: statusDotBreathe 2.4s ease-in-out infinite;
+}
+
+/* ── Light Mode Adaptations ───────────────────────────────────────────────── */
+[data-theme="light"] .db-card,
+[data-theme="light"] .db-kpi-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(37, 99, 235, 0.03);
+}
+
+[data-theme="light"] .db-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .db-kpi-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.12);
+}
+
+[data-theme="light"] .db-kpi-value {
+  color: #0f172a;
+}
+
+[data-theme="light"] .db-radial-bg {
+  stroke: #e2e8f0;
+}
+
+[data-theme="light"] .db-radial-text {
+  color: #475569;
+}
+
+[data-theme="light"] .db-telemetry-grid {
+  border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .db-telemetry-item {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .db-telemetry-status {
+  color: #0f172a;
+}
+
+[data-theme="light"] .db-lifecycle-name {
+  color: #0f172a;
+}
+
+[data-theme="light"] .db-lifecycle-count {
+  color: #475569;
+}
+
+[data-theme="light"] .db-progress-track {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .db-status-row {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .db-status-row:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .db-status-name {
+  color: #0f172a;
+}
+
+[data-theme="light"] .db-status-icon {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.2);
+  color: #2563eb;
+}
+
+/* ── Keyframe Animations ──────────────────────────────────────────────────── */
+@keyframes orbitRotateSlow {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes orbitRotateReverse {
+  0%   { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes orbitNodeTravel {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulseArcGlow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.75)); }
+}
+
+@keyframes statusDotBreathe {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50%      { opacity: 0.65; transform: scale(1.15); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+}
+
+/* ── Accessibility: Prefers Reduced Motion ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .db-orbit-outer,
+  .db-orbit-inner,
+  .db-orbit-traveler,
+  .db-progress-arc,
+  .db-status-dot-pulse {
+    animation: none !important;
+  }
+}
+
+/* ── Responsive Adaptations ───────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .db-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  .db-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .db-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .db-orbital-svg-box {
+    width: 240px;
+    height: 240px;
+  }
+  .db-telemetry-grid {
+    grid-template-columns: 1fr;
+  }
+}

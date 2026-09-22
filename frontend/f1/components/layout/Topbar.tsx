@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { getRoleLabel, getRoleColor } from "../../context/RoleContext";
 import { useAuth } from "../../context/AuthContext";
 import { ConnectWalletButton } from "../../features/wallet/components/ConnectWalletButton";
+import ThemeToggle from "../ui/ThemeToggle";
 
 export default function Topbar() {
   const { user, role } = useAuth();
@@ -24,8 +25,8 @@ export default function Topbar() {
     <div
       style={{
         height: 52,
-        background: "#08131f",
-        borderBottom: "1px solid #152b4a",
+        background: "var(--topbar-bg, #08131f)",
+        borderBottom: "1px solid var(--border-subtle, #152b4a)",
         display: "flex",
         alignItems: "center",
         padding: "0 20px",
@@ -33,6 +34,7 @@ export default function Topbar() {
         position: "sticky",
         top: 0,
         zIndex: 10,
+        transition: "background 0.2s ease, border-color 0.2s ease",
       }}
     >
       {/* Search */}
@@ -83,6 +85,9 @@ export default function Topbar() {
       {/* Connect Wallet */}
       <ConnectWalletButton expectedChainId={import.meta.env.VITE_BLOCKCHAIN_CHAIN_ID ? parseInt(import.meta.env.VITE_BLOCKCHAIN_CHAIN_ID) : undefined} />
 
+      {/* Theme Toggle */}
+      <ThemeToggle />
+
       {/* Notifications */}
       <button
         className="btn-ghost"
@@ -111,11 +116,11 @@ export default function Topbar() {
           alignItems: "center",
           gap: "7px",
           padding: "4px 10px 4px 6px",
-          background: "rgba(30,58,96,0.3)",
-          border: "1px solid #1e3a60",
+          background: "var(--hover-bg, rgba(30,58,96,0.3))",
+          border: "1px solid var(--border, #1e3a60)",
           borderRadius: "20px",
           textDecoration: "none",
-          transition: "border-color 0.15s",
+          transition: "border-color 0.15s, background 0.15s",
         }}
       >
         <div

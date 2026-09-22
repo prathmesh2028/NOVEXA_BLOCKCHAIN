@@ -9,12 +9,10 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
     items: [
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
       { to: "/app/users", label: "Users", icon: "◉" },
-      { to: "/app/roles", label: "Roles & Permissions", icon: "⊛" },
       { to: "/app/assets", label: "Assets", icon: "◈" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },
       { to: "/app/blockchain", label: "Blockchain", icon: "⬡" },
-      { to: "/app/audit", label: "Audit Logs", icon: "≡" },
-      { to: "/app/system-activity", label: "System Activity", icon: "◎" },
+      { to: "/app/system-activity", label: "System Activity", icon: "≡" },
       { to: "/app/settings", label: "Settings", icon: "⚙" },
       { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
     ],
@@ -26,7 +24,7 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/eligible-assets", label: "Eligible Assets", icon: "◈" },
       { to: "/app/certification-queue", label: "Certification Queue", icon: "◉" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },
-      { to: "/app/blockchain", label: "Blockchain Transactions", icon: "⬡" },
+      { to: "/app/blockchain", label: "Blockchain", icon: "⬡" },
       { to: "/app/history", label: "History", icon: "◷" },
     ],
   },
@@ -53,7 +51,7 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/evidence-integrity", label: "Evidence Integrity", icon: "◫" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },
       { to: "/app/blockchain-proof", label: "Blockchain Proof", icon: "⬡" },
-      { to: "/app/audit-trail", label: "Audit Trail", icon: "≡" },
+      { to: "/app/system-activity", label: "System Activity", icon: "≡" },
     ],
   },
 };
@@ -75,11 +73,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       style={{
         width: collapsed ? 56 : 220,
         minHeight: "100vh",
-        background: "#08131f",
-        borderRight: "1px solid #152b4a",
+        background: "var(--sidebar-bg, #08131f)",
+        borderRight: "1px solid var(--border-subtle, #152b4a)",
         display: "flex",
         flexDirection: "column",
-        transition: "width 0.2s ease",
+        transition: "width 0.2s ease, background 0.2s ease, border-color 0.2s ease",
         flexShrink: 0,
         position: "relative",
         zIndex: 20,
@@ -89,7 +87,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div
         style={{
           padding: "16px 14px 14px",
-          borderBottom: "1px solid #152b4a",
+          borderBottom: "1px solid var(--border-subtle, #152b4a)",
           display: "flex",
           alignItems: "center",
           gap: "10px",
@@ -122,7 +120,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               style={{
                 fontSize: "0.95rem",
                 fontWeight: 700,
-                color: "#e2e8f0",
+                color: "var(--foreground, #e2e8f0)",
                 letterSpacing: "0.04em",
                 lineHeight: 1.1,
               }}
@@ -193,7 +191,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div
         style={{
           padding: collapsed ? "10px 8px" : "12px 14px",
-          borderTop: "1px solid #152b4a",
+          borderTop: "1px solid var(--border-subtle, #152b4a)",
         }}
       >
         {!collapsed ? (

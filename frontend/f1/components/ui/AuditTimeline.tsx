@@ -34,7 +34,7 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
 
           // Normalise field names between backend and legacy shapes
           const actorDisplay = e.actor_did || e.actorDid || e.actor || "—";
-          const actorRole = e.actor_role || e.actorRole || "";
+          const actorRole = e.actor_role || e.actorRole || e.role || "";
           const action = e.action || "—";
           const timestamp = e.timestamp || "";
           const details = e.details || "";
@@ -82,6 +82,22 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
+                      {e.category === "SUPPLY_CHAIN" && (
+                        <span
+                          style={{
+                            fontSize: "0.625rem",
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            background: "rgba(14, 165, 233, 0.15)",
+                            border: "1px solid rgba(14, 165, 233, 0.35)",
+                            color: "#38bdf8",
+                          }}
+                        >
+                          SUPPLY CHAIN
+                        </span>
+                      )}
                       {actorRole && <RoleBadge role={actorRole} size="sm" />}
                       <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#e2e8f0" }}>
                         {actorDisplay}

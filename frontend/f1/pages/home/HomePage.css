@@ -1,1239 +1,1377 @@
 /* ============================================================
-   NOVEXA DEFENCE TRUST — HOME HERO COMMAND CENTER STYLING
-   Smart India Hackathon 2026 · Defence-Tech Command Center
-   Inspired by BEL, DRDO, ISRO Mission Dashboards & Enterprise Defence
+   NOVEXA DEFENCE TRUST — HOME / COMMAND CENTER STYLING
+   Smart India Hackathon 2026 · Light-Mode Reference Match
+   Clean Enterprise Defence · Sovereign Blockchain Infrastructure
    ============================================================ */
 
-/* ─── Page Container & Layered Canvas ─── */
+/* ─── Base Page Container ─── */
 .home-page {
-  background: #020817;
+  background-color: var(--background, #f4f7fb);
+  color: var(--foreground, #0f172a);
   min-height: 100vh;
-  color: #e2e8f0;
   position: relative;
   overflow-x: hidden;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* ─── Parallax Canvas Wrapper (Background Only) ─── */
+/* ─── Background Layer (Parallax Container) ─── */
 .home-parallax-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
-/* ─── Layer 6: Aurora Atmosphere ─── */
-.home-aurora-container {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.home-aurora-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.home-aurora-1 {
-  top: -120px;
-  left: 20%;
-  width: 750px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(14, 165, 233, 0.08) 50%, transparent 75%);
-  animation: auroraFloat1 24s ease-in-out infinite alternate;
-}
-
-.home-aurora-2 {
-  top: 10%;
-  right: -80px;
-  width: 650px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(30, 58, 138, 0.09) 55%, transparent 80%);
-  animation: auroraFloat2 28s ease-in-out infinite alternate;
-}
-
-.home-aurora-3 {
-  top: 350px;
-  left: 10%;
-  width: 500px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.12) 0%, transparent 70%);
-  animation: auroraFloat3 20s ease-in-out infinite alternate;
-}
-
-@keyframes auroraFloat1 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, 20px) scale(1.08); }
-  100% { transform: translate(-25px, 15px) scale(0.96); }
-}
-
-@keyframes auroraFloat2 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-35px, -15px) scale(1.05); }
-  100% { transform: translate(20px, 30px) scale(0.95); }
-}
-
-@keyframes auroraFloat3 {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(25px, -20px); }
-}
-
-/* ─── Layer 1: Living Defence Technical Grid ─── */
-.home-defence-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(to right, rgba(30, 58, 96, 0.18) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(30, 58, 96, 0.18) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: radial-gradient(ellipse at 50% 35%, black 40%, transparent 82%);
-  animation: gridLivingMotion 35s linear infinite;
-  will-change: background-position, opacity;
-}
-
-@keyframes gridLivingMotion {
-  0% {
-    background-position: 0 0;
-    opacity: 0.75;
-  }
-  50% {
-    background-position: 0 50px;
-    opacity: 0.95;
-  }
-  100% {
-    background-position: 0 100px;
-    opacity: 0.75;
-  }
-}
-
-/* Technical Constellation Crosshairs */
-.home-grid-crosshairs {
+/* Technical Coordinate Grid */
+.home-technical-grid {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(1px 1px at 25px 25px, rgba(56, 189, 248, 0.35) 1px, transparent 0),
-    radial-gradient(1.5px 1.5px at 125px 75px, rgba(96, 165, 250, 0.4) 1px, transparent 0),
-    radial-gradient(1px 1px at 325px 175px, rgba(34, 197, 94, 0.35) 1px, transparent 0);
-  background-size: 150px 150px;
-  opacity: 0.6;
-  animation: starPulse 7s ease-in-out infinite alternate;
+    linear-gradient(rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.045) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at 50% 35%, black 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 35%, black 40%, transparent 85%);
 }
 
-@keyframes starPulse {
-  0% { opacity: 0.4; }
-  100% { opacity: 0.8; }
+[data-theme="dark"] .home-technical-grid {
+  background-image:
+    linear-gradient(rgba(30, 58, 96, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 96, 0.15) 1px, transparent 1px);
 }
 
-/* ─── Layer 7: Tactical Scan Sweep Line ─── */
-.home-scan-sweep-bar {
+/* Soft Ambient Bloom */
+.home-ambient-bloom {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.03) 60%, rgba(56, 189, 248, 0.18) 98%, rgba(56, 189, 248, 0.6) 100%);
-  border-bottom: 1.5px solid rgba(56, 189, 248, 0.55);
-  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.25);
+  top: -60px;
+  left: 20%;
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, rgba(2, 132, 199, 0.02) 45%, transparent 70%);
   pointer-events: none;
-  animation: scanSweepCycle 9.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  z-index: 1;
 }
 
-@keyframes scanSweepCycle {
-  0% {
-    top: -100px;
-    opacity: 0;
-  }
-  8% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  98% {
-    top: 880px;
-    opacity: 0;
-  }
-  100% {
-    top: 880px;
-    opacity: 0;
-  }
+[data-theme="dark"] .home-ambient-bloom {
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, rgba(14, 165, 233, 0.05) 50%, transparent 75%);
 }
 
-/* ─── Layer 2 & 3: Digital India Network Map & Satellite Orbit ─── */
+/* ─── India Network Stage ─── */
 .home-india-network-stage {
   position: absolute;
-  top: 40px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 1280px;
-  height: 720px;
+  width: 1000px;
+  height: 680px;
   pointer-events: none;
-  opacity: 0.16;
-  transition: opacity 0.4s ease;
+  opacity: 0.75;
 }
 
 .home-india-svg {
   width: 100%;
   height: 100%;
-  overflow: visible;
 }
 
-/* Strategic Node Animation */
-.strategic-node {
-  transform-origin: center;
-  transition: all 0.3s ease;
-}
-
-.node-pulse-ring {
-  animation: nodeRingExpand 3.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
-  transform-origin: center;
-}
-
-@keyframes nodeRingExpand {
-  0% {
-    r: 4;
-    opacity: 0.9;
-    stroke-width: 1.5;
-  }
-  100% {
-    r: 22;
-    opacity: 0;
-    stroke-width: 0.5;
-  }
-}
-
-.vector-line-active {
-  stroke-dasharray: 6 8;
-  animation: vectorFlow 18s linear infinite;
-}
-
-@keyframes vectorFlow {
-  from { stroke-dashoffset: 200; }
-  to { stroke-dashoffset: 0; }
-}
-
-/* Orbit Path & Satellite Silhouette */
 .home-orbit-ring {
-  stroke: rgba(56, 189, 248, 0.3);
-  stroke-dasharray: 6 6;
-  animation: orbitRingSpin 60s linear infinite;
-  transform-origin: 520px 320px;
+  animation: orbitRingGlow 8s ease-in-out infinite alternate;
 }
 
-@keyframes orbitRingSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.home-satellite-group {
-  animation: satelliteOrbitMotion 26s linear infinite;
-  transform-origin: 520px 320px;
-}
-
-@keyframes satelliteOrbitMotion {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes orbitRingGlow {
+  0% { opacity: 0.4; }
+  100% { opacity: 0.9; }
 }
 
 .satellite-signal-wave {
   animation: signalWaveRipple 3s ease-out infinite;
-  transform-origin: center;
 }
 
 @keyframes signalWaveRipple {
-  0% {
-    r: 3;
-    opacity: 1;
-  }
-  100% {
-    r: 24;
-    opacity: 0;
-  }
+  0% { r: 4; opacity: 1; stroke-width: 1.2; }
+  100% { r: 24; opacity: 0; stroke-width: 0.2; }
 }
 
-/* ─── Layer 4: Floating Defence Asset Silhouettes ─── */
-.home-defence-assets-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 0;
+.node-pulse-ring {
+  animation: nodePulse 2.8s infinite ease-in-out;
 }
 
-.defence-asset-silhouette {
-  position: absolute;
-  opacity: 0.085;
-  transition: opacity 0.3s ease;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.35));
+@keyframes nodePulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(2.2); opacity: 0; }
 }
 
-/* Stealth Fighter Aircraft Drift */
-.asset-fighter {
-  top: 14%;
-  right: 12%;
-  width: 110px;
-  height: 65px;
-  animation: fighterPatrol 34s ease-in-out infinite;
-}
-
-@keyframes fighterPatrol {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  25% {
-    transform: translate(45px, -18px) rotate(-1.5deg);
-  }
-  50% {
-    transform: translate(90px, 8px) rotate(1deg);
-  }
-  75% {
-    transform: translate(35px, 20px) rotate(-0.8deg);
-  }
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-}
-
-/* Naval Carrier Silhouette */
-.asset-carrier {
-  bottom: 8%;
-  left: 6%;
-  width: 140px;
-  height: 50px;
-  animation: carrierDrift 42s ease-in-out infinite alternate;
-}
-
-@keyframes carrierDrift {
-  0% {
-    transform: translateX(0) translateY(0);
-  }
-  50% {
-    transform: translateX(35px) translateY(-4px);
-  }
-  100% {
-    transform: translateX(65px) translateY(2px);
-  }
-}
-
-/* Tactical UAV Drone Patrol */
-.asset-drone {
-  top: 48%;
-  left: 3%;
-  width: 80px;
-  height: 44px;
-  animation: droneHover 22s ease-in-out infinite;
-}
-
-@keyframes droneHover {
-  0% {
-    transform: translate(0, 0);
-  }
-  33% {
-    transform: translate(25px, -14px);
-  }
-  66% {
-    transform: translate(50px, 10px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
-/* Tactical Radar Station Silhouette */
-.asset-radar {
-  bottom: 12%;
-  right: 6%;
-  width: 70px;
-  height: 60px;
-  animation: radarPulseBlink 6s ease-in-out infinite alternate;
-}
-
-@keyframes radarPulseBlink {
-  0% { opacity: 0.07; }
-  100% { opacity: 0.12; }
-}
-
-/* ─── Layer 5: Blockchain Encrypted Data Flow ─── */
-.home-blockchain-streams {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.18;
-}
-
-/* ─── Hero Section Layout ─── */
-.home-hero-section {
+/* ─── Hero Container (2-Column Grid) ─── */
+.home-hero-container {
   position: relative;
-  z-index: 2;
-  max-width: 1240px;
+  z-index: 1;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 84px 24px 72px;
+  padding: 36px 32px 64px;
   display: grid;
-  grid-template-columns: 1.16fr 0.94fr;
-  gap: 52px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+  gap: 40px;
+  align-items: start;
 }
 
-/* ─── Hero Title Entrance Sequence (Staggered) ─── */
-.home-sih-badge {
+/* ─── Left Column (Hero Content) ─── */
+.home-hero-left {
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+}
+
+.home-micro-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+[data-theme="dark"] .home-micro-label {
+  color: #94a3b8;
+}
+
+.home-pill-badge {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 6px 16px;
-  background: rgba(37, 99, 235, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.38);
+  gap: 8px;
+  width: fit-content;
+  padding: 5px 14px;
+  background: rgba(239, 246, 255, 0.95);
+  border: 1px solid rgba(37, 99, 235, 0.35);
   border-radius: 20px;
   font-size: 0.75rem;
-  color: #60a5fa;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  margin-bottom: 24px;
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
-  backdrop-filter: blur(10px);
-  opacity: 0;
-  transform: translateY(10px);
-  animation: heroEntranceFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  font-weight: 700;
+  color: #1d4ed8;
+  letter-spacing: 0.05em;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
 }
 
+[data-theme="dark"] .home-pill-badge {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.4);
+  color: #60a5fa;
+}
+
+.operational-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  display: inline-block;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  animation: dotBreathe 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes dotBreathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* 3-Line Hero Title */
 .home-hero-title {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: clamp(2.5rem, 5.4vw, 4rem);
-  font-weight: 700;
+  font-size: clamp(2.75rem, 5.2vw, 4.25rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  text-transform: uppercase;
+}
+
+.title-navy {
+  color: #0f172a;
+  transition: color 0.2s ease;
+}
+
+[data-theme="dark"] .title-navy {
   color: #f8fafc;
-  margin: 0 0 22px;
-  letter-spacing: 0.03em;
-  line-height: 1.05;
 }
 
-.home-title-line {
-  display: block;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-/* Line 1: Slides from Left */
-.home-title-line-1 {
-  transform: translateX(-24px);
-  animation: titleSlideLeft 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.22s forwards;
-}
-
-/* Line 2: Slides Upward with Intense Electric Blue/Cyan Glow */
-.home-title-line-2 {
-  transform: translateY(22px);
-  color: #38bdf8;
-  background: linear-gradient(135deg, #60a5fa 0%, #38bdf8 50%, #00f2fe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 35px rgba(56, 189, 248, 0.45);
-  animation: titleSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.38s forwards;
-}
-
-/* Line 3: Fades in with Tracking */
-.home-title-line-3 {
-  transform: translateY(14px);
-  animation: titleFadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.52s forwards;
-}
-
-@keyframes titleSlideLeft {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes titleSlideUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes titleFadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes heroEntranceFade {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.title-electric {
+  color: #2563eb;
+  text-shadow: 0 0 24px rgba(37, 99, 235, 0.2);
 }
 
 .home-hero-desc {
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 560px;
+  margin: 0 0 30px;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+[data-theme="dark"] .home-hero-desc {
   color: #94a3b8;
-  line-height: 1.72;
-  margin-bottom: 34px;
-  max-width: 520px;
-  opacity: 0;
-  transform: translateY(12px);
-  animation: heroEntranceFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.65s forwards;
 }
 
-/* ─── Premium CTA Buttons ─── */
-.home-cta-group {
+/* CTA Actions */
+.home-cta-actions {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
   align-items: center;
-  opacity: 0;
-  transform: translateY(12px);
-  animation: heroEntranceFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.78s forwards;
+  gap: 14px;
+  margin-bottom: 38px;
+  flex-wrap: wrap;
 }
 
-.home-primary-btn {
+.home-cta-primary {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 13px 30px;
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0284c7 100%);
+  gap: 10px;
+  padding: 12px 26px;
+  background: #2563eb;
   color: #ffffff;
-  border: 1px solid rgba(96, 165, 250, 0.45);
-  border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  cursor: pointer;
+  border-radius: 6px;
   text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.home-primary-btn:hover {
+.home-cta-primary:hover {
+  background: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.6), 0 0 20px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  border-color: #38bdf8;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
 }
 
-.home-primary-btn:active {
+.home-cta-primary:active {
   transform: translateY(0);
-  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.4);
 }
 
-/* Blue light sweep effect */
-.home-primary-btn::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 70%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  transform: skewX(-22deg);
-  transition: left 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+.cta-arrow {
+  transition: transform 0.15s ease;
 }
 
-.home-primary-btn:hover::after {
-  left: 150%;
+.home-cta-primary:hover .cta-arrow {
+  transform: translateX(3px);
 }
 
-.home-btn-arrow {
-  transition: transform 0.22s ease;
-}
-
-.home-primary-btn:hover .home-btn-arrow {
-  transform: translateX(5px);
-}
-
-.home-secondary-btn {
+.home-cta-secondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 26px;
-  background: rgba(12, 24, 40, 0.7);
-  color: #cbd5e1;
-  border: 1px solid #1e3a60;
+  padding: 11px 22px;
+  background: #ffffff;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  font-size: 0.9375rem;
+  font-weight: 600;
   border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 500;
   cursor: pointer;
-  text-decoration: none;
-  backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.16s ease;
 }
 
-.home-secondary-btn:hover {
-  border-color: #38bdf8;
-  color: #ffffff;
-  background: rgba(23, 45, 76, 0.55);
+[data-theme="dark"] .home-cta-secondary {
+  background: rgba(30, 58, 96, 0.25);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+.home-cta-secondary:hover {
+  background: rgba(37, 99, 235, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(56, 189, 248, 0.2);
 }
 
-/* ─── Defence Trust 10-Stage Lifecycle Progression ─── */
-.home-lifecycle-container {
-  margin-top: 38px;
-  padding: 14px 16px;
-  background: rgba(8, 19, 31, 0.85);
-  border: 1px solid #152b4a;
+.home-cta-secondary:active {
+  transform: translateY(0);
+}
+
+/* 4 Trust Indicators Grid */
+.home-trust-indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 560px;
+}
+
+.home-indicator-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: translateY(10px);
-  animation: heroEntranceFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.home-lifecycle-title {
-  font-size: 0.6875rem;
-  color: #64748b;
+[data-theme="dark"] .home-indicator-card {
+  background: #0c1828;
+  border-color: #1e3a60;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.home-indicator-card:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+[data-theme="dark"] .home-indicator-card:hover {
+  border-color: #2563eb;
+}
+
+.indicator-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.indicator-title {
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  letter-spacing: 0.08em;
+  color: #0f172a;
 }
 
-.home-lifecycle-track {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px;
-  position: relative;
+[data-theme="dark"] .indicator-title {
+  color: #f8fafc;
 }
 
-.home-lifecycle-pulse-bar {
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  height: 2px;
-  width: 80px;
-  background: linear-gradient(90deg, transparent, #38bdf8, #60a5fa, transparent);
-  border-radius: 2px;
-  animation: lifecyclePulseSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+.indicator-sub {
+  font-size: 0.725rem;
+  color: #64748b;
+  margin-top: 1px;
 }
 
-@keyframes lifecyclePulseSweep {
-  0% { left: -15%; opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { left: 105%; opacity: 0; }
-}
-
-.home-lifecycle-item {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 0;
-  position: relative;
-}
-
-.home-lifecycle-text {
-  font-size: 0.6875rem;
+[data-theme="dark"] .indicator-sub {
   color: #94a3b8;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  padding: 2px 5px;
-  border-radius: 3px;
-  transition: all 0.2s ease;
 }
 
-.home-lifecycle-item:hover .home-lifecycle-text {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+/* ─── Right Column: Unified Command Center Stack ─── */
+.home-hero-right {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
 }
 
-.home-lifecycle-arrow {
-  margin: 0 4px;
-  color: #1e3a60;
-  font-size: 0.7rem;
-}
-
-/* ─── Hero Visual Stage (Right Side) ─── */
-.home-visual-stage {
+.home-command-chassis {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  opacity: 0;
-  transform: translateY(16px);
-  animation: heroEntranceFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+  width: 100%;
 }
 
-/* ─── Upgraded Radar Tactical Monitor Panel ─── */
-.home-radar-box {
-  position: relative;
-  height: 200px;
-  background: #08131f;
-  border: 1px solid #172d4c;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55), inset 0 0 35px rgba(2, 8, 23, 0.9);
-  transition: border-color 0.25s ease;
-}
-
-.home-radar-box:hover {
-  border-color: #2b568e;
-}
-
-.home-radar-telemetry {
+/* Outer Ambient Electromagnetic Halo behind Radar */
+.home-radar-halo {
   position: absolute;
-  top: 10px;
-  left: 14px;
+  top: -24px;
+  left: -20px;
+  right: -20px;
+  height: 380px;
+  background: radial-gradient(ellipse at 50% 35%, rgba(14, 165, 233, 0.16) 0%, rgba(37, 99, 235, 0.08) 40%, transparent 72%);
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: 0;
+  animation: radarHaloBreathe 8s ease-in-out infinite;
+}
+
+[data-theme="dark"] .home-radar-halo {
+  background: radial-gradient(ellipse at 50% 35%, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.12) 45%, transparent 75%);
+  filter: blur(34px);
+}
+
+@keyframes radarHaloBreathe {
+  0%, 100% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.03);
+  }
+}
+
+/* 1. Tactical Radar Command Panel (Defence-Grade Command Surface) */
+.home-radar-panel {
+  background: linear-gradient(180deg, #091526 0%, #060e1a 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(147, 197, 253, 0.25),
+    inset 0 0 16px rgba(14, 165, 233, 0.06),
+    0 10px 28px -4px rgba(2, 8, 23, 0.28);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-radar-panel:hover {
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(147, 197, 253, 0.35),
+    inset 0 0 20px rgba(14, 165, 233, 0.1),
+    0 12px 32px -4px rgba(2, 8, 23, 0.35);
+}
+
+.radar-bezel-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 30%, #2563eb 70%, transparent 100%);
+  opacity: 0.85;
+}
+
+.radar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.radar-node-id {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.6875rem;
-  font-family: 'JetBrains Mono', monospace;
-  color: #64748b;
-  letter-spacing: 0.04em;
-  z-index: 3;
-}
-
-.home-radar-tag {
-  position: absolute;
-  bottom: 10px;
-  right: 14px;
-  font-size: 0.625rem;
-  color: #38bdf8;
-  background: rgba(37, 99, 235, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 3px 9px;
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.06em;
   font-weight: 600;
-  z-index: 3;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
 }
 
-.home-radar-scope {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 176px;
-  height: 176px;
-  pointer-events: none;
+.radar-sih-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
 }
 
-.home-radar-ring {
+/* Radar Scope Display */
+.radar-scope-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 12px;
+}
+
+.radar-scope {
+  width: 172px;
+  height: 172px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(6, 14, 26, 0.98) 75%);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow:
+    inset 0 0 22px rgba(14, 165, 233, 0.22),
+    0 0 18px rgba(56, 189, 248, 0.14);
+  overflow: hidden;
+}
+
+.radar-ring {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 1px solid rgba(56, 189, 248, 0.22);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.home-radar-ring-1 { width: 44px; height: 44px; }
-.home-radar-ring-2 { width: 88px; height: 88px; border-style: dashed; border-color: rgba(56, 189, 248, 0.28); }
-.home-radar-ring-3 { width: 132px; height: 132px; }
-.home-radar-ring-4 { width: 176px; height: 176px; border-color: rgba(30, 58, 96, 0.6); }
+.radar-ring-1 { width: 42px; height: 42px; }
 
-.home-radar-axis-h {
+.radar-ring-2 {
+  width: 86px;
+  height: 86px;
+}
+
+.radar-ring-inner {
+  border-style: dashed;
+  border-color: rgba(56, 189, 248, 0.32);
+  animation: radarRingRotateCCW 24s linear infinite;
+}
+
+.radar-ring-3 {
+  width: 128px;
+  height: 128px;
+}
+
+.radar-ring-outer {
+  border-style: dotted;
+  border-width: 1.5px;
+  border-color: rgba(34, 211, 238, 0.3);
+  animation: radarRingRotateCW 32s linear infinite;
+}
+
+.radar-ring-4 { width: 162px; height: 162px; }
+
+@keyframes radarRingRotateCW {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes radarRingRotateCCW {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+.radar-axis-h {
   position: absolute;
   top: 50%;
   left: 0;
   right: 0;
   height: 1px;
-  background: rgba(30, 58, 96, 0.5);
+  background: rgba(56, 189, 248, 0.22);
 }
 
-.home-radar-axis-v {
+.radar-axis-v {
   position: absolute;
   left: 50%;
   top: 0;
   bottom: 0;
   width: 1px;
-  background: rgba(30, 58, 96, 0.5);
+  background: rgba(56, 189, 248, 0.22);
 }
 
-.home-radar-center {
+/* Continuous Radar Sweep Beam */
+.radar-sweep-beam {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 8px #0284c7;
+  background: conic-gradient(from 0deg, rgba(56, 189, 248, 0.45) 0deg, rgba(14, 165, 233, 0.12) 45deg, transparent 90deg);
+  animation: radarSweep 5.5s linear infinite;
+  transform-origin: center center;
 }
 
-/* Sweeping Radar Beam with Cone Glow */
-.home-radar-sweep-beam {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 88px;
-  height: 88px;
-  transform-origin: 0 0;
-  background: conic-gradient(from 0deg, rgba(56, 189, 248, 0.4) 0deg, rgba(37, 99, 235, 0.15) 30deg, transparent 60deg);
-  border-radius: 100% 0 0 0;
-  animation: radarRotate 6s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes radarRotate {
+@keyframes radarSweep {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* Radar Detection Blips */
-.home-blip {
+/* Expanding Signal Wave from Active Sector */
+.radar-signal-wave {
   position: absolute;
+  top: 36px;
+  right: 48px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 8px #22c55e;
-  animation: blipPulse 3.5s ease-in-out infinite;
-}
-
-.home-blip-1 { top: 30%; left: 68%; animation-delay: 1.1s; }
-.home-blip-2 { top: 66%; left: 32%; animation-delay: 2.6s; background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
-.home-blip-3 { top: 42%; left: 24%; animation-delay: 4.2s; }
-
-@keyframes blipPulse {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.4); box-shadow: 0 0 12px currentColor; }
-}
-
-/* Target Lock Reticle */
-.home-radar-target-lock {
-  position: absolute;
-  top: 26%;
-  left: 64%;
-  width: 22px;
-  height: 22px;
-  border: 1px solid #22c55e;
+  border: 1.5px solid rgba(56, 189, 248, 0.85);
   pointer-events: none;
-  animation: targetLockSequence 7s ease-in-out infinite;
+  transform: translate(50%, -50%);
+  animation: radarSignalWave 3.6s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
 }
 
-.home-radar-target-lock::before {
-  content: 'LOCK';
-  position: absolute;
-  top: -14px;
-  left: -2px;
-  font-size: 0.55rem;
-  font-family: 'JetBrains Mono', monospace;
-  color: #22c55e;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-@keyframes targetLockSequence {
-  0%, 20% { opacity: 0; transform: scale(1.6); }
-  30%, 65% { opacity: 1; transform: scale(1); }
-  75%, 100% { opacity: 0; transform: scale(0.9); }
-}
-
-/* Stealth Aircraft Monitored Drift */
-.home-aircraft-drift {
-  position: absolute;
-  top: 36%;
-  left: 14%;
-  animation: aircraftPatrolPath 24s ease-in-out infinite;
-  pointer-events: none;
-  opacity: 0.75;
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.45));
-}
-
-@keyframes aircraftPatrolPath {
-  0% { transform: translate(0px, 0px); }
-  25% { transform: translate(80px, -14px); }
-  50% { transform: translate(150px, 6px); }
-  75% { transform: translate(70px, 16px); }
-  100% { transform: translate(0px, 0px); }
-}
-
-.home-aircraft-svg {
-  width: 50px;
-  height: 30px;
-}
-
-/* ─── Blockchain Verification Timeline SVG Bus ─── */
-.home-blockchain-bus {
-  position: relative;
-  background: #08131f;
-  border: 1px solid #172d4c;
-  border-radius: 8px;
-  padding: 12px 14px;
-  overflow: hidden;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
-}
-
-.home-bc-svg {
-  width: 100%;
-  height: 54px;
-  display: block;
-}
-
-.home-bc-path {
-  stroke: #172d4c;
-  stroke-width: 1.5;
-  fill: none;
-}
-
-.home-bc-pulse {
-  stroke: #38bdf8;
-  stroke-width: 2;
-  fill: none;
-  stroke-dasharray: 25 175;
-  animation: bcPulseTravel 4.5s linear infinite;
-  filter: drop-shadow(0 0 6px #0284c7);
-}
-
-@keyframes bcPulseTravel {
-  0% { stroke-dashoffset: 200; }
-  100% { stroke-dashoffset: 0; }
-}
-
-.home-bc-node-group {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.home-bc-node-group:hover circle:first-child {
-  fill: #38bdf8;
-  filter: drop-shadow(0 0 8px #38bdf8);
-}
-
-/* ─── Live System Monitor Card ─── */
-.home-status-monitor {
-  background: #0c1828;
-  border: 1px solid #172d4c;
-  border-radius: 8px;
-  padding: 22px 24px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.home-status-monitor:hover {
-  border-color: #2b568e;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
-}
-
-.home-monitor-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.home-monitor-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 8px;
-  border-bottom: 1px solid #152b4a;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-
-.home-monitor-row:hover {
-  background: rgba(30, 58, 96, 0.25);
-  padding-left: 12px;
-}
-
-/* Breathing Operational Indicator Dot */
-.operational-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #22c55e;
-  display: inline-block;
-  box-shadow: 0 0 6px #22c55e;
-  animation: opDotBreathe 2.4s ease-in-out infinite alternate;
-}
-
-@keyframes opDotBreathe {
+@keyframes radarSignalWave {
   0% {
-    transform: scale(0.9);
-    opacity: 0.7;
-    box-shadow: 0 0 4px #22c55e;
+    width: 6px;
+    height: 6px;
+    opacity: 0.95;
+    transform: translate(0, 0);
   }
   100% {
-    transform: scale(1.25);
-    opacity: 1;
-    box-shadow: 0 0 10px #22c55e;
+    width: 76px;
+    height: 76px;
+    opacity: 0;
+    transform: translate(-35px, -35px);
   }
 }
 
-/* Synthetic Asset Verification Animated Sequence */
-.home-asset-card {
-  margin-top: 18px;
-  padding: 14px 16px;
-  background: #070f1d;
-  border: 1px solid #172d4c;
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
+.radar-center-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #38bdf8;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px #38bdf8;
+  animation: centerPinBreathe 2.4s ease-in-out infinite;
 }
 
-.home-asset-top {
+@keyframes centerPinBreathe {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.28);
+    opacity: 0.75;
+  }
+}
+
+/* Radar Target Blips */
+.radar-blip {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #22c55e;
+  animation: blipPulse 2.8s infinite ease-in-out;
+}
+
+.blip-alpha {
+  top: 36px;
+  right: 48px;
+}
+
+.blip-bravo {
+  bottom: 40px;
+  left: 45px;
+  animation-delay: 1.1s;
+}
+
+.blip-charlie {
+  bottom: 30px;
+  right: 38px;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+  animation-delay: 1.8s;
+}
+
+@keyframes blipPulse {
+  0%, 100% { opacity: 0.95; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.72); }
+}
+
+/* Target Lock Bracket with 4 Precision Corners */
+.radar-target-lock {
+  position: absolute;
+  top: 29px;
+  right: 41px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  animation: radarLockPulse 3.2s ease-in-out infinite;
+}
+
+.lock-bracket-corner {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-color: #22c55e;
+  border-style: solid;
+}
+
+.lock-bracket-corner.tl { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; }
+.lock-bracket-corner.tr { top: 0; right: 0; border-width: 1.5px 1.5px 0 0; }
+.lock-bracket-corner.bl { bottom: 0; left: 0; border-width: 0 0 1.5px 1.5px; }
+.lock-bracket-corner.br { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
+
+@keyframes radarLockPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6));
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.45;
+    filter: drop-shadow(0 0 1px rgba(34, 197, 94, 0.2));
+  }
+}
+
+/* Radar Telemetry Grid */
+.radar-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(10, 22, 38, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 5px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tel-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5875rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.tel-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* Radar Status Checklist */
+.radar-status-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.check-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #cbd5e1;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Radar Bottom Bar */
+.radar-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(56, 189, 248, 0.2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+}
+
+.radar-status-active {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.radar-az-ticker {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* Vertical Connector Conduit between Stack Modules */
+.chassis-connector-rail {
+  height: 14px;
+  width: 2px;
+  margin: 0 auto;
+  position: relative;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.35) 0%, rgba(56, 189, 248, 0.45) 50%, rgba(37, 99, 235, 0.35) 100%);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.rail-energy-pulse {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 100%;
+  height: 12px;
+  background: linear-gradient(180deg, transparent, #38bdf8, transparent);
+  animation: railPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes railPulse {
+  0% { top: -12px; opacity: 0; }
+  25% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* 2. Process / Trust Chain Card */
+.home-trust-chain-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  position: relative;
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .home-trust-chain-card {
+  background: #0c1828;
+  border-color: #1e3a60;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.home-trust-chain-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+}
+
+[data-theme="dark"] .home-trust-chain-card:hover {
+  border-color: #3b82f6;
+}
+
+.chain-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.chain-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .chain-title {
+  color: #f8fafc;
+}
+
+.chain-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.chain-steps-row {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  padding: 6px 4px 4px;
 }
 
-.home-asset-verify-tag {
+.chain-line-track {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: rgba(37, 99, 235, 0.18);
+  overflow: hidden;
+  z-index: 0;
+}
+
+.chain-energy-pulse {
+  position: absolute;
+  top: 0;
+  left: -30px;
+  width: 36px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #2563eb, #38bdf8, transparent);
+  animation: energyPulse 3.8s ease-in-out infinite;
+}
+
+@keyframes energyPulse {
+  0% { left: -36px; }
+  100% { left: 100%; }
+}
+
+.chain-node-box {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 50px;
+}
+
+.chain-node-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chain-node-box:hover .chain-node-circle {
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.45);
+}
+
+[data-theme="dark"] .chain-node-circle {
+  background: #08131f;
+}
+
+.node-dot-inner {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+
+.chain-node-name {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.6875rem;
   font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.32);
-  padding: 2px 8px;
-  border-radius: 4px;
-  animation: tagGlow 2.8s ease-in-out infinite alternate;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
 }
 
-@keyframes tagGlow {
-  0% { box-shadow: 0 0 3px rgba(34, 197, 94, 0.2); }
-  100% { box-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+[data-theme="dark"] .chain-node-name {
+  color: #f8fafc;
 }
 
-/* 4 Tactical Core Pillars */
-.home-pillars-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 14px;
+.chain-node-sub {
+  font-size: 0.625rem;
+  color: #64748b;
 }
 
-.home-pillar-card {
-  padding: 12px 14px;
+/* 3. Live System Monitor Panel */
+.home-monitor-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  position: relative;
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .home-monitor-card {
   background: #0c1828;
-  border: 1px solid #172d4c;
+  border-color: #1e3a60;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.home-monitor-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+}
+
+[data-theme="dark"] .home-monitor-card:hover {
+  border-color: #3b82f6;
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.monitor-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .monitor-title {
+  color: #f8fafc;
+}
+
+.monitor-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.monitor-rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.monitor-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+[data-theme="dark"] .monitor-row {
+  background: #08131f;
+  border-color: #152b4a;
+}
+
+.monitor-row:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+[data-theme="dark"] .monitor-row:hover {
+  background: #0b1a2c;
+  border-color: #1e3a60;
+}
+
+.row-left {
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: all 0.22s ease;
 }
 
-.home-pillar-card:hover {
-  border-color: #2563eb;
-  transform: translateY(-2px);
-  background: rgba(19, 32, 64, 0.65);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+.row-icon {
+  color: #2563eb;
+  font-size: 0.95rem;
 }
 
-/* ─── Scroll Reveal Classes ─── */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(24px);
-  filter: blur(4px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+.row-texts {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
 }
 
-.reveal-on-scroll.is-revealed {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
+.row-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-/* ─── Platform Stats & Cards ─── */
-.home-stat-box {
-  padding: 32px 28px;
-  background: #08131f;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+[data-theme="dark"] .row-name {
+  color: #e2e8f0;
 }
 
-.home-stat-box:hover {
-  background: #0c1828;
-  transform: translateY(-3px);
-  box-shadow: inset 0 2px 0 #2563eb, 0 10px 26px rgba(0, 0, 0, 0.35);
+.row-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-top: 1px;
 }
 
-.home-feature-card {
-  padding: 26px;
-  background: #0c1828;
-  border: 1px solid #172d4c;
+.row-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+/* 4. Government / Trust Panel */
+.home-gov-trust-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
 }
 
-.home-feature-card:hover {
-  transform: translateY(-4px);
-  border-color: #2b568e;
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6), 0 0 18px rgba(37, 99, 235, 0.15);
-}
-
-.home-role-card {
-  padding: 26px;
+[data-theme="dark"] .home-gov-trust-card {
   background: #0c1828;
-  border: 1px solid #172d4c;
-  border-radius: 8px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-color: #1e3a60;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.home-role-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6);
+.tricolor-accent-bar {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%);
 }
 
-/* ─── Navbar Micro Animations ─── */
-.nav-scrolled {
-  background: rgba(2, 8, 23, 0.88) !important;
-  backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.25) !important;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(56, 189, 248, 0.15);
+.gov-card-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
 }
 
-.nav-link-animated {
+.gov-insignia {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gov-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gov-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #0f172a;
+}
+
+[data-theme="dark"] .gov-title {
+  color: #f8fafc;
+}
+
+.gov-motto {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #2563eb;
+  letter-spacing: 0.08em;
+}
+
+/* ─── Hero Entrance Animations (Staggered Load) ─── */
+.hero-stagger-1 { animation: heroFadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both; }
+.hero-stagger-2 { animation: heroFadeInUp 0.48s cubic-bezier(0.16, 1, 0.3, 1) 0.09s both; }
+.hero-stagger-3 { animation: heroFadeInUp 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both; }
+.hero-stagger-4 { animation: heroFadeInUp 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.20s both; }
+.hero-stagger-5 { animation: heroFadeInUp 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
+.hero-stagger-6 { animation: heroFadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.33s both; }
+.hero-stagger-7 { animation: heroFadeInUp 0.62s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both; }
+
+@keyframes heroFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ─── Stats Section ─── */
+.home-stats-section {
+  padding: 48px 32px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
   position: relative;
-  transition: color 0.2s ease;
+  z-index: 1;
 }
 
-.nav-link-animated::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 12px;
-  right: 12px;
-  height: 2px;
-  background: #38bdf8;
-  border-radius: 2px;
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+[data-theme="dark"] .home-stats-section {
+  background: #050d1a;
+  border-color: #152b4a;
 }
 
-.nav-link-animated:hover::after {
-  transform: scaleX(1);
+.stats-container {
+  max-width: 1360px;
+  margin: 0 auto;
 }
 
-.nav-logo-pulse {
-  animation: logoPulseCycle 4.5s ease-in-out infinite;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
 }
 
-@keyframes logoPulseCycle {
-  0%, 100% {
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(56, 189, 248, 0.7), 0 0 24px rgba(37, 99, 235, 0.5);
-  }
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-/* ─── Responsive Adjustments ─── */
-@media (max-width: 1024px) {
-  .home-hero-section {
+[data-theme="dark"] .stat-card {
+  background: #0c1828;
+  border-color: #1e3a60;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+}
+
+.stat-number {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+[data-theme="dark"] .stat-number {
+  color: #f8fafc;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 3px;
+}
+
+.stat-note {
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+/* ─── Bottom Micro Footer ─── */
+.home-micro-footer {
+  text-align: center;
+  padding: 24px 20px 16px;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.micro-footer-line-1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.micro-footer-line-2 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #94a3b8;
+}
+
+/* ─── Overview Modal ─── */
+.overview-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.overview-modal-panel {
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 10px;
+  max-width: 620px;
+  width: 100%;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
+  overflow: hidden;
+  animation: pageFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-callout {
+  padding: 14px 16px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--foreground);
+}
+
+.overview-feature-box {
+  padding: 12px 14px;
+  background: var(--table-header-bg, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+}
+
+/* ─── Responsive Breakdown ─── */
+@media (max-width: 1120px) {
+  .home-hero-container {
     grid-template-columns: 1fr;
-    gap: 44px;
-    padding: 56px 20px 48px;
+    gap: 36px;
   }
-  
-  .home-radar-box {
-    height: 180px;
+  .home-hero-left {
+    max-width: 100%;
   }
-  
-  .home-india-network-stage {
-    opacity: 0.12;
-    height: 550px;
+  .home-hero-desc {
+    max-width: 100%;
+  }
+  .home-trust-indicators-grid {
+    max-width: 100%;
   }
 }
 
-@media (max-width: 768px) {
-  .home-hero-section {
-    padding: 38px 16px 36px;
+@media (max-width: 640px) {
+  .home-hero-container {
+    padding: 20px 16px 40px;
   }
-  
   .home-hero-title {
     font-size: 2.25rem;
   }
-  
-  .home-pillars-grid {
+  .home-trust-indicators-grid {
     grid-template-columns: 1fr;
   }
-  
-  .home-radar-box {
-    height: 160px;
-  }
-  
-  .home-radar-scope {
-    width: 140px;
-    height: 140px;
-  }
-  
-  .home-radar-ring-4 {
-    width: 140px;
-    height: 140px;
-  }
-  
-  .home-india-network-stage {
-    opacity: 0.08;
-    height: 420px;
-  }
-  
-  .asset-carrier, .asset-radar {
-    display: none;
+  .radar-telemetry-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* ─── Accessibility: Reduced Motion Support ─── */
+/* ─── Accessibility: Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
-  .home-defence-grid,
-  .home-grid-crosshairs,
-  .home-aurora-glow,
-  .home-scan-sweep-bar,
-  .home-orbit-ring,
-  .home-satellite-group,
+  .radar-sweep-beam,
   .satellite-signal-wave,
   .node-pulse-ring,
-  .vector-line-active,
-  .asset-fighter,
-  .asset-carrier,
-  .asset-drone,
-  .asset-radar,
-  .home-title-line,
-  .home-sih-badge,
-  .home-hero-desc,
-  .home-cta-group,
-  .home-lifecycle-container,
-  .home-visual-stage,
-  .home-radar-sweep-beam,
-  .home-aircraft-drift,
-  .home-lifecycle-pulse-bar,
-  .home-bc-pulse,
-  .home-blip,
-  .home-radar-target-lock,
-  .nav-logo-pulse,
+  .radar-blip,
+  .radar-target-lock,
+  .chain-energy-pulse,
   .operational-dot,
-  .reveal-on-scroll {
+  .home-radar-halo,
+  .radar-ring-inner,
+  .radar-ring-outer,
+  .radar-signal-wave,
+  .radar-center-pin,
+  .rail-energy-pulse,
+  .hero-stagger-1,
+  .hero-stagger-2,
+  .hero-stagger-3,
+  .hero-stagger-4,
+  .hero-stagger-5,
+  .hero-stagger-6,
+  .hero-stagger-7 {
     animation: none !important;
-    transform: none !important;
-    opacity: 1 !important;
-    transition: none !important;
-    filter: none !important;
   }
-  
-  .home-primary-btn:hover,
-  .home-secondary-btn:hover,
-  .home-feature-card:hover,
-  .home-role-card:hover,
-  .home-stat-box:hover,
-  .home-pillar-card:hover {
+  .home-parallax-bg {
     transform: none !important;
   }
 }
