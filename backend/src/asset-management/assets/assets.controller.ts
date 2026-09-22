@@ -36,7 +36,7 @@ export class AssetsController {
   /**
    * GET /assets/eligible
    * Returns assets that are ACCEPTED_FOR_ASSEMBLY, have verified evidence,
-   * and are not already certified. This is the pool for NFT_CREATOR certification.
+   * and are not already certified. This is the pool for QUALITY_INSPECTOR certification.
    */
   @Get('eligible')
   @CasbinPolicy('/api/v1/assets/eligible', 'GET')

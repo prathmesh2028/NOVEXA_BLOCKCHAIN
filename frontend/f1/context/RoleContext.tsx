@@ -1,77 +1,36 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-
-export type Role = "admin" | "nft-creator" | "technician" | "auditor";
-
-interface RoleUser {
-  id: string;
-  name: string;
-  role: Role;
-  did: string;
-  email: string;
-  wallet?: string;
-}
+import { createContext, useContext, ReactNode } from "react";
+import type { Role } from "./AuthContext";
 
 interface RoleContextValue {
-  user: RoleUser | null;
-  login: (role: Role) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
+  getRoleLabel: (role: Role) => string;
+  getRoleColor: (role: Role) => string;
 }
-
-const USERS: Record<Role, RoleUser> = {
-  admin: {
-    id: "USR-001",
-    name: "Arjun Mehta",
-    role: "admin",
-    did: "did:bel:actor:001",
-    email: "a.mehta@bel-defence.in",
-    wallet: "0x8A42...19F2",
-  },
-  "nft-creator": {
-    id: "USR-002",
-    name: "Priya Sharma",
-    role: "nft-creator",
-    did: "did:bel:actor:002",
-    email: "p.sharma@bel-defence.in",
-    wallet: "0x3C77...A4D1",
-  },
-  technician: {
-    id: "USR-003",
-    name: "Rajesh Kumar",
-    role: "technician",
-    did: "did:bel:actor:003",
-    email: "r.kumar@bel-defence.in",
-  },
-  auditor: {
-    id: "USR-004",
-    name: "Deepa Nair",
-    role: "auditor",
-    did: "did:bel:actor:004",
-    email: "d.nair@bel-defence.in",
-  },
-};
 
 const RoleContext = createContext<RoleContextValue | null>(null);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<RoleUser | null>(() => {
-    const stored = localStorage.getItem("bel_role");
-    return stored ? USERS[stored as Role] ?? null : null;
-  });
+  const getRoleLabel = (role: Role): string => {
+    const labels: Record<string, string> = {
+      "system-admin": "System Administrator",
+      "procurement-supply-chain-officer": "Procurement & Supply Chain Officer",
+      "quality-inspector": "Quality Inspector",
+      "auditor": "Auditor",
+    };
+    return labels[role] || role;
+  };
 
-  function login(role: Role) {
-    const u = USERS[role];
-    setUser(u);
-    localStorage.setItem("bel_role", role);
-  }
-
-  function logout() {
-    setUser(null);
-    localStorage.removeItem("bel_role");
-  }
+  const getRoleColor = (role: Role): string => {
+    const colors: Record<string, string> = {
+      "system-admin": "#ef4444",
+      "procurement-supply-chain-officer": "#8b5cf6",
+      "quality-inspector": "#f59e0b",
+      "auditor": "#22c55e",
+    };
+    return colors[role] || "#64748b";
+  };
 
   return (
-    <RoleContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <RoleContext.Provider value={{ getRoleLabel, getRoleColor }}>
       {children}
     </RoleContext.Provider>
   );
@@ -83,22 +42,4 @@ export function useRole() {
   return ctx;
 }
 
-export function getRoleLabel(role: Role): string {
-  const labels: Record<Role, string> = {
-    admin: "Administrator",
-    "nft-creator": "NFT Creator",
-    technician: "Technician",
-    auditor: "Auditor",
-  };
-  return labels[role];
-}
-
-export function getRoleColor(role: Role): string {
-  const colors: Record<Role, string> = {
-    admin: "#ef4444",
-    "nft-creator": "#8b5cf6",
-    technician: "#f59e0b",
-    auditor: "#22c55e",
-  };
-  return colors[role];
-}
+export { getRoleLabel, getRoleColor };

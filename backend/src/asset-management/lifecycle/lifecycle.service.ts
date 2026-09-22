@@ -18,16 +18,16 @@ export interface TransitionRule {
 }
 
 const TRANSITION_RULES: TransitionRule[] = [
-  { from: 'UNREGISTERED', to: 'SUPPLIER_DECLARED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: false, requiresInspection: false },
-  { from: 'SUPPLIER_DECLARED', to: 'RECEIVED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: false, requiresInspection: false },
-  { from: 'RECEIVED', to: 'INSPECTION_RECORDED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: true },
-  { from: 'RECEIVED', to: 'INSPECTION_OVERDUE', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
-  { from: 'RECEIVED', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
-  { from: 'INSPECTION_OVERDUE', to: 'INSPECTION_RECORDED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: true },
-  { from: 'INSPECTION_OVERDUE', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
-  { from: 'INSPECTION_RECORDED', to: 'ACCEPTED_FOR_ASSEMBLY', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: false },
-  { from: 'INSPECTION_RECORDED', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN'], requiresEvidence: true, requiresInspection: false },
-  { from: 'ACCEPTED_FOR_ASSEMBLY', to: 'REJECTED_QUARANTINED', allowedRoles: ['TECHNICIAN', 'ADMIN', 'SYSTEM'], requiresEvidence: false, requiresInspection: false },
+  { from: 'UNREGISTERED', to: 'SUPPLIER_DECLARED', allowedRoles: ['PROCUREMENT_SUPPLY_CHAIN_OFFICER', 'QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: false, requiresInspection: false },
+  { from: 'SUPPLIER_DECLARED', to: 'RECEIVED', allowedRoles: ['PROCUREMENT_SUPPLY_CHAIN_OFFICER', 'QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: false, requiresInspection: false },
+  { from: 'RECEIVED', to: 'INSPECTION_RECORDED', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: true, requiresInspection: true },
+  { from: 'RECEIVED', to: 'INSPECTION_OVERDUE', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: false, requiresInspection: false },
+  { from: 'RECEIVED', to: 'REJECTED_QUARANTINED', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: false, requiresInspection: false },
+  { from: 'INSPECTION_OVERDUE', to: 'INSPECTION_RECORDED', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: true, requiresInspection: true },
+  { from: 'INSPECTION_OVERDUE', to: 'REJECTED_QUARANTINED', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: false, requiresInspection: false },
+  { from: 'INSPECTION_RECORDED', to: 'ACCEPTED_FOR_ASSEMBLY', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: true, requiresInspection: false },
+  { from: 'INSPECTION_RECORDED', to: 'REJECTED_QUARANTINED', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: true, requiresInspection: false },
+  { from: 'ACCEPTED_FOR_ASSEMBLY', to: 'REJECTED_QUARANTINED', allowedRoles: ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN'], requiresEvidence: false, requiresInspection: false },
 ];
 
 @Injectable()
@@ -69,8 +69,8 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
    * Deterministically resolve responsible recipient for lifecycle notifications:
    * 1. Explicitly assigned responsible user (asset.registeredById)
    * 2. Assigned inspector if available
-   * 3. Operational role TECHNICIAN
-   * 4. Fallback ADMIN
+   * 3. Operational role QUALITY_INSPECTOR
+   * 4. Fallback SYSTEM_ADMIN
    */
   async resolveResponsibleRecipient(asset: any): Promise<{ recipientId?: string; recipientRole?: AppRole }> {
     if (asset.registeredById && this.prisma.user?.findUnique) {
@@ -93,7 +93,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
       } catch {}
     }
 
-    return { recipientRole: 'TECHNICIAN' };
+    return { recipientRole: 'QUALITY_INSPECTOR' };
   }
 
   /**
@@ -159,7 +159,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
         }
 
         // IDOR/BOLA Check: ensure actor belongs to the same supplier as the asset
-        if (params.actorRole !== 'ADMIN' && params.actorRole !== 'SYSTEM' && params.actorRole !== 'AUDITOR') {
+        if (params.actorRole !== 'SYSTEM_ADMIN' && params.actorRole !== 'SYSTEM' && params.actorRole !== 'AUDITOR') {
           if (asset.registeredById && asset.registeredById !== params.actorId) {
             const creator = await tx.user.findUnique({ where: { id: asset.registeredById } });
             const actorUser = await tx.user.findUnique({ where: { id: params.actorId } });
@@ -299,7 +299,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
               fromState: 'RECEIVED',
               toState: 'INSPECTION_OVERDUE',
               actorId,
-              actorRole: 'ADMIN',
+              actorRole: 'SYSTEM_ADMIN',
               reason: `Inspection deadline exceeded (due: ${asset.inspectionDueDate?.toISOString()})`,
             },
           });
@@ -309,7 +309,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
               {
                 eventType: 'LIFECYCLE_TRANSITIONED',
                 actorId,
-                actorRole: 'ADMIN',
+                actorRole: 'SYSTEM_ADMIN',
                 action: 'Automated overdue detection flagged asset',
                 resourceType: 'Asset',
                 resourceId: asset.id,
@@ -324,7 +324,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
               data: {
                 eventType: 'LIFECYCLE_TRANSITIONED',
                 actorId,
-                actorRole: 'ADMIN',
+                actorRole: 'SYSTEM_ADMIN',
                 action: 'Automated overdue detection flagged asset',
                 resourceType: 'Asset',
                 resourceId: asset.id,
@@ -386,7 +386,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
               fromState,
               toState: 'REJECTED_QUARANTINED',
               actorId,
-              actorRole: 'ADMIN',
+              actorRole: 'SYSTEM_ADMIN',
               reason: `Shelf life expired on ${asset.shelfLifeExpiry?.toISOString() || 'prior date'}`,
             },
           });
@@ -396,7 +396,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
               {
                 eventType: 'LIFECYCLE_TRANSITIONED',
                 actorId,
-                actorRole: 'ADMIN',
+                actorRole: 'SYSTEM_ADMIN',
                 action: 'Automated shelf-life expiry quarantined asset',
                 resourceType: 'Asset',
                 resourceId: asset.id,
@@ -411,7 +411,7 @@ export class LifecycleService implements OnModuleInit, OnModuleDestroy {
               data: {
                 eventType: 'LIFECYCLE_TRANSITIONED',
                 actorId,
-                actorRole: 'ADMIN',
+                actorRole: 'SYSTEM_ADMIN',
                 action: 'Automated shelf-life expiry quarantined asset',
                 resourceType: 'Asset',
                 resourceId: asset.id,

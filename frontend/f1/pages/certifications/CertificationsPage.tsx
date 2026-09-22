@@ -3,32 +3,8 @@ import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
-
-import {
-  CertificationType,
-  CertificationStatus,
-  CertVerificationStatus,
-  CERTIFICATION_TYPES,
-  CERTIFICATION_STATUSES,
-  VERIFICATION_STATUSES,
-  getCertifications,
-} from "./certificationData";
-
-/*
- * IMPORTANT:
- * Keep the EXACT import paths used by your project for these 3 items.
- *
- * CertificationResponse
- * certificationService
- * dashboardService
- *
- * Your conflict file did not contain those imports, so their original
- * paths cannot be determined safely from the uploaded file alone.
- */
-
-// import type { CertificationResponse } from "../../services/certificationService";
-// import { certificationService } from "../../services/certificationService";
-// import { dashboardService } from "../../services/dashboardService";
+import type { CertificationResponse } from "../../services/certifications";
+import { certificationService } from "../../services/certifications";
 
 
 export default function CertificationsPage() {
@@ -48,11 +24,9 @@ export default function CertificationsPage() {
      ============================================================ */
 
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [verificationFilter, setVerificationFilter] = useState("ALL");
 
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 
   /* ============================================================
      CREATE CERTIFICATION STATE
@@ -78,41 +52,21 @@ export default function CertificationsPage() {
     setLoading(true);
 
     try {
-      /*
-       * If your project has certificationService/dashboardService,
-       * use the original implementation from the test branch here.
-       *
-       * Example:
-       *
-       * const [listRes, summaryRes] = await Promise.all([
-       *   certificationService.listCertifications({ page_size: 100 }),
-       *   dashboardService.getSummary(),
-       * ]);
-       *
-       * setCerts(listRes.items);
-       * setTotal(listRes.total);
-       * setPending(summaryRes.pending_certifications);
-       * setConfirmed(summaryRes.confirmed_certifications);
-       */
+      const listRes = await certificationService.listCertifications({ page_size: 100 });
 
-      const localCertifications = getCertifications();
-
-      setCerts(localCertifications as any[]);
-      setTotal(localCertifications.length);
+      setCerts(listRes.items);
+      setTotal(listRes.total);
 
       setPending(
-        localCertifications.filter(
-          (c: any) =>
-            c.status === "Pending" ||
-            c.status === "PENDING" ||
-            c.verificationStatus === "Pending Verification"
+        listRes.items.filter(
+          (c: CertificationResponse) =>
+            c.status === "PENDING"
         ).length
       );
 
       setConfirmed(
-        localCertifications.filter(
-          (c: any) =>
-            c.verificationStatus === "Verified" ||
+        listRes.items.filter(
+          (c: CertificationResponse) =>
             c.status === "CONFIRMED"
         ).length
       );
@@ -146,21 +100,20 @@ export default function CertificationsPage() {
     setCreateStatus(null);
 
     try {
-      /*
-       * RESTORE YOUR EXISTING TEST-BRANCH API CALL HERE:
-       *
-       * await certificationService.createCertification({
-       *   asset_id: assetIdInput.trim(),
-       *   batch_id: batchIdInput.trim() || undefined,
-       * });
-       *
-       * The conflict file confirms this was the test branch's
-       * original implementation.
-       */
+      await certificationService.createCertification({
+        asset_id: assetIdInput.trim(),
+        batch_id: batchIdInput.trim() || undefined,
+      });
 
-      throw new Error(
-        "Connect certificationService.createCertification() here."
-      );
+      setCreateStatus({
+        type: "success",
+        message: "Certification created successfully",
+      });
+
+      setShowCreateModal(false);
+      setAssetIdInput("");
+      setBatchIdInput("");
+      fetchData();
     } catch (err: any) {
       setCreateStatus({
         type: "error",
@@ -181,67 +134,37 @@ export default function CertificationsPage() {
   const filteredCerts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    return certs.filter((cert: any) => {
+    return certs.filter((cert: CertificationResponse) => {
       const matchesSearch =
         !normalizedSearch ||
-        String(cert.id ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
         String(cert.cert_id ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(cert.certificateNumber ?? "")
           .toLowerCase()
           .includes(normalizedSearch) ||
         String(cert.asset_id ?? "")
           .toLowerCase()
           .includes(normalizedSearch) ||
-        String(cert.asset?.assetId ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(cert.asset?.assetName ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(cert.authority?.name ?? "")
+        String(cert.tx_hash ?? "")
           .toLowerCase()
           .includes(normalizedSearch);
-
-      const matchesType =
-        typeFilter === "ALL" || cert.type === typeFilter;
 
       const matchesStatus =
         statusFilter === "ALL" || cert.status === statusFilter;
 
-      const matchesVerification =
-        verificationFilter === "ALL" ||
-        cert.verificationStatus === verificationFilter;
-
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesStatus &&
-        matchesVerification
-      );
+      return matchesSearch && matchesStatus;
     });
   }, [
     certs,
     search,
-    typeFilter,
     statusFilter,
-    verificationFilter,
   ]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    typeFilter !== "ALL" ||
-    statusFilter !== "ALL" ||
-    verificationFilter !== "ALL";
+    statusFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
-    setTypeFilter("ALL");
     setStatusFilter("ALL");
-    setVerificationFilter("ALL");
   };
 
   /* ============================================================

@@ -13,12 +13,12 @@ export class LifecycleController {
   /**
    * POST /lifecycle/transition
    * Execute a lifecycle state transition on an asset.
-   * TECHNICIAN and ADMIN only.
+   * QUALITY_INSPECTOR and SYSTEM_ADMIN only.
    * Body: { asset_id, to_state, reason?, evidence_ids?, idempotency_key? }
    */
   @Post('transition')
   @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @RequireRoles('QUALITY_INSPECTOR', 'SYSTEM_ADMIN')
   async transition(@Body() body: any, @Req() req: Request) {
     const user = (req as any).user;
     return this.lifecycleService.transition({
@@ -40,7 +40,7 @@ export class LifecycleController {
    */
   @Post('detect-overdue')
   @UseGuards(RolesGuard)
-  @RequireRoles('ADMIN', 'TECHNICIAN')
+  @RequireRoles('SYSTEM_ADMIN', 'QUALITY_INSPECTOR')
   async detectOverdue(@Req() req: Request) {
     const user = (req as any).user;
     return this.lifecycleService.detectAndFlagOverdueAssets(user.sub);
