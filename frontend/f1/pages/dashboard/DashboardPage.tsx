@@ -184,6 +184,50 @@ function DashboardSkeleton() {
   );
 }
 
+/* ── Dashboard Error State ──────────────────────────────────────────── */
+function DashboardError({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return (
+    <div
+      className="db-card"
+      style={{
+        padding: "40px 32px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 16,
+        textAlign: "center",
+        borderColor: "rgba(239, 68, 68, 0.3)",
+        background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(12,24,40,0.9) 100%)",
+      }}
+    >
+      <div style={{ fontSize: "2rem" }}>⚠</div>
+      <div style={{ fontSize: "1.125rem", fontWeight: 700, color: "#fca5a5" }}>
+        Dashboard Data Unavailable
+      </div>
+      <div style={{ fontSize: "0.875rem", color: "#94a3b8", maxWidth: 480, lineHeight: 1.6 }}>
+        {error}
+      </div>
+      <button
+        onClick={onRetry}
+        style={{
+          marginTop: 8,
+          padding: "10px 24px",
+          background: "rgba(59, 130, 246, 0.15)",
+          border: "1px solid rgba(59, 130, 246, 0.4)",
+          borderRadius: 8,
+          color: "#60a5fa",
+          fontSize: "0.875rem",
+          fontWeight: 600,
+          cursor: "pointer",
+          letterSpacing: "0.04em",
+        }}
+      >
+        ↻ Retry
+      </button>
+    </div>
+  );
+}
+
 /* ── Row 3: Circular Defence Trust Visualization (HERO FEATURE) ─────── */
 function DefenceTrustVisual({
   trustPercentage = 99.4,
@@ -520,11 +564,20 @@ function RecentActivityCard({ auditEvents }: { auditEvents: AuditEventResponse[]
 function AdminDashboard() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [auditEvents, setAuditEvents] = useState<AuditEventResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    dashboardService.getSummary().then(setSummary).catch(console.error);
+  const loadData = () => {
+    setError(null);
+    setLoading(true);
+    dashboardService.getSummary()
+      .then(setSummary)
+      .catch((e: any) => setError(e?.message || 'Failed to load dashboard data. Backend may be unavailable.'))
+      .finally(() => setLoading(false));
     auditService.listAuditEvents({ page_size: 4 }).then(r => setAuditEvents(r.items)).catch(console.error);
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const totalAssets   = useCountUp(summary?.total_assets ?? 0, 800, 100);
   const activeUsers   = useCountUp(summary?.active_users ?? 0, 700, 180);
@@ -532,7 +585,8 @@ function AdminDashboard() {
   const failedVerif   = useCountUp(summary?.failed_verifications ?? 0, 600, 340);
   const blockchainTxs = useCountUp(summary?.total_blockchain_txs ?? 0, 900, 420);
 
-  if (!summary) return <DashboardSkeleton />;
+  if (loading && !summary) return <DashboardSkeleton />;
+  if (error && !summary) return <DashboardError error={error} onRetry={loadData} />;
 
   // Calculate dynamic trust integrity score
   const total = summary.total_assets || 1;
@@ -705,16 +759,28 @@ function NFTCreatorDashboard() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [recentCerts, setRecentCerts] = useState<CertificationResponse[]>([]);
   const [eligibleAssets, setEligibleAssets] = useState<AssetResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    dashboardService.getSummary().then(setSummary).catch(console.error);
+  const loadData = () => {
+    setError(null);
+    setLoading(true);
+    dashboardService.getSummary()
+      .then(setSummary)
+      .catch((e: any) => setError(e?.message || 'Failed to load dashboard data. Backend may be unavailable.'))
+      .finally(() => setLoading(false));
     certificationService.listCertifications({ page_size: 5 }).then(r => setRecentCerts(r.items)).catch(console.error);
     assetService.listAssets({ lifecycle: "ACCEPTED_FOR_ASSEMBLY", page_size: 5 }).then(r => setEligibleAssets(r.items)).catch(console.error);
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const pendingCount = useCountUp(summary?.pending_certifications ?? 0, 600, 150);
   const totalIssued  = useCountUp(summary?.total_certifications ?? 0, 800, 100);
   const blockchainTx = useCountUp(summary?.total_blockchain_txs ?? 0, 700, 250);
+
+  if (loading && !summary) return <DashboardSkeleton />;
+  if (error && !summary) return <DashboardError error={error} onRetry={loadData} />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -865,20 +931,32 @@ function TechnicianDashboard() {
   const [myAssets, setMyAssets] = useState<AssetResponse[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [assetsLoading, setAssetsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    dashboardService.getSummary().then(setSummary).catch(console.error);
+  const loadData = () => {
+    setError(null);
+    setLoading(true);
+    dashboardService.getSummary()
+      .then(setSummary)
+      .catch((e: any) => setError(e?.message || 'Failed to load dashboard data. Backend may be unavailable.'))
+      .finally(() => setLoading(false));
     assetService.listAssets({ page_size: 5 })
       .then(r => setMyAssets(r.items))
       .catch(console.error)
       .finally(() => setAssetsLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const myCount        = useCountUp(summary?.total_assets ?? 0, 700, 100);
   const pendingInspect = useCountUp(
     Object.entries(summary?.lifecycle_breakdown ?? {}).find(([k]) => k === "RECEIVED")?.[1] ?? 0,
     600, 200
   );
+
+  if (loading && !summary) return <DashboardSkeleton />;
+  if (error && !summary) return <DashboardError error={error} onRetry={loadData} />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -1025,17 +1103,29 @@ function AuditorDashboard() {
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEventResponse[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    dashboardService.getSummary().then(setSummary).catch(console.error);
+  const loadData = () => {
+    setError(null);
+    setLoading(true);
+    dashboardService.getSummary()
+      .then(setSummary)
+      .catch((e: any) => setError(e?.message || 'Failed to load dashboard data. Backend may be unavailable.'))
+      .finally(() => setLoading(false));
     assetService.listAssets({ page_size: 10 }).then(r => setAssets(r.items)).catch(console.error);
     auditService.listAuditEvents({ page_size: 4 }).then(r => setAuditEvents(r.items)).catch(console.error);
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   const pendingVerif  = useCountUp(summary?.failed_verifications ?? 0, 700, 100);
   const auditTotal    = useCountUp(summary?.total_audit_events ?? 0, 900, 300);
 
   const unverifiedAssets = assets.filter(a => a.verification_status !== "VERIFIED");
+
+  if (loading && !summary) return <DashboardSkeleton />;
+  if (error && !summary) return <DashboardError error={error} onRetry={loadData} />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
