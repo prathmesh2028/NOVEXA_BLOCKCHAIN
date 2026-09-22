@@ -5,6 +5,8 @@ import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
 import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
+import { CERTIFICATION_TYPES, CERTIFICATION_STATUSES, VERIFICATION_STATUSES } from "./certificationData";
+import type { CertificationStatus } from "./certificationData";
 
 
 export default function CertificationsPage() {
@@ -25,6 +27,8 @@ export default function CertificationsPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [verificationFilter, setVerificationFilter] = useState("ALL");
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 
@@ -150,21 +154,34 @@ export default function CertificationsPage() {
       const matchesStatus =
         statusFilter === "ALL" || cert.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      const matchesType =
+        typeFilter === "ALL" || (cert.type && cert.type === typeFilter);
+
+      const matchesVerification =
+        verificationFilter === "ALL" ||
+        (cert.verificationStatus && cert.verificationStatus === verificationFilter);
+
+      return matchesSearch && matchesStatus && matchesType && matchesVerification;
     });
   }, [
     certs,
     search,
     statusFilter,
+    typeFilter,
+    verificationFilter,
   ]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    statusFilter !== "ALL";
+    statusFilter !== "ALL" ||
+    typeFilter !== "ALL" ||
+    verificationFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("ALL");
+    setTypeFilter("ALL");
+    setVerificationFilter("ALL");
   };
 
   /* ============================================================

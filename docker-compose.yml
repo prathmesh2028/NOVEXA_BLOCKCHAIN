@@ -29,7 +29,7 @@ services:
 
   # ── MinIO (S3-compatible object storage) ────────────────────
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: kavachtrust-minio
     restart: unless-stopped
     environment:

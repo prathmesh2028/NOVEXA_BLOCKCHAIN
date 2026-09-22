@@ -1,1 +1,1 @@
-import './f1/main';
+import './f1/main.tsx';

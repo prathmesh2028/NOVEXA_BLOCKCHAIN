@@ -1367,10 +1367,12 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Role-based dashboard body ──────────────────────────── */}
-      {role === "admin"       && <AdminDashboard />}
-      {role === "nft-creator" && <NFTCreatorDashboard />}
-      {role === "quality-inspector"  && <QualityInspectorDashboard />}
-      {role === "auditor"     && <AuditorDashboard />}
+      {role === "system-admin"                      && <AdminDashboard />}
+      {role === "procurement-supply-chain-officer"  && <NFTCreatorDashboard />}
+      {role === "quality-inspector"                 && <QualityInspectorDashboard />}
+      {role === "auditor"                           && <AuditorDashboard />}
+      {/* Fallback for any role not matched above */}
+      {!["system-admin","procurement-supply-chain-officer","quality-inspector","auditor"].includes(role) && <AdminDashboard />}
     </div>
   );
 }
