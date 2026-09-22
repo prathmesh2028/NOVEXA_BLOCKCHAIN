@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { DefenceAsset } from "./assetData";
-import { formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
 
 interface AssetDetailDrawerProps {
   asset: DefenceAsset | null;
@@ -160,7 +160,7 @@ export default function AssetDetailDrawer({ asset, onClose }: AssetDetailDrawerP
           </div>
           <div>
             <div className="section-label" style={{ marginBottom: 4 }}>CRYPTOGRAPHIC TRUST</div>
-            <StatusBadge status={asset.verification} size="sm" />
+            <StatusBadge status={asset.verification || asset.verificationStatus || "PENDING"} size="sm" />
           </div>
         </div>
 
