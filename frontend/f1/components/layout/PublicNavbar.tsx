@@ -1,111 +1,259 @@
 import { Link } from "react-router";
 import { useState, useEffect } from "react";
+import ThemeToggle from "../ui/ThemeToggle";
+import { useAuth } from "../../context/AuthContext";
+import { getRoleLabel, getRoleColor } from "../../context/RoleContext";
 
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { user, role } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 12);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const displayUser = user || {
+    name: "Deepa Nair",
+    email: "d.nair@bel-defence.in",
+  };
+  const displayRole = role || "auditor";
+  const roleColor = getRoleColor(displayRole as any);
+
+  const NAV_ITEMS = [
+    { label: "Platform", to: "/app/dashboard" },
+    { label: "Assets", to: "/app/assets" },
+    { label: "Certifications", to: "/app/certifications" },
+    { label: "Blockchain", to: "/app/blockchain" },
+    { label: "System Activity", to: "/app/system-activity" },
+    { label: "Supply Chain", to: "/app/supply-chain" },
+    { label: "Settings", to: "/app/settings" },
+  ];
+
   return (
     <nav
-      className={scrolled ? "nav-scrolled" : ""}
+      className={`public-navbar ${scrolled ? "nav-scrolled" : ""}`}
       style={{
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "rgba(2, 8, 23, 0.94)",
+        background: "var(--topbar-bg, #ffffff)",
         backdropFilter: "blur(12px)",
-        borderBottom: "1px solid #152b4a",
-        transition: "background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease",
+        borderBottom: "1px solid var(--border-subtle, #e2e8f0)",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+        transition: "background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
       }}
     >
       <div
         style={{
-          maxWidth: 1200,
-          margin: "0 auto",
+          width: "100%",
           padding: "0 24px",
-          height: 62,
+          height: 52,
           display: "flex",
           alignItems: "center",
-          gap: 32,
+          justifyContent: "space-between",
+          gap: 16,
         }}
       >
-        {/* Logo */}
-        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+        {/* LEFT: NOVEXA Logo */}
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
           <div
-            className="nav-logo-pulse"
+            className="navbar-logo-icon"
             style={{
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-              borderRadius: "6px",
+              borderRadius: "5px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 900,
-              fontSize: "0.95rem",
-              color: "#fff",
-              letterSpacing: "-0.03em",
-              border: "1px solid rgba(56, 189, 248, 0.4)",
+              fontSize: "0.85rem",
+              color: "#ffffff",
+              letterSpacing: "-0.04em",
+              fontFamily: "'Barlow Condensed', sans-serif",
+              boxShadow: "0 2px 8px rgba(37, 99, 235, 0.35)",
+              flexShrink: 0,
             }}
           >
             NX
           </div>
-          <div>
-            <div
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+            <span
               className="font-display"
-              style={{ fontSize: "0.95rem", fontWeight: 700, color: "#f8fafc", letterSpacing: "0.05em", lineHeight: 1.1 }}
+              style={{
+                fontSize: "0.95rem",
+                fontWeight: 700,
+                color: "var(--foreground, #0f172a)",
+                letterSpacing: "0.04em",
+              }}
             >
               NOVEXA
-            </div>
-            <div style={{ fontSize: "0.55rem", color: "#38bdf8", fontWeight: 600, letterSpacing: "0.12em" }}>
+            </span>
+            <span
+              style={{
+                fontSize: "0.55rem",
+                color: "#2563eb",
+                letterSpacing: "0.1em",
+                fontWeight: 700,
+                marginTop: 2,
+              }}
+            >
               DEFENCE TRUST
-            </div>
+            </span>
           </div>
         </Link>
 
-        <div style={{ flex: 1 }} />
-
-        {/* Navigation Links with animated hover underlines */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {["Platform", "Roles", "Blockchain", "Security"].map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              className="nav-link-animated"
+        {/* CENTER: Navigation Links */}
+        <div
+          className="navbar-center-links"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            overflowX: "auto",
+          }}
+        >
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="nav-link-item"
               style={{
-                padding: "8px 14px",
+                padding: "6px 12px",
                 fontSize: "0.8125rem",
-                color: "#94a3b8",
+                color: "var(--muted-foreground, #475569)",
                 textDecoration: "none",
                 borderRadius: "4px",
                 fontWeight: 500,
+                whiteSpace: "nowrap",
+                transition: "color 0.15s ease, background 0.15s ease",
               }}
             >
-              {item}
-            </a>
+              {item.label}
+            </Link>
           ))}
         </div>
 
-        <Link
-          to="/login"
-          className="home-primary-btn"
-          style={{ padding: "8px 18px", fontSize: "0.8125rem", borderRadius: "5px" }}
-        >
-          <span>Sign In</span>
-          <span className="home-btn-arrow">→</span>
-        </Link>
+        {/* RIGHT: Search, Theme Toggle, Notifications, User Profile */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {/* Quick Search */}
+          <Link
+            to="/app/search"
+            className="btn-ghost"
+            style={{
+              padding: "6px 8px",
+              color: "var(--muted, #64748b)",
+              fontSize: "0.875rem",
+              borderRadius: "5px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title="Search Assets, Certs & Blockchain"
+            aria-label="Search"
+          >
+            ◎
+          </Link>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* Notifications with indicator */}
+          <Link
+            to="/app/dashboard"
+            className="btn-ghost"
+            style={{
+              position: "relative",
+              padding: "6px 8px",
+              color: "var(--muted, #64748b)",
+              fontSize: "0.875rem",
+              borderRadius: "5px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title="System Alerts & Notifications"
+            aria-label="Notifications"
+          >
+            ◫
+            <span
+              style={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                width: 6,
+                height: 6,
+                background: "#ef4444",
+                borderRadius: "50%",
+              }}
+            />
+          </Link>
+
+          {/* Enterprise User Avatar Chip */}
+          <Link
+            to={user ? "/app/settings" : "/login"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "3px 10px 3px 4px",
+              background: "var(--hover-bg, rgba(226, 232, 240, 0.6))",
+              border: "1px solid var(--border, #cbd5e1)",
+              borderRadius: "20px",
+              textDecoration: "none",
+              transition: "border-color 0.15s ease, background 0.15s ease",
+            }}
+            title={user ? `${displayUser.name} (${getRoleLabel(displayRole as any)})` : "Sign In to NOVEXA Platform"}
+          >
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                background: `${roleColor}22`,
+                border: `1px solid ${roleColor}55`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "0.625rem",
+                fontWeight: 700,
+                color: roleColor,
+                flexShrink: 0,
+              }}
+            >
+              {displayUser.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "var(--foreground, #0f172a)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {displayUser.name}
+              </span>
+              <span
+                style={{
+                  fontSize: "0.6rem",
+                  color: roleColor,
+                  fontWeight: 600,
+                }}
+              >
+                {getRoleLabel(displayRole as any)}
+              </span>
+            </div>
+            <span style={{ fontSize: "0.6rem", color: "var(--muted, #64748b)", marginLeft: 2 }}>▼</span>
+          </Link>
+        </div>
       </div>
     </nav>
   );

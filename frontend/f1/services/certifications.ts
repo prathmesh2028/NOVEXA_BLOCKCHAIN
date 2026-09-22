@@ -37,5 +37,9 @@ export const certificationService = {
 
   getCertification: async (id: string) => {
     return api.get<CertificationResponse>(`/certifications/${id}`);
+  },
+
+  createCertification: async (data: { asset_id: string; batch_id?: string }) => {
+    return api.post<CertificationResponse>('/certifications', data);
   }
 };

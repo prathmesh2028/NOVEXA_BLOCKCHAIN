@@ -53,23 +53,8 @@ export class UsersService {
         throw new ConflictException(`A user with email '${data.email}' already exists`);
       }
 
-      const isDemoMode = process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo';
-      if (!isDemoMode) {
-        this.logger.error(`Database failure during user invitation: ${e?.message}`, e?.stack);
-        throw e;
-      }
-
-      // Demo/offline fallback — return a synthetic success response
-      this.logger.warn(`Database unavailable, returning mock user (code: ${e?.code})`);
-      const mockId = `user-${Date.now()}`;
-      return {
-        id: mockId,
-        email: data.email,
-        name: data.name,
-        status: 'PENDING',
-        roles: [data.role],
-        created_at: new Date().toISOString(),
-      };
+      this.logger.error(`Database failure during user invitation: ${e?.message}`, e?.stack);
+      throw e;
     }
   }
 

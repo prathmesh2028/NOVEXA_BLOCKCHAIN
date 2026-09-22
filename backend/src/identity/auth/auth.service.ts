@@ -35,6 +35,7 @@ export interface UserMeResponse {
   } | null;
 }
 
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -46,15 +47,20 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<TokenResponse> {
     let targetEmail = email ? email.trim() : '';
-    if (
-      targetEmail.toLowerCase() === 'demo' ||
-      targetEmail.toLowerCase() === 'demo@kavachtrust.com' ||
-      targetEmail.toLowerCase() === 'admin'
-    ) {
-      targetEmail = 'a.mehta@bel-defence.in';
+    const aliasMap: Record<string, string> = {
+      'demo': 'a.mehta@bel-defence.in',
+      'demo@kavachtrust.com': 'a.mehta@bel-defence.in',
+      'admin': 'a.mehta@bel-defence.in',
+      'admin@kavachtrust.gov.in': 'a.mehta@bel-defence.in',
+      'nft@kavachtrust.gov.in': 'p.sharma@bel-defence.in',
+      'tech@kavachtrust.gov.in': 'r.kumar@bel-defence.in',
+      'auditor@kavachtrust.gov.in': 'd.nair@bel-defence.in',
+    };
+    if (aliasMap[targetEmail.toLowerCase()]) {
+      targetEmail = aliasMap[targetEmail.toLowerCase()];
     }
 
-    let user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email: targetEmail },
       include: {
         roles: true,
@@ -63,40 +69,10 @@ export class AuthService {
     });
 
     if (!user) {
-      const roleMap: Record<string, { name: string; role: 'ADMIN' | 'NFT_CREATOR' | 'TECHNICIAN' | 'AUDITOR' }> = {
-        'a.mehta@bel-defence.in': { name: 'Arjun Mehta', role: 'ADMIN' },
-        'p.sharma@bel-defence.in': { name: 'Priya Sharma', role: 'NFT_CREATOR' },
-        'r.kumar@bel-defence.in': { name: 'Rajesh Kumar', role: 'TECHNICIAN' },
-        'd.nair@bel-defence.in': { name: 'Deepa Nair', role: 'AUDITOR' },
-      };
-
-      const preset = roleMap[targetEmail] || { name: 'Demo User', role: 'ADMIN' };
-      const defaultHash = await bcrypt.hash('password', 10);
-
-      user = await this.prisma.user.create({
-        data: {
-          email: targetEmail,
-          name: preset.name,
-          passwordHash: defaultHash,
-          status: 'ACTIVE',
-          roles: {
-            create: { role: preset.role },
-          },
-        },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid =
-      password === 'demo' ||
-      password === 'password' ||
-      (user.passwordHash
-        ? await bcrypt.compare(password, user.passwordHash)
-        : false);
-
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -106,12 +82,18 @@ export class AuthService {
     }
 
     // Update last active
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { lastActive: new Date() },
-    });
+    try {
+      if (user.id && !user.id.startsWith('usr-')) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { lastActive: new Date() },
+        });
+      }
+    } catch (err: any) {
+      // Ignore DB write failures when database is offline
+    }
 
-    const roles = user.roles.map((r: any) => r.role);
+    const roles = user.roles.map((r: any) => typeof r === 'string' ? r : r.role);
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -146,7 +128,7 @@ export class AuthService {
   }
 
   async getMe(userId: string): Promise<UserMeResponse> {
-    const user: any = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
         roles: true,
@@ -163,13 +145,13 @@ export class AuthService {
       email: user.email,
       name: user.name,
       status: user.status,
-      roles: user.roles.map((r: any) => r.role),
+      roles: user.roles.map((r: any) => typeof r === 'string' ? r : r.role),
       actor: user.actor ? {
         id: user.actor.id,
         did: user.actor.did,
-        credential_status: user.actor.credentialStatus || user.actor.credential_status,
-        identity_status: user.actor.identityStatus || user.actor.identity_status,
-        wallet_address: user.actor.walletAddress || user.actor.wallet_address,
+        credential_status: user.actor.credentialStatus,
+        identity_status: user.actor.identityStatus,
+        wallet_address: user.actor.walletAddress,
       } : null,
     };
   }
@@ -182,8 +164,7 @@ export class AuthService {
       throw new BadRequestException('new_password must be at least 8 characters long');
     }
 
-    const user: any = await this.prisma.user.findUnique({ where: { id: userId } });
-
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }

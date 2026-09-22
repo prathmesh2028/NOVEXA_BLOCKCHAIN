@@ -1,7 +1,8 @@
-import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class LoginDto {
-  @IsEmail({}, { message: 'email must be a valid email address' })
+  @IsString({ message: 'email must be a string' })
+  @IsNotEmpty({ message: 'email must not be empty' })
   @MaxLength(254, { message: 'email must be at most 254 characters' })
   email!: string;
 

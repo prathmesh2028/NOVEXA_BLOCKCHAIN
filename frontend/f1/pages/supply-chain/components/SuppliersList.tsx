@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supplyChainService, SupplierResponse } from "../../../services/supply-chain";
+import StatusBadge from "../../../components/ui/StatusBadge";
 
 export default function SuppliersList() {
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchSuppliers();
@@ -13,7 +15,7 @@ export default function SuppliersList() {
     try {
       setLoading(true);
       const data = await supplyChainService.listSuppliers();
-      setSuppliers(data.items || (data as any)); // fallback to raw array if API changes
+      setSuppliers(data.items || (data as any));
     } catch (error) {
       console.error("Failed to fetch suppliers", error);
     } finally {
@@ -21,44 +23,85 @@ export default function SuppliersList() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-400">Loading suppliers...</div>;
+  const filtered = suppliers.filter(
+    (s) =>
+      !search ||
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      (s.supplier_id && s.supplier_id.toLowerCase().includes(search.toLowerCase())) ||
+      (s.type && s.type.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-white">Suppliers</h2>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          Add Supplier
-        </button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+        <input
+          type="text"
+          className="internal-search-input"
+          placeholder="Filter suppliers by name, ID, or type..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ maxWidth: 360 }}
+        />
+        <button className="btn-primary">+ Add Supplier</button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="internal-table-container">
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr className="border-b border-gray-700 text-gray-400">
-              <th className="p-3">ID</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Contact</th>
-              <th className="p-3">Status</th>
+            <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
+              {["Supplier ID", "Company Name", "Vendor Type", "Contact Detail", "Certifications", "Status"].map((h) => (
+                <th
+                  key={h}
+                  style={{
+                    padding: "10px 14px",
+                    textAlign: "left",
+                    fontSize: "0.6875rem",
+                    color: "var(--muted)",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {suppliers.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan={4} className="p-3 text-center text-gray-500">
-                  No suppliers found.
+                <td colSpan={6} style={{ padding: "36px", textAlign: "center", color: "var(--muted)" }}>
+                  Loading certified suppliers...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: "36px", textAlign: "center", color: "var(--muted)" }}>
+                  No suppliers found matching filter criteria.
                 </td>
               </tr>
             ) : (
-              suppliers.map((supplier) => (
-                <tr key={supplier.id} className="border-b border-gray-800 hover:bg-gray-800">
-                  <td className="p-3 text-gray-300">{supplier.supplier_id || supplier.id}</td>
-                  <td className="p-3 text-white font-medium">{supplier.name}</td>
-                  <td className="p-3 text-gray-400">{supplier.contact_email || supplier.contact_phone || "N/A"}</td>
-                  <td className="p-3">
-                    <span className="bg-green-900 text-green-300 text-xs px-2 py-1 rounded">
-                      {supplier.status || "ACTIVE"}
+              filtered.map((supplier) => (
+                <tr key={supplier.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                  <td style={{ padding: "12px 14px" }}>
+                    <span className="meta-id" style={{ color: "#3b82f6", fontWeight: 600 }}>
+                      {supplier.supplier_id || supplier.id}
                     </span>
+                  </td>
+                  <td style={{ padding: "12px 14px", fontWeight: 600, color: "var(--foreground)" }}>
+                    {supplier.name}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "var(--muted)" }}>
+                    {supplier.type || "Tier-1 OEM"}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8125rem", color: "var(--muted)" }}>
+                    {supplier.contact_email || supplier.contact_phone || "—"}
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>
+                    {supplier.certifications || "ISO 9001 / AS9100"}
+                  </td>
+                  <td style={{ padding: "12px 14px" }}>
+                    <StatusBadge status={supplier.status || "ACTIVE"} size="sm" />
                   </td>
                 </tr>
               ))
