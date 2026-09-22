@@ -177,10 +177,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {!collapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
-
-        {!collapsed && (
-          </nav>
-        )}
       </nav>
 
       {/* User */}
