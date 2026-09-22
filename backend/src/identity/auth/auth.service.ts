@@ -35,68 +35,6 @@ export interface UserMeResponse {
   } | null;
 }
 
-const MOCK_DEMO_USERS: Record<string, any> = {
-  'a.mehta@bel-defence.in': {
-    id: 'usr-admin-001',
-    email: 'a.mehta@bel-defence.in',
-    name: 'Arjun Mehta',
-    status: 'ACTIVE',
-    passwordHash: '',
-    roles: [{ role: 'ADMIN' }],
-    actor: {
-      id: 'act-admin-001',
-      did: 'did:bel:actor:001',
-      credentialStatus: 'ACTIVE',
-      identityStatus: 'VERIFIED',
-      walletAddress: '0x8A42b3c5d1e7f2a919F2',
-    },
-  },
-  'p.sharma@bel-defence.in': {
-    id: 'usr-nft-002',
-    email: 'p.sharma@bel-defence.in',
-    name: 'Priya Sharma',
-    status: 'ACTIVE',
-    passwordHash: '',
-    roles: [{ role: 'NFT_CREATOR' }],
-    actor: {
-      id: 'act-nft-002',
-      did: 'did:bel:actor:002',
-      credentialStatus: 'ACTIVE',
-      identityStatus: 'VERIFIED',
-      walletAddress: '0x3C77f4a2b8c1d5e9A4D1',
-    },
-  },
-  'r.kumar@bel-defence.in': {
-    id: 'usr-tech-003',
-    email: 'r.kumar@bel-defence.in',
-    name: 'Rajesh Kumar',
-    status: 'ACTIVE',
-    passwordHash: '',
-    roles: [{ role: 'TECHNICIAN' }],
-    actor: {
-      id: 'act-tech-003',
-      did: 'did:bel:actor:003',
-      credentialStatus: 'ACTIVE',
-      identityStatus: 'VERIFIED',
-      walletAddress: null,
-    },
-  },
-  'd.nair@bel-defence.in': {
-    id: 'usr-auditor-004',
-    email: 'd.nair@bel-defence.in',
-    name: 'Deepa Nair',
-    status: 'ACTIVE',
-    passwordHash: '',
-    roles: [{ role: 'AUDITOR' }],
-    actor: {
-      id: 'act-auditor-004',
-      did: 'did:bel:actor:004',
-      credentialStatus: 'ACTIVE',
-      identityStatus: 'VERIFIED',
-      walletAddress: null,
-    },
-  },
-};
 
 @Injectable()
 export class AuthService {
@@ -122,46 +60,19 @@ export class AuthService {
       targetEmail = aliasMap[targetEmail.toLowerCase()];
     }
 
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({
-        where: { email: targetEmail },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
-    } catch (err: any) {
-      this.logger.warn(`Database connection offline during login query for ${targetEmail}: ${err.message}. Falling back to demo mode user.`);
-    }
-
-    if (!user) {
-      user = MOCK_DEMO_USERS[targetEmail.toLowerCase()];
-    }
+    const user = await this.prisma.user.findUnique({
+      where: { email: targetEmail },
+      include: {
+        roles: true,
+        actor: true,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    let isPasswordValid = false;
-    if (user.passwordHash) {
-      try {
-        isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      } catch (e) {}
-    }
-
-    if (!isPasswordValid && (password === 'demo' || password === 'password' || password === 'admin' || !user.passwordHash)) {
-      const canonicalEmails = [
-        'a.mehta@bel-defence.in',
-        'p.sharma@bel-defence.in',
-        'r.kumar@bel-defence.in',
-        'd.nair@bel-defence.in',
-      ];
-      if (canonicalEmails.includes(user.email)) {
-        isPasswordValid = true;
-      }
-    }
-
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -217,24 +128,13 @@ export class AuthService {
   }
 
   async getMe(userId: string): Promise<UserMeResponse> {
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
-    } catch (err: any) {
-      this.logger.warn(`Database connection offline during getMe query for ${userId}: ${err.message}. Falling back to demo mode user.`);
-    }
-
-    if (!user) {
-      user = Object.values(MOCK_DEMO_USERS).find(
-        (u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase(),
-      );
-    }
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        roles: true,
+        actor: true,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -249,9 +149,9 @@ export class AuthService {
       actor: user.actor ? {
         id: user.actor.id,
         did: user.actor.did,
-        credential_status: user.actor.credentialStatus || user.actor.credential_status,
-        identity_status: user.actor.identityStatus || user.actor.identity_status,
-        wallet_address: user.actor.walletAddress || user.actor.wallet_address,
+        credential_status: user.actor.credentialStatus,
+        identity_status: user.actor.identityStatus,
+        wallet_address: user.actor.walletAddress,
       } : null,
     };
   }
@@ -264,39 +164,21 @@ export class AuthService {
       throw new BadRequestException('new_password must be at least 8 characters long');
     }
 
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({ where: { id: userId } });
-    } catch (err: any) {
-      this.logger.warn(`Database connection offline during changePassword query for ${userId}. Falling back to demo mode user.`);
-    }
-
-    if (!user) {
-      user = Object.values(MOCK_DEMO_USERS).find((u) => u.id === userId);
-    }
-
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    if (user.passwordHash) {
-      const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!isCurrentValid && currentPassword !== 'password' && currentPassword !== 'demo') {
-        throw new UnauthorizedException('Current password is incorrect');
-      }
+    const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isCurrentValid) {
+      throw new UnauthorizedException('Current password is incorrect');
     }
 
-    try {
-      if (user.id && !user.id.startsWith('usr-')) {
-        const newHash = await bcrypt.hash(newPassword, 10);
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { passwordHash: newHash },
-        });
-      }
-    } catch (err: any) {
-      // Ignore DB write failure in demo mode
-    }
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash },
+    });
 
     this.logger.log(`Password updated for user ${user.email}`);
     return { message: 'Password updated successfully' };
