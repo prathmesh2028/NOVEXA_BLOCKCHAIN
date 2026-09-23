@@ -39,7 +39,7 @@ export const certificationService = {
     return api.get<CertificationResponse>(`/certifications/${id}`);
   },
 
-  createCertification: async (data: { asset_id: string; batch_id?: string }) => {
+  createCertification: async (data: { asset_id: string; batch_id?: string; certificate_image?: string; image_name?: string }) => {
     return api.post<CertificationResponse>('/certifications', data);
   }
 };

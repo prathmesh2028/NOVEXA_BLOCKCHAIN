@@ -1143,11 +1143,8 @@ function AuditorDashboard() {
           borderColor: "rgba(34,197,94,0.25)",
         }}
       >
-        <Link to="/app/search" className="btn-primary" style={{ fontSize: "0.9375rem" }}>
-          Search Assets to Verify →
-        </Link>
-        <Link to="/app/verification" className="btn-secondary">
-          Verification Center
+        <Link to="/app/verification" className="btn-primary" style={{ fontSize: "0.9375rem" }}>
+          Launch Verification Center →
         </Link>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
           <span className="db-status-dot-pulse" />

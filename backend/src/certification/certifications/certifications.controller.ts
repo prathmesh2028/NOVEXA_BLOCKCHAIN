@@ -59,6 +59,7 @@ export class CertificationsController {
       issuedByName: req.user.name || req.user.email,
       issuedByDid: req.user.did,
       issuedByRole: req.user.roles?.[0] || 'UNKNOWN',
+      certificateImage: dto.certificate_image,
     });
   }
 

@@ -21,7 +21,9 @@ export class InspectionsService {
   }) {
     try {
       // Validate asset exists and is in correct state
-      const asset = await this.prisma.asset.findUnique({ where: { id: data.assetId } });
+      const asset = await this.prisma.asset.findFirst({
+        where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
+      });
       if (!asset) throw new BadRequestException(`Asset ${data.assetId} not found`);
 
       if (asset.lifecycleState !== 'RECEIVED' && asset.lifecycleState !== 'SUPPLIER_DECLARED') {
@@ -31,7 +33,7 @@ export class InspectionsService {
       const inspection = await this.prisma.$transaction(async (tx) => {
         const insp = await tx.inspection.create({
           data: {
-            assetId: data.assetId,
+            assetId: asset.id,
             inspectorId: data.inspectorId,
             inspectorDid: data.inspectorDid,
             result: data.result,
@@ -48,7 +50,7 @@ export class InspectionsService {
             actorDid: data.inspectorDid,
             action: `Inspection recorded: ${data.result}`,
             resourceType: 'Asset',
-            resourceId: data.assetId,
+            resourceId: asset.id,
             result: data.result === 'FAIL' ? 'WARNING' : 'SUCCESS',
             details: data.notes || `Inspection result: ${data.result}`,
           },
@@ -68,7 +70,13 @@ export class InspectionsService {
 
   async listInspections(assetId?: string) {
     const where: any = {};
-    if (assetId) where.assetId = assetId;
+    if (assetId) {
+      const asset = await this.prisma.asset.findFirst({
+        where: { OR: [{ id: assetId }, { assetId }] },
+        select: { id: true },
+      });
+      where.assetId = asset ? asset.id : assetId;
+    }
 
     try {
       const items = await this.prisma.inspection.findMany({

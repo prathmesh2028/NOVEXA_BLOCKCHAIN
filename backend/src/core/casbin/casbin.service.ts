@@ -53,6 +53,11 @@ export class CasbinService implements OnModuleInit {
       this.logger.error('Casbin enforcer not initialized — denying access (fail closed)');
       return false;
     }
+    try {
+      await this.enforcer.loadPolicy();
+    } catch {
+      // Keep existing policy if reload encounters I/O lock
+    }
     for (const role of roles) {
       const allowed = await this.enforcer.enforce(role, obj, act);
       if (allowed) {
