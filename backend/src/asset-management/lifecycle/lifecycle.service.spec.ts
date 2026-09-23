@@ -94,7 +94,7 @@ describe('LifecycleService', () => {
       assetId: 'ast-1',
       toState: 'INSPECTION_RECORDED',
       actorId: 'usr-1',
-      actorRole: 'TECHNICIAN',
+      actorRole: 'QUALITY_INSPECTOR',
       evidenceIds: [], // missing evidence
     })).rejects.toThrow(BadRequestException);
   });
@@ -107,7 +107,7 @@ describe('LifecycleService', () => {
       assetId: 'ast-1',
       toState: 'SUPPLIER_DECLARED',
       actorId: 'usr-1',
-      actorRole: 'TECHNICIAN',
+      actorRole: 'QUALITY_INSPECTOR',
       idempotencyKey: 'idem-key-1',
     });
 
@@ -150,7 +150,7 @@ describe('LifecycleService', () => {
       }));
       expect(mockNotificationsService.createNotification).toHaveBeenCalledWith(expect.objectContaining({
         type: 'EXPIRY_WARNING',
-        recipientRole: 'TECHNICIAN',
+        recipientRole: 'QUALITY_INSPECTOR',
       }));
     });
 

@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsOptional } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class CreateCertificationDto {
   @IsString()
@@ -8,4 +8,12 @@ export class CreateCertificationDto {
   @IsString()
   @IsOptional()
   batch_id?: string;
+
+  @IsString()
+  @IsOptional()
+  certificate_image?: string;
+
+  @IsString()
+  @IsOptional()
+  image_name?: string;
 }
