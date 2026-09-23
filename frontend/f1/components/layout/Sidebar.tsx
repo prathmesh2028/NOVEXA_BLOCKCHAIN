@@ -67,10 +67,11 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { user, role, logout } = useAuth();
-  if (!user || !role) return null;
+  if (!user) return null;
 
-  const nav = NAV_CONFIG[role];
-  const roleColor = getRoleColor(role);
+  const currentRole = (role && NAV_CONFIG[role as Role]) ? (role as Role) : "quality-inspector";
+  const nav = NAV_CONFIG[currentRole] || NAV_CONFIG["quality-inspector"];
+  const roleColor = getRoleColor(currentRole);
 
   return (
     <aside
@@ -178,6 +179,20 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </NavLink>
         ))}
       </nav>
+
+      {/* Secure People Emblem Widget matching Reference */}
+      {!collapsed && (
+        <div className="sidebar-secure-people-widget">
+          <div className="sidebar-shield-emblem">
+            <span style={{ fontSize: "1.25rem" }}>🛡</span>
+          </div>
+          <div className="sidebar-secure-text">
+            <div>SECURE PEOPLE</div>
+            <div>SECURE ASSETS</div>
+            <div style={{ color: "#22c55e" }}>SECURE NATION</div>
+          </div>
+        </div>
+      )}
 
       {/* User */}
       <div
