@@ -23,6 +23,7 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
       { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
       { to: "/app/assets", label: "Assets", icon: "◈" },
+      { to: "/app/certification-queue", label: "Certification Queue", icon: "◉" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },
       { to: "/app/blockchain", label: "Blockchain", icon: "⬡" },
     ],
@@ -48,7 +49,6 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
     label: "Audit & Verification",
     items: [
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
-      { to: "/app/search", label: "Search", icon: "◎" },
       { to: "/app/verification", label: "Verification Center", icon: "◉" },
       { to: "/app/assets", label: "Assets", icon: "◈" },
       { to: "/app/evidence-integrity", label: "Evidence Integrity", icon: "◫" },

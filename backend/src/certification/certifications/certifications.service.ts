@@ -92,10 +92,13 @@ export class CertificationsService {
     issuedByName?: string;
     issuedByDid?: string;
     issuedByRole?: string;
+    certificateImage?: string;
   }) {
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const asset = await tx.asset.findUnique({ where: { id: data.assetId } });
+        const asset = await tx.asset.findFirst({
+          where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
+        });
         if (!asset) throw new BadRequestException(`Asset ${data.assetId} not found`);
 
         // Precondition: eligible lifecycle state

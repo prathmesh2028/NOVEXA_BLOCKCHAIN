@@ -83,7 +83,7 @@ describe('AuthService (Authentication & Password Management)', () => {
       const [, payloadB64] = res.access_token.split('.');
       const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
       expect(payload.sub).toBeDefined();
-      expect(payload.email).toBe('a.mehta@bel-defence.in');
+      expect(payload.email).toBe('admin@kavachtrust.gov.in');
       expect(Array.isArray(payload.roles)).toBe(true);
       expect(payload.iss).toBe('kavachtrust');
     });
@@ -126,7 +126,7 @@ describe('AuthService (Authentication & Password Management)', () => {
       const { access_token } = await service.login('admin@kavachtrust.gov.in', 'password');
       const payload = await service.validateToken(access_token);
       expect(payload.sub).toBeDefined();
-      expect(payload.email).toBe('a.mehta@bel-defence.in');
+      expect(payload.email).toBe('admin@kavachtrust.gov.in');
     });
 
     it('throws UnauthorizedException for a tampered token', async () => {

@@ -4,6 +4,7 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
 import { certificationService } from "../../services/certifications";
+import CertificateImageUpload from "../../components/certifications/CertificateImageUpload";
 
 export default function CertificationQueuePage() {
   const [queue, setQueue] = useState<any[]>([]);
@@ -14,6 +15,8 @@ export default function CertificationQueuePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState("");
   const [batchIdInput, setBatchIdInput] = useState("");
+  const [certificateImage, setCertificateImage] = useState<string | null>(null);
+  const [certificateImageName, setCertificateImageName] = useState<string | null>(null);
   const [modalStatus, setModalStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,6 +48,8 @@ export default function CertificationQueuePage() {
       setSelectedAssetId(queue[0].asset_id || queue[0].id);
     }
     setBatchIdInput("");
+    setCertificateImage(null);
+    setCertificateImageName(null);
     setModalStatus(null);
     setShowCreateModal(true);
   };
@@ -59,6 +64,8 @@ export default function CertificationQueuePage() {
       await certificationService.createCertification({
         asset_id: selectedAssetId,
         batch_id: batchIdInput.trim() || undefined,
+        certificate_image: certificateImage || undefined,
+        image_name: certificateImageName || undefined,
       });
       setModalStatus({
         type: "success",
@@ -68,6 +75,8 @@ export default function CertificationQueuePage() {
       setTimeout(() => {
         setShowCreateModal(false);
         setModalStatus(null);
+        setCertificateImage(null);
+        setCertificateImageName(null);
       }, 1500);
     } catch (err: any) {
       setModalStatus({
@@ -242,7 +251,7 @@ export default function CertificationQueuePage() {
             zIndex: 1000,
           }}
         >
-          <div className="panel" style={{ width: "100%", maxWidth: 480, padding: 24, border: "1px solid #1e3a60" }}>
+          <div className="panel" style={{ width: "100%", maxWidth: 540, maxHeight: "90vh", overflowY: "auto", padding: 24, border: "1px solid #1e3a60" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <div>
                 <div style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0" }}>NFT Create · Mint Certification</div>
@@ -252,6 +261,8 @@ export default function CertificationQueuePage() {
                 onClick={() => {
                   setShowCreateModal(false);
                   setModalStatus(null);
+                  setCertificateImage(null);
+                  setCertificateImageName(null);
                 }}
                 style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1.2rem" }}
               >
@@ -324,9 +335,19 @@ export default function CertificationQueuePage() {
                 />
               </div>
 
+              {/* Certificate Image Upload */}
+              <CertificateImageUpload
+                value={certificateImage}
+                fileName={certificateImageName}
+                onChange={(val, name) => {
+                  setCertificateImage(val);
+                  setCertificateImageName(name || null);
+                }}
+              />
+
               <div style={{ padding: "10px 12px", background: "rgba(37,99,235,0.08)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: 4, fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.5 }}>
                 <span style={{ color: "#60a5fa", fontWeight: 600 }}>ERC-5192 Soulbound Token: </span>
-                Generates a non-transferable on-chain certification token bound to the selected defence asset.
+                Generates a non-transferable on-chain certification token bound to the selected defence asset with attached verification seal.
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
@@ -336,6 +357,8 @@ export default function CertificationQueuePage() {
                   onClick={() => {
                     setShowCreateModal(false);
                     setModalStatus(null);
+                    setCertificateImage(null);
+                    setCertificateImageName(null);
                   }}
                 >
                   Cancel

@@ -14,8 +14,8 @@ export class SupplyChainController {
   }
 
   @Post('suppliers')
-  createSupplier(@Body() body: { name: string; contactInfo?: any }, @Req() req: any) {
-    return this.supplyChainService.createSupplier(body, req.user.id);
+  createSupplier(@Body() body: any, @Req() req: any) {
+    return this.supplyChainService.createSupplier(body, req.user?.id || req.user?.sub || 'system');
   }
 
   @Get('facilities')
@@ -24,8 +24,8 @@ export class SupplyChainController {
   }
 
   @Post('facilities')
-  createFacility(@Body() body: { supplierId: string; name: string; type: string; location?: string }, @Req() req: any) {
-    return this.supplyChainService.createFacility(body, req.user.id);
+  createFacility(@Body() body: any, @Req() req: any) {
+    return this.supplyChainService.createFacility(body, req.user?.id || req.user?.sub || 'system');
   }
 
   @Get('lots')
@@ -34,8 +34,8 @@ export class SupplyChainController {
   }
 
   @Post('lots')
-  createLot(@Body() body: { supplierId: string; materialType: string; quantity: number }, @Req() req: any) {
-    return this.supplyChainService.createLot(body, req.user.id);
+  createLot(@Body() body: any, @Req() req: any) {
+    return this.supplyChainService.createLot(body, req.user?.id || req.user?.sub || 'system');
   }
 
   @Get('shipments')
@@ -44,17 +44,17 @@ export class SupplyChainController {
   }
 
   @Post('shipments')
-  createShipment(@Body() body: { lotId: string; dispatchFacilityId: string; receiveFacilityId: string; trackingNumber?: string }, @Req() req: any) {
-    return this.supplyChainService.createShipment(body, req.user.id);
+  createShipment(@Body() body: any, @Req() req: any) {
+    return this.supplyChainService.createShipment(body, req.user?.id || req.user?.sub || 'system');
   }
 
   @Patch('shipments/:id/dispatch')
   dispatchShipment(@Param('id') id: string, @Req() req: any) {
-    return this.supplyChainService.dispatchShipment(id, req.user.id);
+    return this.supplyChainService.dispatchShipment(id, req.user?.id || req.user?.sub || 'system');
   }
 
   @Patch('shipments/:id/receive')
   receiveShipment(@Param('id') id: string, @Req() req: any) {
-    return this.supplyChainService.receiveShipment(id, req.user.id);
+    return this.supplyChainService.receiveShipment(id, req.user?.id || req.user?.sub || 'system');
   }
 }

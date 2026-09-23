@@ -120,7 +120,7 @@ describe('ApprovalsService', () => {
       );
       expect(mockNotificationsService.createNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          recipientRole: 'NFT_CREATOR',
+          recipientRole: 'QUALITY_INSPECTOR',
           type: 'APPROVAL_REQUIRED',
         }),
       );

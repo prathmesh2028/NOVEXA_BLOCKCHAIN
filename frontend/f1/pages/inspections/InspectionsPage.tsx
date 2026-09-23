@@ -12,6 +12,7 @@ export default function InspectionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [resultFilter, setResultFilter] = useState("ALL");
   const [showRecordModal, setShowRecordModal] = useState(false);
+  const [recordError, setRecordError] = useState<string | null>(null);
   const [recordForm, setRecordForm] = useState({
     asset_id: "",
     result: "PASS",
@@ -38,13 +39,14 @@ export default function InspectionsPage() {
 
   const handleRecordInspection = async (e: React.FormEvent) => {
     e.preventDefault();
+    setRecordError(null);
     try {
       await api.post("/inspections/record", recordForm);
       setShowRecordModal(false);
       setRecordForm({ asset_id: "", result: "PASS", notes: "", evidence_ids: [] });
       fetchInspections();
     } catch (err: any) {
-      alert(`Failed to record inspection: ${err.message || "Unknown error"}`);
+      setRecordError(err.message || "Failed to record inspection");
     }
   };
 
@@ -270,6 +272,12 @@ export default function InspectionsPage() {
             </div>
 
             <form onSubmit={handleRecordInspection} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {recordError && (
+                <div style={{ padding: "8px 12px", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.4)", borderRadius: 6, color: "#f87171", fontSize: "0.8125rem" }}>
+                  {recordError}
+                </div>
+              )}
+
               <div>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Target Asset ID *
@@ -280,7 +288,7 @@ export default function InspectionsPage() {
                   style={{ width: "100%" }}
                   value={recordForm.asset_id}
                   onChange={(e) => setRecordForm({ ...recordForm, asset_id: e.target.value })}
-                  placeholder="e.g. EF-2026-00421"
+                  placeholder="e.g. EF-2026-00421 or UUID"
                   required
                 />
               </div>
