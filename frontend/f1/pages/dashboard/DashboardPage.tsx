@@ -925,9 +925,9 @@ function NFTCreatorDashboard() {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   TECHNICIAN DASHBOARD
+   QUALITY INSPECTOR DASHBOARD
    ════════════════════════════════════════════════════════════════════ */
-function TechnicianDashboard() {
+function QualityInspectorDashboard() {
   const [myAssets, setMyAssets] = useState<AssetResponse[]>([]);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [assetsLoading, setAssetsLoading] = useState(true);
@@ -1143,11 +1143,8 @@ function AuditorDashboard() {
           borderColor: "rgba(34,197,94,0.25)",
         }}
       >
-        <Link to="/app/search" className="btn-primary" style={{ fontSize: "0.9375rem" }}>
-          Search Assets to Verify →
-        </Link>
-        <Link to="/app/verification" className="btn-secondary">
-          Verification Center
+        <Link to="/app/verification" className="btn-primary" style={{ fontSize: "0.9375rem" }}>
+          Launch Verification Center →
         </Link>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
           <span className="db-status-dot-pulse" />
@@ -1367,10 +1364,12 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Role-based dashboard body ──────────────────────────── */}
-      {role === "admin"       && <AdminDashboard />}
-      {role === "nft-creator" && <NFTCreatorDashboard />}
-      {role === "technician"  && <TechnicianDashboard />}
-      {role === "auditor"     && <AuditorDashboard />}
+      {role === "system-admin"                      && <AdminDashboard />}
+      {role === "procurement-supply-chain-officer"  && <NFTCreatorDashboard />}
+      {role === "quality-inspector"                 && <QualityInspectorDashboard />}
+      {role === "auditor"                           && <AuditorDashboard />}
+      {/* Fallback for any role not matched above */}
+      {!["system-admin","procurement-supply-chain-officer","quality-inspector","auditor"].includes(role) && <AdminDashboard />}
     </div>
   );
 }

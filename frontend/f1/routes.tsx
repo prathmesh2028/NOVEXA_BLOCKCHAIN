@@ -54,20 +54,20 @@ export const router = createBrowserRouter([
       { path: "my-assets", Component: MyAssetsPage },
       { path: "supply-chain", Component: SupplyChainDashboardPage },
 
-      // Admin Only
+      // System Admin Only
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["admin"]} />,
+        Component: () => <RoleGuard allowedRoles={["system-admin"]} />,
         children: [
           { path: "users", Component: UsersPage },
           { path: "roles", Component: RolesPage },
         ]
       },
 
-      // Certifications & Blockchain — accessible by Admin, NFT Creator, and Auditor
+      // Certifications & Blockchain — accessible by System Admin, Procurement, Quality Inspector, and Auditor
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["admin", "nft-creator", "auditor"]} />,
+        Component: () => <RoleGuard allowedRoles={["system-admin", "procurement-supply-chain-officer", "quality-inspector", "auditor"]} />,
         children: [
           { path: "certifications", Component: CertificationsPage },
           { path: "certifications/:id", Component: CertificationDetailPage },
@@ -76,20 +76,20 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // NFT Creator Queue & Eligible Assets
+      // Certification Queue & Eligible Assets — Quality Inspector and Procurement Officer
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["admin", "nft-creator"]} />,
+        Component: () => <RoleGuard allowedRoles={["quality-inspector", "procurement-supply-chain-officer"]} />,
         children: [
           { path: "certification-queue", Component: CertificationQueuePage },
           { path: "eligible-assets", Component: EligibleAssetsPage },
         ]
       },
 
-      // Technician & Admin
+      // Quality Inspector & System Admin
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["admin", "technician"]} />,
+        Component: () => <RoleGuard allowedRoles={["system-admin", "quality-inspector"]} />,
         children: [
           { path: "register", Component: RegisterAssetPage },
           { path: "inspections", Component: InspectionsPage },
@@ -98,10 +98,10 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // Auditor & Admin
+      // Auditor & System Admin
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["admin", "auditor"]} />,
+        Component: () => <RoleGuard allowedRoles={["system-admin", "auditor"]} />,
         children: [
           // Canonical System Activity route — audit and audit-trail redirect or alias here
           { path: "system-activity", Component: AuditPage },

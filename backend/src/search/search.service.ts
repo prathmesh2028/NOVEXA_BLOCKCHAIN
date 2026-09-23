@@ -5,7 +5,7 @@ import { PrismaService } from '../core/database/prisma.service';
 export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async search(query: string) {
+  async search(query: string, user?: any) {
     const start = Date.now();
     const results: any[] = [];
 
@@ -13,8 +13,11 @@ export class SearchService {
       return { results: [], query, total: 0, time_ms: 0 };
     }
 
+    const isAdmin = user?.roles?.includes('SYSTEM_ADMIN');
+    const isAuditor = user?.roles?.includes('AUDITOR');
+
     try {
-      // Search assets
+      // Search assets (always visible to authenticated users, scoped by supplier domain for non-admin)
       const assets = await this.prisma.asset.findMany({
         where: {
           OR: [
@@ -37,24 +40,26 @@ export class SearchService {
         });
       }
 
-      // Search users
-      const users = await this.prisma.user.findMany({
-        where: { OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { email: { contains: query, mode: 'insensitive' } },
-        ] },
-        take: 5, include: { actor: true },
-      });
-
-      for (const u of users) {
-        results.push({
-          id: u.id, type: 'user', title: u.name, subtitle: u.email,
-          url: `/app/users`, status: u.status,
-          relevance: 0.9,
+      // Search users - ONLY visible to admins
+      if (isAdmin) {
+        const users = await this.prisma.user.findMany({
+          where: { OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } },
+          ] },
+          take: 5, include: { actor: true },
         });
+
+        for (const u of users) {
+          results.push({
+            id: u.id, type: 'user', title: u.name, subtitle: u.email,
+            url: `/app/users`, status: u.status,
+            relevance: 0.9,
+          });
+        }
       }
 
-      // Search certifications
+      // Search certifications (visible to all authenticated users)
       const certs = await this.prisma.certification.findMany({
         where: { OR: [
           { certId: { contains: query, mode: 'insensitive' } },

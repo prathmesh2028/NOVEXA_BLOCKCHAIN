@@ -2,6 +2,7 @@ import { Controller, Get, Post, Param, Body, Query, UseGuards, Req, NotFoundExce
 import { CertificationsService } from './certifications.service';
 import { JwtAuthGuard } from '../../identity/auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../../identity/auth/guards/casbin.guard';
+import { CreateCertificationDto } from './dto/create-certification.dto';
 
 @Controller('certifications')
 @UseGuards(JwtAuthGuard, CasbinGuard)
@@ -26,7 +27,7 @@ export class CertificationsController {
    * GET /certifications/queue
    * Returns the certification queue: assets in ACCEPTED_FOR_ASSEMBLY with
    * verified evidence, grouped by eligibility for minting.
-   * NFT_CREATOR and ADMIN only.
+   * QUALITY_INSPECTOR and SYSTEM_ADMIN only.
    */
   @Get('queue')
   @CasbinPolicy('/api/v1/certifications/queue', 'GET')
@@ -43,7 +44,6 @@ export class CertificationsController {
   /**
    * GET /certifications/:id
    * Returns a single certification by its UUID or certId (e.g. CERT-2026-00089).
-   * Backed by fallback data in demo mode.
    */
   @Get(':id')
   async getCertification(@Param('id') id: string) {
@@ -52,12 +52,14 @@ export class CertificationsController {
 
   @Post()
   @CasbinPolicy('/api/v1/certifications', 'POST')
-  async createCertification(@Body() body: any, @Req() req: any) {
+  async createCertification(@Body() dto: CreateCertificationDto, @Req() req: any) {
     return this.certificationsService.createCertification({
-      assetId: body.asset_id,
+      assetId: dto.asset_id,
       issuedById: req.user.sub,
       issuedByName: req.user.name || req.user.email,
       issuedByDid: req.user.did,
+      issuedByRole: req.user.roles?.[0] || 'UNKNOWN',
+      certificateImage: dto.certificate_image,
     });
   }
 

@@ -21,7 +21,7 @@ export class ApprovalsController {
       stage: body.stage as ApprovalStage,
       requestedById: user.sub,
       requestedByName: user.name || user.email,
-      requestedByRole: user.roles?.[0] || 'TECHNICIAN',
+      requestedByRole: user.roles?.[0] || 'QUALITY_INSPECTOR',
       comments: body.comments,
     });
   }
@@ -60,7 +60,7 @@ export class ApprovalsController {
       status: body.status,
       approverId: user.sub,
       approverName: user.name || user.email,
-      approverRole: (user.roles?.[0] || 'NFT_CREATOR') as AppRole,
+      approverRole: (user.roles?.[0] || 'QUALITY_INSPECTOR') as AppRole,
       comments: body.comments,
       digitalSignature: body.digital_signature,
     });

@@ -13,9 +13,10 @@ export class UsersService {
     // Guard: role must be a valid AppRole enum value.
     // InviteUserDto enforces this at the DTO layer, but we re-check here
     // to be safe if this method is called programmatically.
-    if (!Object.values(AppRole).includes(data.role)) {
+    const validRoles = ['SYSTEM_ADMIN', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER', 'QUALITY_INSPECTOR', 'AUDITOR'];
+    if (!validRoles.includes(data.role)) {
       throw new BadRequestException(
-        `Invalid role '${data.role}'. Must be one of: ${Object.values(AppRole).join(', ')}`,
+        `Invalid role '${data.role}'. Must be one of: ${validRoles.join(', ')}`,
       );
     }
 
@@ -31,7 +32,7 @@ export class UsersService {
           passwordHash: tempPasswordHash,
           status: 'PENDING',
           roles: {
-            create: [{ role: data.role }],
+            create: [{ role: data.role as any }],
           },
         },
         include: { roles: true },

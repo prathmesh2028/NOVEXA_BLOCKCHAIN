@@ -132,8 +132,10 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Audit Trail Integrity",
-          status: "VERIFIED" as const,
-          detail: "Backend cryptographic hash chaining validated",
+          status: checkMap.get('audit') || checkMap.get('audit_trail')
+            ? statusToUi((checkMap.get('audit') || checkMap.get('audit_trail')).status)
+            : ("REVIEW" as const),
+          detail: (checkMap.get('audit') || checkMap.get('audit_trail'))?.reason || "Audit chain verification pending audit event confirmation",
         },
       ];
 
@@ -168,8 +170,8 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Audit Trail Integrity",
-          status: "VERIFIED" as const,
-          detail: "No modification detected in audit log",
+          status: "REVIEW" as const,
+          detail: "Audit chain verification pending backend log integrity check",
         },
       ];
 

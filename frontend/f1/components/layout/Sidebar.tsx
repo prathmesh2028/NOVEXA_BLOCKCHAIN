@@ -1,11 +1,11 @@
 import { NavLink, Link } from "react-router";
 import { getRoleLabel, getRoleColor } from "../../context/RoleContext";
 import { useAuth } from "../../context/AuthContext";
-import type { Role } from "../../context/RoleContext";
+import type { Role } from "../../context/AuthContext";
 
 const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: string; icon: string }[] }> = {
-  admin: {
-    label: "Administration",
+  "system-admin": {
+    label: "System Administration",
     items: [
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
       { to: "/app/users", label: "Users", icon: "◉" },
@@ -17,41 +17,45 @@ const NAV_CONFIG: Record<Role, { label: string; items: { to: string; label: stri
       { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
     ],
   },
-  "nft-creator": {
-    label: "NFT Creator",
+  "procurement-supply-chain-officer": {
+    label: "Procurement & Supply Chain",
     items: [
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
-      { to: "/app/eligible-assets", label: "Eligible Assets", icon: "◈" },
+      { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
+      { to: "/app/assets", label: "Assets", icon: "◈" },
       { to: "/app/certification-queue", label: "Certification Queue", icon: "◉" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },
       { to: "/app/blockchain", label: "Blockchain", icon: "⬡" },
-      { to: "/app/history", label: "History", icon: "◷" },
     ],
   },
-  technician: {
-    label: "Technician",
+  "quality-inspector": {
+    label: "Quality Inspection",
     items: [
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
-      { to: "/app/my-assets", label: "My Assets", icon: "◈" },
-      { to: "/app/register", label: "Register / Update", icon: "⊕" },
+      { to: "/app/assets", label: "Assets", icon: "◈" },
+      { to: "/app/register", label: "Register Asset", icon: "⊕" },
       { to: "/app/technical-records", label: "Technical Records", icon: "☰" },
       { to: "/app/evidence", label: "Evidence", icon: "◫" },
       { to: "/app/inspections", label: "Inspections", icon: "◌" },
       { to: "/app/lifecycle", label: "Lifecycle", icon: "◷" },
+      { to: "/app/certification-queue", label: "Certification Queue", icon: "◉" },
+      { to: "/app/eligible-assets", label: "Eligible Assets", icon: "◈" },
+      { to: "/app/certifications", label: "Certifications", icon: "◆" },
+      { to: "/app/blockchain", label: "Blockchain", icon: "⬡" },
       { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
     ],
   },
   auditor: {
-    label: "Auditor",
+    label: "Audit & Verification",
     items: [
       { to: "/app/dashboard", label: "Dashboard", icon: "⊞" },
-      { to: "/app/search", label: "Search", icon: "◎" },
       { to: "/app/verification", label: "Verification Center", icon: "◉" },
       { to: "/app/assets", label: "Assets", icon: "◈" },
       { to: "/app/evidence-integrity", label: "Evidence Integrity", icon: "◫" },
       { to: "/app/certifications", label: "Certifications", icon: "◆" },
       { to: "/app/blockchain-proof", label: "Blockchain Proof", icon: "⬡" },
       { to: "/app/system-activity", label: "System Activity", icon: "≡" },
+      { to: "/app/supply-chain", label: "Supply Chain", icon: "⛟" },
     ],
   },
 };
@@ -173,18 +177,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {!collapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
-
-        {!collapsed && (
-          <div style={{ borderTop: "1px solid #152b4a", marginTop: 12, paddingTop: 8 }}>
-            <NavLink
-              to="/app/search"
-              className={({ isActive }) => `sidebar-link${isActive ? " active" : ""}`}
-            >
-              <span style={{ fontSize: "0.9rem", width: 16, textAlign: "center" }}>◎</span>
-              <span>Search</span>
-            </NavLink>
-          </div>
-        )}
       </nav>
 
       {/* User */}

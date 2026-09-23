@@ -91,10 +91,14 @@ export class CertificationsService {
     issuedById: string;
     issuedByName?: string;
     issuedByDid?: string;
+    issuedByRole?: string;
+    certificateImage?: string;
   }) {
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const asset = await tx.asset.findUnique({ where: { id: data.assetId } });
+        const asset = await tx.asset.findFirst({
+          where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
+        });
         if (!asset) throw new BadRequestException(`Asset ${data.assetId} not found`);
 
         // Precondition: eligible lifecycle state
@@ -155,7 +159,7 @@ export class CertificationsService {
             eventType: 'CERTIFICATION_CREATED',
             actorId: data.issuedById,
             actorDid: data.issuedByDid,
-            actorRole: 'NFT_CREATOR',
+            actorRole: data.issuedByRole || 'UNKNOWN',
             action: 'Certification minting initiated',
             resourceType: 'Certification',
             resourceId: cert.id,
@@ -231,7 +235,7 @@ export class CertificationsService {
    * Certification Queue:
    * Assets eligible for certification review — ACCEPTED_FOR_ASSEMBLY state,
    * verified evidence, and either uncertified or with PENDING certification.
-   * NFT_CREATOR role reviews and initiates minting from this queue.
+   * QUALITY_INSPECTOR role reviews and initiates minting from this queue.
    */
   async getCertificationQueue(params: { page?: number; page_size?: number } = {}) {
     const page = params.page || 1;

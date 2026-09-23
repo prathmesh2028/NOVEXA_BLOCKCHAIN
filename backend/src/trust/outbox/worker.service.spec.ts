@@ -258,7 +258,7 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
     expect(mockOutboxService.markCompleted).not.toHaveBeenCalled();
   });
 
-  it('should fall back to simulated tx hash in demo mode if explicitly configured', async () => {
+  it('should mark transaction as FAILED when submission fails', async () => {
     mockConfigService.blockchainMode = 'demo';
 
     const mockEvent = {
@@ -277,15 +277,13 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
 
     await (worker as any).processEvents();
 
-    expect(mockTx.certification.update).toHaveBeenCalledWith(
+    expect(mockPrisma.blockchainTransaction.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'cert-1' },
         data: expect.objectContaining({
-          status: 'CONFIRMED',
-          txHash: expect.stringMatching(/^0xDEMO_/),
+          status: 'FAILED',
         }),
       }),
     );
-    expect(mockOutboxService.markCompleted).toHaveBeenCalledWith('outbox-demo-1');
+    expect(mockTx.certification.update).not.toHaveBeenCalled();
   });
 });
