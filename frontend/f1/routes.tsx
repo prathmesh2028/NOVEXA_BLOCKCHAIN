@@ -76,10 +76,10 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // Certification Queue & Eligible Assets — Quality Inspector only
+      // Certification Queue & Eligible Assets — Quality Inspector and Procurement Officer
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["quality-inspector"]} />,
+        Component: () => <RoleGuard allowedRoles={["quality-inspector", "procurement-supply-chain-officer"]} />,
         children: [
           { path: "certification-queue", Component: CertificationQueuePage },
           { path: "eligible-assets", Component: EligibleAssetsPage },

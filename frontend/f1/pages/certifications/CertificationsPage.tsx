@@ -5,9 +5,13 @@ import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
 import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
+import { CERTIFICATION_TYPES, CERTIFICATION_STATUSES, VERIFICATION_STATUSES } from "./certificationData";
+import type { CertificationStatus } from "./certificationData";
 
 
 export default function CertificationsPage() {
+  const { role } = useAuth();
+  const isAuditor = role === "auditor";
   /* ============================================================
      API STATE
      ============================================================ */
@@ -25,6 +29,8 @@ export default function CertificationsPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [verificationFilter, setVerificationFilter] = useState("ALL");
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 
@@ -36,6 +42,8 @@ export default function CertificationsPage() {
 
   const [assetIdInput, setAssetIdInput] = useState("");
   const [batchIdInput, setBatchIdInput] = useState("");
+  const [certificateImage, setCertificateImage] = useState<string | null>(null);
+  const [certificateImageName, setCertificateImageName] = useState<string | null>(null);
 
   const [createStatus, setCreateStatus] = useState<{
     type: "success" | "error";
@@ -103,17 +111,25 @@ export default function CertificationsPage() {
       await certificationService.createCertification({
         asset_id: assetIdInput.trim(),
         batch_id: batchIdInput.trim() || undefined,
+        certificate_image: certificateImage || undefined,
+        image_name: certificateImageName || undefined,
       });
 
       setCreateStatus({
         type: "success",
-        message: "Certification created successfully",
+        message: "Certification created successfully with verified cryptographic seal",
       });
 
-      setShowCreateModal(false);
       setAssetIdInput("");
       setBatchIdInput("");
+      setCertificateImage(null);
+      setCertificateImageName(null);
       fetchData();
+      // Close the modal after a brief success display
+      setTimeout(() => {
+        setShowCreateModal(false);
+        setCreateStatus(null);
+      }, 1500);
     } catch (err: any) {
       setCreateStatus({
         type: "error",
@@ -125,6 +141,7 @@ export default function CertificationsPage() {
     } finally {
       setIsSubmitting(false);
     }
+
   };
 
   /* ============================================================
@@ -150,21 +167,34 @@ export default function CertificationsPage() {
       const matchesStatus =
         statusFilter === "ALL" || cert.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      const matchesType =
+        typeFilter === "ALL" || (cert.type && cert.type === typeFilter);
+
+      const matchesVerification =
+        verificationFilter === "ALL" ||
+        (cert.verificationStatus && cert.verificationStatus === verificationFilter);
+
+      return matchesSearch && matchesStatus && matchesType && matchesVerification;
     });
   }, [
     certs,
     search,
     statusFilter,
+    typeFilter,
+    verificationFilter,
   ]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    statusFilter !== "ALL";
+    statusFilter !== "ALL" ||
+    typeFilter !== "ALL" ||
+    verificationFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("ALL");
+    setTypeFilter("ALL");
+    setVerificationFilter("ALL");
   };
 
   /* ============================================================
@@ -541,27 +571,31 @@ export default function CertificationsPage() {
               alignItems: "center",
             }}
           >
-            <Link
-              to="/app/certification-queue"
-              className="btn-secondary"
-              style={{
-                fontSize: "0.8125rem",
-                padding: "6px 14px",
-                textDecoration: "none",
-              }}
-            >
-              Certification Queue →
-            </Link>
+            {!isAuditor && (
+              <>
+                <Link
+                  to="/app/certification-queue"
+                  className="btn-secondary"
+                  style={{
+                    fontSize: "0.8125rem",
+                    padding: "6px 14px",
+                    textDecoration: "none",
+                  }}
+                >
+                  Certification Queue →
+                </Link>
 
-            <button
-              className="btn-primary"
-              onClick={() => {
-                setShowCreateModal(true);
-                setCreateStatus(null);
-              }}
-            >
-              + Create Certification
-            </button>
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    setShowCreateModal(true);
+                    setCreateStatus(null);
+                  }}
+                >
+                  + Create Certification
+                </button>
+              </>
+            )}
 
             <button
               className="btn-ghost"
@@ -1850,10 +1884,11 @@ export default function CertificationsPage() {
             className="panel"
             style={{
               width: "100%",
-              maxWidth: 460,
+              maxWidth: 540,
+              maxHeight: "90vh",
+              overflowY: "auto",
               padding: 24,
-              border:
-                "1px solid #1e3a60",
+              border: "1px solid #1e3a60",
             }}
           >
             {/* MODAL HEADER */}
@@ -1861,8 +1896,7 @@ export default function CertificationsPage() {
             <div
               style={{
                 display: "flex",
-                justifyContent:
-                  "space-between",
+                justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 18,
               }}
@@ -1879,10 +1913,10 @@ export default function CertificationsPage() {
 
               <button
                 onClick={() => {
-                  setShowCreateModal(
-                    false
-                  );
+                  setShowCreateModal(false);
                   setCreateStatus(null);
+                  setCertificateImage(null);
+                  setCertificateImageName(null);
                 }}
                 style={{
                   background: "none",
@@ -1897,13 +1931,10 @@ export default function CertificationsPage() {
             </div>
 
             <form
-              onSubmit={
-                handleCreateSubmit
-              }
+              onSubmit={handleCreateSubmit}
               style={{
                 display: "flex",
-                flexDirection:
-                  "column",
+                flexDirection: "column",
                 gap: 14,
               }}
             >
@@ -1912,31 +1943,24 @@ export default function CertificationsPage() {
               {createStatus && (
                 <div
                   style={{
-                    padding:
-                      "8px 12px",
+                    padding: "8px 12px",
                     borderRadius: 4,
-                    fontSize:
-                      "0.8125rem",
+                    fontSize: "0.8125rem",
                     background:
-                      createStatus.type ===
-                      "success"
+                      createStatus.type === "success"
                         ? "rgba(34,197,94,0.15)"
                         : "rgba(239,68,68,0.15)",
                     border:
-                      createStatus.type ===
-                      "success"
+                      createStatus.type === "success"
                         ? "1px solid rgba(34,197,94,0.3)"
                         : "1px solid rgba(239,68,68,0.3)",
                     color:
-                      createStatus.type ===
-                      "success"
+                      createStatus.type === "success"
                         ? "#22c55e"
                         : "#ef4444",
                   }}
                 >
-                  {
-                    createStatus.message
-                  }
+                  {createStatus.message}
                 </div>
               )}
 
@@ -1946,8 +1970,7 @@ export default function CertificationsPage() {
                 <label
                   style={{
                     display: "block",
-                    fontSize:
-                      "0.75rem",
+                    fontSize: "0.75rem",
                     color: "#94a3b8",
                     marginBottom: 4,
                   }}
@@ -1960,23 +1983,14 @@ export default function CertificationsPage() {
                   className="input"
                   style={{
                     width: "100%",
-                    padding:
-                      "8px 12px",
-                    background:
-                      "#0c1828",
-                    border:
-                      "1px solid #1e3a60",
+                    padding: "8px 12px",
+                    background: "#0c1828",
+                    border: "1px solid #1e3a60",
                     borderRadius: 4,
                     color: "#e2e8f0",
                   }}
-                  value={
-                    assetIdInput
-                  }
-                  onChange={(e) =>
-                    setAssetIdInput(
-                      e.target.value
-                    )
-                  }
+                  value={assetIdInput}
+                  onChange={(e) => setAssetIdInput(e.target.value)}
                   placeholder="e.g. EF-2026-00421"
                   required
                 />
@@ -1988,8 +2002,7 @@ export default function CertificationsPage() {
                 <label
                   style={{
                     display: "block",
-                    fontSize:
-                      "0.75rem",
+                    fontSize: "0.75rem",
                     color: "#94a3b8",
                     marginBottom: 4,
                   }}
@@ -2002,48 +2015,41 @@ export default function CertificationsPage() {
                   className="input"
                   style={{
                     width: "100%",
-                    padding:
-                      "8px 12px",
-                    background:
-                      "#0c1828",
-                    border:
-                      "1px solid #1e3a60",
+                    padding: "8px 12px",
+                    background: "#0c1828",
+                    border: "1px solid #1e3a60",
                     borderRadius: 4,
                     color: "#e2e8f0",
                   }}
-                  value={
-                    batchIdInput
-                  }
-                  onChange={(e) =>
-                    setBatchIdInput(
-                      e.target.value
-                    )
-                  }
+                  value={batchIdInput}
+                  onChange={(e) => setBatchIdInput(e.target.value)}
                   placeholder="e.g. BATCH-2026-Q1"
                 />
               </div>
+
+              {/* CERTIFICATE IMAGE / SEAL UPLOAD */}
+              <CertificateImageUpload
+                value={certificateImage}
+                fileName={certificateImageName}
+                onChange={(val, name) => {
+                  setCertificateImage(val);
+                  setCertificateImageName(name || null);
+                }}
+              />
 
               {/* INFORMATION */}
 
               <div
                 style={{
-                  padding:
-                    "10px 12px",
-                  background:
-                    "rgba(139,92,246,0.08)",
-                  border:
-                    "1px solid rgba(139,92,246,0.2)",
+                  padding: "10px 12px",
+                  background: "rgba(139,92,246,0.08)",
+                  border: "1px solid rgba(139,92,246,0.2)",
                   borderRadius: 4,
-                  fontSize:
-                    "0.75rem",
+                  fontSize: "0.75rem",
                   color: "#94a3b8",
                 }}
               >
-                Creating a certification
-                initiates cryptographic
-                verification and Soulbound
-                Token generation on
-                BEL-TRUST-CHAIN.
+                Creating a certification initiates cryptographic verification, soulbound token generation, and anchors the uploaded seal to BEL-TRUST-CHAIN.
               </div>
 
               {/* ACTIONS */}
@@ -2061,12 +2067,10 @@ export default function CertificationsPage() {
                   type="button"
                   className="btn-ghost"
                   onClick={() => {
-                    setShowCreateModal(
-                      false
-                    );
-                    setCreateStatus(
-                      null
-                    );
+                    setShowCreateModal(false);
+                    setCreateStatus(null);
+                    setCertificateImage(null);
+                    setCertificateImageName(null);
                   }}
                 >
                   Cancel

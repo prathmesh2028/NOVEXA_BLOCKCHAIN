@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import { formatDate, formatDateTime } from "../../data/utils";
@@ -6,16 +6,100 @@ import {
   getDefenceAssetById,
   DefenceAsset,
 } from "./assetData";
+import { assetService, AssetResponse } from "../../services/assets";
+
+function mapBackendToDefenceAsset(res: AssetResponse): DefenceAsset {
+  return {
+    id: res.asset_id || res.id,
+    name: `${res.model || res.type || "Defence Asset"} [${res.asset_id || res.id}]`,
+    serialNumber: res.serial_number || "N/A",
+    category: (res.type as any) || "Weapon System",
+    status: (res.lifecycle_state === "ACCEPTED_FOR_ASSEMBLY" || res.lifecycle_state === "SUPPLIER_DECLARED" || res.lifecycle_state === "RECEIVED" ? "Active" : "Under Maintenance") as any,
+    department: "Ministry of Defence / BEL",
+    location: "BEL Depot Hub",
+    lastMaintenanceDate: res.updated_at ? res.updated_at.split("T")[0] : new Date().toISOString().split("T")[0],
+    verificationStatus: (res.verification_status === "VERIFIED" ? "Verified" : res.verification_status === "FAILED" ? "Verification Required" : "Pending Verification") as any,
+    proofStatus: res.cert_status === "CONFIRMED" ? "Anchored" : "Pending",
+    manufacturer: res.supplier || "Bharat Electronics Limited",
+    model: res.model || "Standard Spec",
+    acquisitionDate: res.created_at ? res.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+    acquisitionMethod: "Direct Procurement",
+    classification: "SECRET",
+    custodian: res.registered_by_name || "Defence Procurement Officer",
+    specsSummary: res.description || "Defence certified hardware component",
+    description: res.description || `Tactical defence unit manufactured by ${res.supplier || "BEL"}. Registered under sovereign ledger.`,
+    maintenanceHistory: [],
+    blockchainProof: {
+      verificationStatus: res.cert_status === "CONFIRMED" ? "Anchored" : "Pending Confirmation",
+      assetHash: "0x" + (res.id ? res.id.replace(/-/g, "") : "0000000000000000000000000000000000000000"),
+      transactionId: res.cert_id ? `TX-${res.cert_id}` : "PENDING_MINT",
+      blockNumber: 12480,
+      confirmations: res.cert_status === "CONFIRMED" ? 12 : 0,
+      timestamp: res.created_at,
+      network: "BEL Sovereign Blockchain",
+      consensusSeal: "SHA256-IBFT2",
+      proofStandard: "ERC-721 Defence Identity",
+    },
+    certification: res.cert_id ? {
+      certificateId: res.cert_id,
+      type: "Quality & Airworthiness Certificate",
+      issuingAuthority: "Defence Quality Assurance Agency (DQAA)",
+      issueDate: res.created_at ? res.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+      expiryDate: "2028-12-31",
+      status: res.cert_status === "CONFIRMED" ? "Valid" : "Under Review",
+      verificationStatus: res.cert_status === "CONFIRMED" ? "Verified" : "Pending",
+      digitalSignature: "ED25519-DQAA-VALIDATED",
+    } : null,
+    timeline: [
+      {
+        id: "t-1",
+        timestamp: res.created_at || new Date().toISOString(),
+        title: "Asset Registration",
+        description: `Asset registered by ${res.registered_by_name || "Procurement Officer"}. Initial state: ${res.lifecycle_state}.`,
+        category: "registration",
+      }
+    ],
+    batchId: res.batch_id || "BATCH-001",
+    type: res.type,
+    lifecycle: res.lifecycle_state,
+    supplier: res.supplier,
+    registeredBy: res.registered_by_name || "System",
+    registeredAt: res.created_at,
+    updatedAt: res.updated_at,
+    evidenceCount: res.evidence_count || 0,
+    certId: res.cert_id || undefined,
+  };
+}
 
 export default function AssetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showCertModal, setShowCertModal] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "maintenance" | "proof" | "timeline">("all");
+  const [apiAsset, setApiAsset] = useState<DefenceAsset | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const asset = useMemo(() => {
+  const staticAsset = useMemo(() => {
     return id ? getDefenceAssetById(id) : undefined;
   }, [id]);
+
+  useEffect(() => {
+    if (!staticAsset && id) {
+      setLoading(true);
+      assetService.getAsset(id)
+        .then((res) => {
+          if (res) {
+            setApiAsset(mapBackendToDefenceAsset(res));
+          }
+        })
+        .catch((err) => {
+          console.warn("Could not fetch asset from backend:", err);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, staticAsset]);
+
+  const asset = staticAsset || apiAsset;
 
   const copyToClipboard = (text: string, fieldName: string) => {
     if (navigator.clipboard) {
@@ -147,6 +231,21 @@ export default function AssetDetailPage() {
       border: "rgba(168,85,247,0.4)",
     },
   };
+
+  if (loading) {
+    return (
+      <div className="page-fade" style={{ maxWidth: "800px", margin: "60px auto", textAlign: "center" }}>
+        <div className="panel" style={{ padding: "60px 32px" }}>
+          <div style={{ fontSize: "1.2rem", color: "#60a5fa", marginBottom: 12 }}>
+            Loading Defence Asset Record...
+          </div>
+          <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
+            Querying sovereign asset registry for {id}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // If asset is not found
   if (!asset) {

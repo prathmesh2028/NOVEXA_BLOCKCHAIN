@@ -74,7 +74,17 @@ export class EvidenceService {
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
-    if (params.asset_id) where.assetId = params.asset_id;
+    let targetAssetId = params.asset_id;
+    if (params.asset_id) {
+      const foundAsset = await this.prisma.asset.findFirst({
+        where: { OR: [{ id: params.asset_id }, { assetId: params.asset_id }] },
+        select: { id: true },
+      });
+      if (foundAsset) {
+        targetAssetId = foundAsset.id;
+      }
+      where.assetId = targetAssetId;
+    }
     if (params.event_type) where.event = params.event_type;
 
     if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
@@ -89,8 +99,8 @@ export class EvidenceService {
           select: { id: true },
         });
         // If an asset filter is already provided, ensure it's in the allowed list
-        if (params.asset_id) {
-          if (!assets.some(a => a.id === params.asset_id)) {
+        if (targetAssetId) {
+          if (!assets.some(a => a.id === targetAssetId)) {
              where.assetId = 'NOT_FOUND_NO_ACCESS'; 
           }
         } else {

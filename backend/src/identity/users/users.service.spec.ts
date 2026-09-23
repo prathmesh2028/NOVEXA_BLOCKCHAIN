@@ -36,18 +36,18 @@ describe('UsersService', () => {
         name: 'Tech User',
         status: 'PENDING',
         createdAt: new Date('2026-01-01'),
-        roles: [{ role: AppRole.TECHNICIAN }],
+        roles: [{ role: AppRole.QUALITY_INSPECTOR }],
       };
       mockPrisma.user.create.mockResolvedValue(mockUser);
 
       const result = await service.inviteUser({
         email: 'tech@example.com',
         name: 'Tech User',
-        role: AppRole.TECHNICIAN,
+        role: AppRole.QUALITY_INSPECTOR,
       });
 
       expect(result.email).toBe('tech@example.com');
-      expect(result.roles).toContain(AppRole.TECHNICIAN);
+      expect(result.roles).toContain(AppRole.QUALITY_INSPECTOR);
       expect(result.status).toBe('PENDING');
     });
 
@@ -81,7 +81,7 @@ describe('UsersService', () => {
         service.inviteUser({
           email: 'offline@example.com',
           name: 'Offline User',
-          role: AppRole.NFT_CREATOR,
+          role: AppRole.QUALITY_INSPECTOR,
         }),
       ).rejects.toThrow('Connection refused');
     });
