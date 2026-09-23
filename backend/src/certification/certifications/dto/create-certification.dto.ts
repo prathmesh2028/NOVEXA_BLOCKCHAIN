@@ -2,6 +2,7 @@ import { IsString, IsOptional } from 'class-validator';
 
 export class CreateCertificationDto {
   @IsString()
+  @IsUUID()
   asset_id!: string;
 
   @IsString()
