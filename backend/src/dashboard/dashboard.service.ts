@@ -45,7 +45,28 @@ export class DashboardService {
         failed_verifications: failedVerifications,
       };
     } catch (e: any) {
-      this.logger.error(`Database failure in getMetrics: ${e.message}`, e.stack);
+      this.logger.warn(`Database unreachable in getSummary: ${e.message}. Returning demo dashboard summary.`);
+      if (process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo' || process.env.NODE_ENV === 'development') {
+        return {
+          total_assets: 48,
+          active_users: 12,
+          pending_users: 3,
+          total_certifications: 35,
+          pending_certifications: 4,
+          confirmed_certifications: 31,
+          total_blockchain_txs: 142,
+          total_audit_events: 289,
+          lifecycle_breakdown: {
+            UNREGISTERED: 2,
+            SUPPLIER_DECLARED: 6,
+            RECEIVED: 8,
+            INSPECTION_RECORDED: 14,
+            ACCEPTED_FOR_ASSEMBLY: 16,
+            REJECTED_QUARANTINED: 2,
+          },
+          failed_verifications: 2,
+        };
+      }
       throw e;
     }
   }

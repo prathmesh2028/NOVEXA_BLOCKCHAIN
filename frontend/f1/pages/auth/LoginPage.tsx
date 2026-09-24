@@ -3,12 +3,8 @@ import { useNavigate, Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import "./LoginPage.css";
 
-// Photorealistic 3D Defence Assets (Cool Blue / Cyan Palette)
+// Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
 import earthPanoramicImg from "./assets/earth_panoramic.jpg";
-import satelliteImg from "./assets/satellite_3d.png";
-import fighterImg from "./assets/fighter_3d.png";
-import fighterEscortImg from "./assets/fighter_escort_3d.png";
-import navalShipImg from "./assets/naval_ship_3d.png";
 
 interface DemoAccount {
   id: string;
@@ -115,9 +111,9 @@ export default function LoginPage() {
       {/* ─── TOP BAR: BRANDING & KAVACH ACCESS ─── */}
       <header className="cmd-topbar">
         <Link to="/" className="cmd-brand-group">
-          <div className="cmd-brand-icon">NX</div>
+          <div className="cmd-brand-icon">BEL</div>
           <div className="cmd-brand-text">
-            <span className="cmd-brand-title">NOVEXA</span>
+            <span className="cmd-brand-title">BEL</span>
             <span className="cmd-brand-subtitle">DEFENCE TRUST</span>
           </div>
         </Link>
@@ -294,87 +290,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 2. Communication Satellite Layer (Upper Left) */}
-          <div
-            className="satellite-pos-wrapper"
-            style={{ transform: "translate(calc(var(--mouse-x, 0) * 9px), calc(var(--mouse-y, 0) * 9px))" }}
-          >
-            <div className="satellite-unit">
-              {/* Soft, Thin, Semi-transparent Conical Beam Pulsing towards Earth */}
-              <div className="satellite-beam" />
-
-              {/* 3D Rendered Satellite */}
-              <img
-                src={satelliteImg}
-                alt="Defence Communication Satellite"
-                className="satellite-img-3d"
-              />
-            </div>
-          </div>
-
-          {/* 3. Stealth Fighter Aircraft Layer (Upper Right) */}
-          <div
-            className="fighter-pos-wrapper"
-            style={{ transform: "translate(calc(var(--mouse-x, 0) * 11px), calc(var(--mouse-y, 0) * 11px))" }}
-          >
-            <div className="fighter-unit">
-              <div className="fighter-contrail contrail-left" />
-              <div className="fighter-contrail contrail-right" />
-
-              {/* 3D Rendered Stealth Fighter */}
-              <img
-                src={fighterImg}
-                alt="5th Gen Air Superiority Fighter"
-                className="fighter-img-3d"
-              />
-            </div>
-          </div>
-
-          {/* Trailing Escort Wingman Fighter */}
-          <div
-            className="wingman-pos-wrapper"
-            style={{ transform: "translate(calc(var(--mouse-x, 0) * 10px), calc(var(--mouse-y, 0) * 10px))" }}
-          >
-            <div className="wingman-unit">
-              <img
-                src={fighterEscortImg}
-                alt="Wingman Escort Fighter"
-                className="wingman-img-3d"
-              />
-            </div>
-          </div>
-
-          {/* 4. Naval Guided Missile Destroyer Layer (Lower Left Water) */}
-          <div
-            className="naval-pos-wrapper"
-            style={{ transform: "translate(calc(var(--mouse-x, 0) * 7px), calc(var(--mouse-y, 0) * 7px))" }}
-          >
-            <div className="naval-unit">
-              <div className="naval-water-wake" />
-              <div className="naval-radar-ping" />
-
-              {/* 3D Rendered Guided Missile Destroyer */}
-              <img
-                src={navalShipImg}
-                alt="Guided Missile Destroyer Warship"
-                className="naval-ship-img-3d"
-              />
-            </div>
-          </div>
-
-          {/* 4 Operational Tactical Badges (Clean & Focused) */}
-          <div className="cmd-node-badge node-satellite">
-            <div className="cmd-node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-            </div>
-            <div className="cmd-node-text-group">
-              <span className="cmd-node-title">SATELLITE MONITORING</span>
-              <span className="cmd-node-sub">GLOBAL COVERAGE</span>
-            </div>
-          </div>
-
+          {/* Secure Network Node Badge (Preserved) */}
           <div className="cmd-node-badge node-comm">
             <div className="cmd-node-icon">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -385,32 +301,6 @@ export default function LoginPage() {
             <div className="cmd-node-text-group">
               <span className="cmd-node-title">SECURE COMMUNICATION</span>
               <span className="cmd-node-sub">ENCRYPTED NETWORK</span>
-            </div>
-          </div>
-
-          <div className="cmd-node-badge node-air">
-            <div className="cmd-node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 19 21 12 17 5 21 12 2" />
-              </svg>
-            </div>
-            <div className="cmd-node-text-group">
-              <span className="cmd-node-title">AIR DEFENCE</span>
-              <span className="cmd-node-sub">MISSION READY</span>
-            </div>
-          </div>
-
-          <div className="cmd-node-badge node-naval">
-            <div className="cmd-node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="5" r="3" />
-                <line x1="12" y1="22" x2="12" y2="8" />
-                <path d="M5 12H2a10 10 0 0 0 20 0h-3" />
-              </svg>
-            </div>
-            <div className="cmd-node-text-group">
-              <span className="cmd-node-title">NAVAL OPERATIONS</span>
-              <span className="cmd-node-sub">MARITIME SECURITY</span>
             </div>
           </div>
         </div>
@@ -426,9 +316,9 @@ export default function LoginPage() {
 
             {/* Console Lockup */}
             <div className="console-header-lockup">
-              <div className="console-nx-mini">NX</div>
+              <div className="console-nx-mini">BEL</div>
               <div className="console-header-text">
-                <span className="console-header-title">NOVEXA DEFENCE TRUST</span>
+                <span className="console-header-title">BEL DEFENCE TRUST</span>
                 <span className="console-header-sub">KAVACH TRUST PLATFORM • SECURE ACCESS</span>
               </div>
             </div>

@@ -1,7 +1,7 @@
 /* ============================================================
-   NOVEXA DEFENCE TRUST — CINEMATIC DEFENCE COMMAND LOGIN
+   BEL DEFENCE TRUST — CINEMATIC DEFENCE COMMAND LOGIN
    Reference-Accurate 3D Defence Command Interface (Cool Blue Palette)
-   Layers: Earth + Satellite + Fighter + Naval Ship + Console
+   Layers: Earth + Console
    ============================================================ */
 
 /* ----- Core Variables (Pure Cool Palette: Deep Navy, Cyan, Blue, White) ----- */
@@ -148,7 +148,7 @@
   justify-content: center;
   font-family: var(--cmd-font-display);
   font-weight: 900;
-  font-size: 1.15rem;
+  font-size: 1rem;
   letter-spacing: 0.05em;
   color: #ffffff;
 }
@@ -527,198 +527,7 @@
   box-shadow: 0 0 10px var(--cmd-cyan), 0 0 20px var(--cmd-cyan);
 }
 
-/* ─── 3. SATELLITE (UPPER LEFT ABOVE EARTH) ─── */
-.satellite-pos-wrapper {
-  position: absolute;
-  top: 25px;
-  left: 200px;
-  pointer-events: none;
-  will-change: transform;
-  z-index: 4;
-}
-
-.satellite-unit {
-  position: relative;
-  width: 250px;
-  height: 180px;
-  animation: satelliteOrbitMotion 26s ease-in-out infinite alternate;
-}
-
-@keyframes satelliteOrbitMotion {
-  0% { transform: translate(0, 0) rotate(-6deg); }
-  50% { transform: translate(20px, -12px) rotate(2deg); }
-  100% { transform: translate(-14px, 10px) rotate(-8deg); }
-}
-
-.satellite-img-3d {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
-}
-
-/* Soft, Thin, Semi-transparent Conical Beam */
-.satellite-beam {
-  position: absolute;
-  top: 95px;
-  left: 120px;
-  width: 200px;
-  height: 330px;
-  background: linear-gradient(145deg, rgba(0, 229, 255, 0.45) 0%, rgba(0, 229, 255, 0.08) 55%, transparent 100%);
-  clip-path: polygon(48% 0%, 52% 0%, 100% 100%, 0% 100%);
-  filter: blur(3px);
-  pointer-events: none;
-  animation: commBeamPulse 3.5s ease-in-out infinite alternate;
-  transform-origin: top center;
-}
-
-@keyframes commBeamPulse {
-  0% { opacity: 0.3; transform: scaleX(0.85); }
-  100% { opacity: 0.75; transform: scaleX(1.15); }
-}
-
-/* ─── 4. FIGHTER AIRCRAFT (UPPER RIGHT BESIDE LOGIN CARD) ─── */
-.fighter-pos-wrapper {
-  position: absolute;
-  top: 70px;
-  left: 720px;
-  pointer-events: none;
-  will-change: transform;
-  z-index: 4;
-}
-
-.fighter-unit {
-  position: relative;
-  width: 210px;
-  height: 180px;
-  animation: fighterFlightLoop 22s ease-in-out infinite alternate;
-}
-
-@keyframes fighterFlightLoop {
-  0% { transform: translate(0, 0) rotate(6deg) scale(0.96); }
-  50% { transform: translate(22px, -14px) rotate(10deg) scale(1.02); }
-  100% { transform: translate(-14px, 10px) rotate(4deg) scale(0.94); }
-}
-
-.fighter-img-3d {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.55));
-}
-
-.fighter-contrail {
-  position: absolute;
-  width: 110px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.45) 100%);
-  border-radius: 2px;
-  filter: blur(1.5px);
-}
-
-.contrail-left {
-  top: 145px;
-  left: 10px;
-  transform: rotate(-35deg);
-}
-
-.contrail-right {
-  top: 125px;
-  left: -15px;
-  transform: rotate(-35deg);
-}
-
-.wingman-pos-wrapper {
-  position: absolute;
-  top: 190px;
-  left: 780px;
-  pointer-events: none;
-  will-change: transform;
-  z-index: 3;
-}
-
-.wingman-unit {
-  position: relative;
-  width: 100px;
-  opacity: 0.7;
-  animation: wingmanFollow 22s ease-in-out infinite alternate;
-}
-
-@keyframes wingmanFollow {
-  0% { transform: translate(0, 0) rotate(8deg); }
-  50% { transform: translate(20px, -10px) rotate(12deg); }
-  100% { transform: translate(-10px, 8px) rotate(6deg); }
-}
-
-.wingman-img-3d {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.3));
-}
-
-/* ─── 5. NAVAL DESTROYER (LOWER LEFT ON WATER) ─── */
-.naval-pos-wrapper {
-  position: absolute;
-  bottom: 75px;
-  left: 100px;
-  pointer-events: none;
-  will-change: transform;
-  z-index: 4;
-}
-
-.naval-unit {
-  position: relative;
-  width: 420px;
-  animation: navalDrift 30s ease-in-out infinite alternate;
-}
-
-@keyframes navalDrift {
-  0% { transform: translate(0, 0) rotate(-0.5deg); }
-  50% { transform: translate(16px, -4px) rotate(0.5deg); }
-  100% { transform: translate(-10px, 3px) rotate(-1deg); }
-}
-
-.naval-ship-img-3d {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 16px rgba(0, 229, 255, 0.3));
-}
-
-.naval-water-wake {
-  position: absolute;
-  bottom: 15px;
-  left: -20px;
-  width: 430px;
-  height: 22px;
-  background: radial-gradient(ellipse at 50% 50%, rgba(0, 229, 255, 0.45) 0%, rgba(37, 99, 235, 0.2) 50%, transparent 80%);
-  filter: blur(5px);
-  animation: wakeShimmer 4s ease-in-out infinite alternate;
-}
-
-@keyframes wakeShimmer {
-  0% { opacity: 0.5; transform: scaleX(0.95); }
-  100% { opacity: 0.9; transform: scaleX(1.05); }
-}
-
-.naval-radar-ping {
-  position: absolute;
-  top: 25px;
-  left: 200px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 229, 255, 0.5);
-  animation: radarPing 4s ease-out infinite;
-}
-
-@keyframes radarPing {
-  0% { transform: scale(0.2); opacity: 1; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-
-/* ─── 6. DEFENCE NETWORK NODES & CALLOUT BADGES ─── */
+/* ─── 3. DEFENCE NETWORK NODES & CALLOUT BADGES ─── */
 .cmd-node-badge {
   position: absolute;
   display: flex;
@@ -777,11 +586,8 @@
   text-transform: uppercase;
 }
 
-/* Exact Reference Positions */
-.node-satellite { top: 105px; left: 480px; }
+/* Exact Reference Position */
 .node-comm { top: 250px; left: 340px; }
-.node-air { top: 75px; left: 780px; }
-.node-naval { bottom: 145px; left: 360px; }
 
 /* ============================================================
    RIGHT: STABLE LOGIN CONSOLE (0PX PARALLAX)
@@ -882,7 +688,7 @@
   justify-content: center;
   font-family: var(--cmd-font-display);
   font-weight: 900;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   color: #ffffff;
 }
 

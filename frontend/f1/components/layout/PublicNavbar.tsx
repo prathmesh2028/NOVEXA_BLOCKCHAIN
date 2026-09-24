@@ -17,14 +17,14 @@ export default function PublicNavbar() {
   }, []);
 
   const displayUser = user || {
-    name: "Deepa Nair",
-    email: "d.nair@bel-defence.in",
+    name: "Arjun Mehta",
+    email: "a.mehta@bel-defence.in",
   };
-  const displayRole = role || "auditor";
+  const displayRole = role || "system-admin";
   const roleColor = getRoleColor(displayRole as any);
 
   const NAV_ITEMS = [
-    { label: "Platform", to: "/app/dashboard" },
+    { label: "Dashboard", to: "/app/dashboard" },
     { label: "Assets", to: "/app/assets" },
     { label: "Certifications", to: "/app/certifications" },
     { label: "Blockchain", to: "/app/blockchain" },
