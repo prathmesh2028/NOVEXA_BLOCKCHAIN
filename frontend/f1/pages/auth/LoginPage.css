@@ -1,1642 +1,1491 @@
 /* ============================================================
-   NOVEXA SECURE DEFENCE ACCESS — Login Page Styles
-   Synthetic Demonstration Platform — SIH 2026
-   Visual Theme: Advanced Defence Trust System Coming Online
+   NOVEXA DEFENCE TRUST — CINEMATIC DEFENCE COMMAND LOGIN
+   Reference-Accurate 3D Defence Command Interface (Cool Blue Palette)
+   Layers: Earth + Satellite + Fighter + Naval Ship + Console
    ============================================================ */
 
-/* ----- CSS Custom Properties ----- */
+/* ----- Core Variables (Pure Cool Palette: Deep Navy, Cyan, Blue, White) ----- */
 :root {
-  --login-navy: #060d1a;
-  --login-surface: #0a1628;
-  --login-elevated: #0e1e36;
-  --login-border: #1a3152;
-  --login-border-subtle: #132844;
-  --login-primary: #2563eb;
-  --login-primary-hover: #1d4ed8;
-  --login-accent: #3b82f6;
-  --login-accent-glow: rgba(37, 99, 235, 0.25);
-  --login-ink: #e2e8f0;
-  --login-ink-2: #94a3b8;
-  --login-ink-3: #64748b;
-  --login-ink-4: #475569;
-  --login-steel: #4a6a8a;
-  --login-card-bg: rgba(10, 22, 40, 0.88);
-  --login-emerald: #22c55e;
+  --cmd-bg-deep: #01040a;
+  --cmd-bg-navy: #030816;
+  --cmd-cyan: #00e5ff;
+  --cmd-cyan-glow: rgba(0, 229, 255, 0.45);
+  --cmd-blue: #1d4ed8;
+  --cmd-blue-bright: #2563eb;
+  --cmd-blue-glow: rgba(37, 99, 235, 0.35);
+  --cmd-emerald: #10b981;
+  --cmd-card-bg: rgba(5, 14, 32, 0.9);
+  --cmd-card-border: rgba(0, 229, 255, 0.35);
+  --cmd-text-white: #f8fafc;
+  --cmd-text-muted: #94a3b8;
+  --cmd-text-dim: #64748b;
+  --cmd-font-display: 'Barlow Condensed', sans-serif;
+  --cmd-font-body: 'Inter', system-ui, sans-serif;
+  --cmd-font-mono: 'JetBrains Mono', monospace;
 }
 
-/* ----- Page Container ----- */
+/* ============================================================
+   PAGE CONTAINER & FULLSCREEN COMPOSITION
+   ============================================================ */
 .login-page {
-  min-height: 100vh;
-  display: flex;
-  background: var(--login-navy);
   position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 800px;
+  background-color: var(--cmd-bg-deep);
+  color: var(--cmd-text-white);
+  font-family: var(--cmd-font-body);
   overflow: hidden;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: var(--login-ink);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
 }
 
-/* =========================================================
-   CINEMATIC BACKGROUND — Staged 0ms
-   ========================================================= */
-.login-bg {
+/* ============================================================
+   ATMOSPHERIC BACKGROUND (COOL PALETTE ONLY - ZERO ORANGE)
+   ============================================================ */
+.cmd-background-layer {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   z-index: 0;
   overflow: hidden;
+}
+
+/* Deep Space Void & Cool Blue Nebulae */
+.cmd-space-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 46% 45%, rgba(14, 40, 90, 0.5) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 20% 20%, rgba(30, 80, 200, 0.18) 0%, transparent 60%),
+    linear-gradient(180deg, #010308 0%, #020714 35%, #040e22 65%, #05122a 100%);
+}
+
+/* Cool Blue / Cyan Atmospheric Nebula Glow (Replacing all orange) */
+.cmd-cyan-nebula-glow {
+  position: absolute;
+  bottom: 10%;
+  left: 42%;
+  width: 720px;
+  height: 300px;
+  background: radial-gradient(ellipse at 50% 65%, rgba(0, 200, 255, 0.12) 0%, rgba(10, 35, 85, 0.22) 50%, transparent 75%);
+  filter: blur(52px);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Lower Ocean Water Depth Gradient */
+.cmd-ocean-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  height: 38%;
+  background: linear-gradient(180deg, transparent 0%, rgba(4, 18, 42, 0.5) 40%, rgba(1, 6, 18, 0.98) 100%);
   pointer-events: none;
 }
 
-/* Atmospheric gradient motion */
-.login-bg::before {
-  content: '';
-  position: absolute;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(ellipse at 30% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-              radial-gradient(ellipse at 50% 80%, rgba(30, 58, 96, 0.06) 0%, transparent 50%),
-              radial-gradient(ellipse at 15% 15%, rgba(37, 99, 235, 0.04) 0%, transparent 55%);
-  animation: bgDrift 24s ease-in-out infinite alternate;
-}
-
-/* Soft ambient light sweep */
-.login-bg::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.025), transparent);
-  animation: lightSweep 16s ease-in-out infinite;
-}
-
-@keyframes bgDrift {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-2%, 2%) scale(1.02); }
-  100% { transform: translate(2%, -1%) scale(1.01); }
-}
-
-@keyframes lightSweep {
-  0% { left: -60%; }
-  100% { left: 120%; }
-}
-
-/* Technical grid overlay */
-.login-grid-overlay {
+/* Faint Background Stars */
+.cmd-stars-canvas {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(37, 99, 235, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.025) 1px, transparent 1px);
-  background-size: 55px 55px;
-  opacity: 0;
-  animation: gridFadeIn 1s ease-out 0.1s forwards, gridShift 45s linear infinite;
+    radial-gradient(1.2px 1.2px at 12% 16%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1.8px 1.8px at 24% 10%, rgba(0, 229, 255, 0.95), transparent),
+    radial-gradient(1px 1px at 38% 6%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.2px 1.2px at 62% 12%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.8px 1.8px at 75% 18%, rgba(96, 165, 250, 0.9), transparent),
+    radial-gradient(1px 1px at 88% 8%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 15% 42%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.2px 1.2px at 30% 35%, rgba(0, 229, 255, 0.75), transparent),
+    radial-gradient(1.8px 1.8px at 5% 70%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 35% 82%, rgba(255, 255, 255, 0.6), transparent);
+  opacity: 0.8;
 }
 
-@keyframes gridFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes gridShift {
-  0% { background-position: 0 0; }
-  100% { background-position: 55px 55px; }
-}
-
-/* Faint CRT-style technical scanline */
-.login-scanline {
+/* Tactical Grid Overlay */
+.cmd-grid-overlay {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(37, 99, 235, 0.009) 3px,
-    rgba(37, 99, 235, 0.009) 4px
-  );
-  pointer-events: none;
-  animation: scanlineMove 6s linear infinite;
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+  background-size: 64px 64px;
 }
 
-@keyframes scanlineMove {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(4px); }
+/* ============================================================
+   TOP BAR: BRANDING & KAVACH PLATFORM TELEMETRY
+   ============================================================ */
+.cmd-topbar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 36px 10px 36px;
+  box-sizing: border-box;
 }
 
-/* =========================================================
-   SPLIT LAYOUT
-   ========================================================= */
-.login-visual-side {
+.cmd-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cmd-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+  border: 1px solid rgba(0, 229, 255, 0.55);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cmd-font-display);
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+}
+
+.cmd-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmd-brand-title {
+  font-family: var(--cmd-font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.cmd-brand-subtitle {
+  font-family: var(--cmd-font-mono);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: var(--cmd-cyan);
+  text-transform: uppercase;
+}
+
+.cmd-top-telemetry {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--cmd-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--cmd-text-muted);
+}
+
+.cmd-telemetry-line {
+  width: 90px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.6) 50%, var(--cmd-cyan) 100%);
+}
+
+/* ============================================================
+   MAIN LAYOUT (HERO LEFT + CENTER 3D SCENE + RIGHT CONSOLE)
+   ============================================================ */
+.cmd-main-layout {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-  padding: 40px;
-  min-height: 100vh;
+  justify-content: space-between;
+  padding: 0 36px;
+  box-sizing: border-box;
+  z-index: 10;
 }
 
-.login-form-side {
-  flex: 0 0 520px;
+/* ============================================================
+   LEFT: HERO HEADLINE & FEATURE BLOCKS
+   ============================================================ */
+.cmd-hero-column {
+  position: relative;
+  z-index: 15;
+  width: 330px;
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  pointer-events: auto;
+}
+
+.cmd-headline-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmd-headline-secure {
+  font-family: var(--cmd-font-display);
+  font-weight: 800;
+  font-size: 2.85rem;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.cmd-headline-defence {
+  font-family: var(--cmd-font-display);
+  font-weight: 800;
+  font-size: 2.85rem;
+  letter-spacing: 0.04em;
+  color: var(--cmd-cyan);
+  text-shadow: 0 0 28px rgba(0, 229, 255, 0.55);
+  line-height: 1.05;
+}
+
+.cmd-headline-sub {
+  font-family: var(--cmd-font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.22em;
+  color: #cbd5e1;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.cmd-headline-desc {
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--cmd-text-muted);
+  max-width: 320px;
+  margin: 0;
+}
+
+/* Left 3 Feature Items */
+.cmd-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cmd-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: rgba(8, 20, 42, 0.55);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+  cursor: default;
+}
+
+.cmd-feature-item:hover {
+  background: rgba(12, 28, 56, 0.8);
+  border-color: rgba(0, 229, 255, 0.5);
+  transform: translateX(4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 229, 255, 0.18);
+}
+
+.cmd-feature-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.22);
+  border: 1px solid rgba(0, 229, 255, 0.38);
+  display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  color: var(--cmd-cyan);
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.cmd-feature-item:hover .cmd-feature-icon-box {
+  background: rgba(37, 99, 235, 0.45);
+  border-color: var(--cmd-cyan);
+  box-shadow: 0 0 16px var(--cmd-cyan);
+}
+
+.cmd-feature-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmd-feature-title {
+  font-family: var(--cmd-font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: #f1f5f9;
+}
+
+.cmd-feature-sub {
+  font-size: 0.72rem;
+  color: var(--cmd-text-muted);
+}
+
+/* ============================================================
+   CENTER CINEMATIC SCENE (CLEAN, UNCLUTTERED 3D LAYERS)
+   ============================================================ */
+.cmd-scene-center {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
   z-index: 2;
-  padding: 40px 48px;
-  min-height: 100vh;
 }
 
-/* Decorative dividing line */
-.login-form-side::before {
-  content: '';
+/* Subtle Cyber Network Arcs SVG */
+.cmd-network-arcs-svg {
   position: absolute;
-  left: 0;
-  top: 12%;
-  bottom: 12%;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, var(--login-border), rgba(37, 99, 235, 0.15), var(--login-border), transparent);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* =========================================================
-   LEFT-SIDE VISUAL — Defence System Coming Online
-   ========================================================= */
+.arc-path {
+  stroke: rgba(0, 229, 255, 0.15);
+  stroke-width: 1px;
+  stroke-dasharray: 4 4;
+}
 
-/* ----- SATELLITE GRID (ORBITAL RINGS) — Staged 350ms ----- */
-.satellite-grid {
+.arc-pulse {
+  stroke: var(--cmd-cyan);
+  stroke-width: 1.8px;
+  stroke-dasharray: 10 160;
+  animation: arcPacketTravel 4.5s linear infinite;
+  filter: drop-shadow(0 0 6px var(--cmd-cyan));
+}
+
+@keyframes arcPacketTravel {
+  0% { stroke-dashoffset: 180; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* ─── 1. HERO EARTH GLOBE CENTERPIECE ─── */
+.earth-pos-wrapper {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.earth-system {
+  position: absolute;
+  top: 48%;
+  left: 45%;
   transform: translate(-50%, -50%);
   width: 480px;
   height: 480px;
   pointer-events: none;
-  opacity: 0;
-  animation: satFadeIn 1s ease-out 0.35s forwards;
 }
 
-@keyframes satFadeIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
-.satellite-orbit {
+.earth-globe {
   position: absolute;
-  border: 1px solid rgba(37, 99, 235, 0.05);
+  inset: 0;
   border-radius: 50%;
-  top: 50%;
-  left: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 0 95px rgba(0, 229, 255, 0.55),
+    0 0 190px rgba(37, 99, 235, 0.35);
 }
 
-.satellite-orbit-1 {
-  width: 115%;
-  height: 75%;
-  transform: translate(-50%, -50%) rotate(-15deg);
-}
-
-.satellite-orbit-2 {
-  width: 130%;
-  height: 55%;
-  transform: translate(-50%, -50%) rotate(25deg);
-  border-style: dashed;
-  border-color: rgba(37, 99, 235, 0.035);
-}
-
-.satellite-orbit-3 {
-  width: 95%;
-  height: 95%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  border-color: rgba(37, 99, 235, 0.045);
-}
-
-/* ----- RADAR ANIMATION — Staged 450ms ----- */
-.radar-container {
-  position: relative;
-  width: 350px;
-  height: 350px;
-  opacity: 0;
-  animation: radarFadeIn 1s ease-out 0.45s forwards;
-}
-
-@keyframes radarFadeIn {
-  from { opacity: 0; transform: scale(0.88); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.radar-ring {
+/* Pulsating Atmospheric Glow Rim */
+.earth-atmosphere {
   position: absolute;
-  border: 1px solid rgba(37, 99, 235, 0.12);
+  inset: -20px;
   border-radius: 50%;
+  background: radial-gradient(circle, transparent 65%, rgba(0, 229, 255, 0.22) 80%, rgba(0, 229, 255, 0.6) 94%, transparent 100%);
+  animation: atmosphereBreathe 5s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes atmosphereBreathe {
+  0% { opacity: 0.7; transform: scale(0.99); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Continuous Rotating World Map - India Centered */
+.earth-texture-rotating {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-size: auto 100%;
+  background-repeat: repeat-x;
+  background-position: -381px 0;
+  animation: earthSpinContinuous 65s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes earthSpinContinuous {
+  0% { background-position-x: -381px; }
+  100% { background-position-x: -1241px; }
+}
+
+/* Photorealistic 3D Spherical Light & Deep Shadow Overlay */
+.earth-spherical-shading {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(0, 229, 255, 0.08) 28%,
+    rgba(2, 16, 50, 0.45) 60%,
+    rgba(1, 5, 18, 0.88) 82%,
+    rgba(0, 2, 8, 0.98) 100%
+  );
+  box-shadow:
+    inset 22px 16px 34px rgba(0, 229, 255, 0.45),
+    inset -36px -28px 65px rgba(0, 0, 0, 0.96);
+  pointer-events: none;
+}
+
+/* Tactical Longitude / Latitude Rings */
+.earth-grid-lines-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Central Floating Glowing 3D "NX" Shield */
+.earth-nx-shield {
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 102px;
+  height: 122px;
+  z-index: 5;
+  filter: drop-shadow(0 0 24px rgba(0, 229, 255, 0.88));
+  animation: shieldPulse 3.5s ease-in-out infinite;
 }
 
-.radar-ring-1 {
-  width: 100%;
-  height: 100%;
-  border-width: 1.5px;
-  border-color: rgba(37, 99, 235, 0.16);
+@keyframes shieldPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.7)); }
+  50% { transform: translate(-50%, -50%) scale(1.06); filter: drop-shadow(0 0 36px rgba(0, 229, 255, 0.98)); }
 }
 
-.radar-ring-2 {
-  width: 72%;
-  height: 72%;
-}
-
-.radar-ring-3 {
-  width: 44%;
-  height: 44%;
-}
-
-.radar-ring-4 {
-  width: 18%;
-  height: 18%;
-  border-color: rgba(37, 99, 235, 0.2);
-}
-
-/* Crosshair axes */
-.radar-cross {
+/* ─── 2. ORBITAL RINGS SYSTEM ─── */
+.orbital-ring {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
-  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.orbital-ring-1 {
+  width: 660px;
+  height: 280px;
+  border: 1.2px solid rgba(0, 229, 255, 0.4);
+  transform: translate(-50%, -50%) rotate(-24deg);
+  animation: orbitRotateClockwise 30s linear infinite;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
+}
+
+.orbital-ring-2 {
+  width: 720px;
+  height: 230px;
+  border: 1px dashed rgba(0, 229, 255, 0.3);
+  transform: translate(-50%, -50%) rotate(34deg);
+  animation: orbitRotateCounter 38s linear infinite;
+}
+
+.orbital-ring-3 {
+  width: 550px;
+  height: 550px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
   transform: translate(-50%, -50%);
 }
 
-.radar-cross::before,
-.radar-cross::after {
-  content: '';
+@keyframes orbitRotateClockwise {
+  from { transform: translate(-50%, -50%) rotate(-24deg); }
+  to { transform: translate(-50%, -50%) rotate(336deg); }
+}
+
+@keyframes orbitRotateCounter {
+  from { transform: translate(-50%, -50%) rotate(34deg); }
+  to { transform: translate(-50%, -50%) rotate(-326deg); }
+}
+
+.orbit-marker {
   position: absolute;
-  background: rgba(37, 99, 235, 0.08);
-}
-
-.radar-cross::before {
-  width: 100%;
-  height: 1px;
-  top: 50%;
-  left: 0;
-}
-
-.radar-cross::after {
-  width: 1px;
-  height: 100%;
-  left: 50%;
-  top: 0;
-}
-
-/* Central point */
-.radar-center {
-  position: absolute;
-  top: 50%;
+  top: -4px;
   left: 50%;
   width: 7px;
   height: 7px;
-  background: var(--login-primary);
   border-radius: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 10px rgba(37, 99, 235, 0.6), 0 0 20px rgba(37, 99, 235, 0.25);
-  z-index: 3;
+  background: #ffffff;
+  box-shadow: 0 0 10px var(--cmd-cyan), 0 0 20px var(--cmd-cyan);
 }
 
-/* Radar central ambient pulse */
-.radar-glow {
+/* ─── 3. SATELLITE (UPPER LEFT ABOVE EARTH) ─── */
+.satellite-pos-wrapper {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 75%;
-  height: 75%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 40%, transparent 70%);
+  top: 25px;
+  left: 200px;
   pointer-events: none;
-  animation: glowPulse 5s ease-in-out infinite;
-}
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-/* Primary Radar Sweep (360° rotation in 6s, linear, infinite) */
-.radar-sweep {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 50%;
-  height: 50%;
-  transform-origin: 0 0;
-  animation: radarSpin 6s linear infinite;
   will-change: transform;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.radar-sweep::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgba(37, 99, 235, 0.22) 6deg,
-    rgba(37, 99, 235, 0.08) 26deg,
-    transparent 50deg
-  );
-  border-radius: 0 100% 0 0;
-}
-
-/* Secondary depth sweep */
-.radar-sweep-2 {
-  animation-delay: -2s;
-}
-
-.radar-sweep-2::before {
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgba(37, 99, 235, 0.08) 4deg,
-    rgba(37, 99, 235, 0.02) 18deg,
-    transparent 35deg
-  );
-}
-
-@keyframes radarSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* 4 Synchronized Detection Points */
-.radar-point {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  background: #60a5fa;
-  border-radius: 50%;
   z-index: 4;
 }
 
-.radar-point::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border: 1px solid rgba(96, 165, 250, 0.4);
-  border-radius: 50%;
-}
-
-/* Point 1: top-right (angle ~45°). Hit at ~0.75s in 6s cycle */
-.radar-point-1 {
-  top: 26%;
-  left: 68%;
-  animation: pointPulse1 6s ease-in-out infinite;
-}
-.radar-point-1::after {
-  animation: pointRing1 6s ease-out infinite;
-}
-
-/* Point 2: bottom-right (angle ~135°). Hit at ~2.25s in 6s cycle */
-.radar-point-2 {
-  top: 70%;
-  left: 66%;
-  animation: pointPulse2 6s ease-in-out infinite;
-}
-.radar-point-2::after {
-  animation: pointRing2 6s ease-out infinite;
-}
-
-/* Point 3: bottom-left (angle ~225°). Hit at ~3.75s in 6s cycle */
-.radar-point-3 {
-  top: 72%;
-  left: 32%;
-  animation: pointPulse3 6s ease-in-out infinite;
-}
-.radar-point-3::after {
-  animation: pointRing3 6s ease-out infinite;
-}
-
-/* Point 4: top-left (angle ~315°). Hit at ~5.25s in 6s cycle */
-.radar-point-4 {
-  top: 28%;
-  left: 30%;
-  animation: pointPulse4 6s ease-in-out infinite;
-}
-.radar-point-4::after {
-  animation: pointRing4 6s ease-out infinite;
-}
-
-/* Radar-synchronized point brightness and expanding rings */
-@keyframes pointPulse1 {
-  0%, 25%, 100% { opacity: 0.25; transform: scale(0.9); }
-  12.5% { opacity: 1; transform: scale(1.3); }
-}
-@keyframes pointRing1 {
-  0%, 25%, 100% { transform: scale(1); opacity: 0; }
-  12.5% { transform: scale(2.4); opacity: 0.6; }
-}
-
-@keyframes pointPulse2 {
-  0%, 15%, 50%, 100% { opacity: 0.25; transform: scale(0.9); }
-  37.5% { opacity: 1; transform: scale(1.3); }
-}
-@keyframes pointRing2 {
-  0%, 15%, 50%, 100% { transform: scale(1); opacity: 0; }
-  37.5% { transform: scale(2.4); opacity: 0.6; }
-}
-
-@keyframes pointPulse3 {
-  0%, 40%, 75%, 100% { opacity: 0.25; transform: scale(0.9); }
-  62.5% { opacity: 1; transform: scale(1.3); }
-}
-@keyframes pointRing3 {
-  0%, 40%, 75%, 100% { transform: scale(1); opacity: 0; }
-  62.5% { transform: scale(2.4); opacity: 0.6; }
-}
-
-@keyframes pointPulse4 {
-  0%, 65%, 100% { opacity: 0.25; transform: scale(0.9); }
-  87.5% { opacity: 1; transform: scale(1.3); }
-}
-@keyframes pointRing4 {
-  0%, 65%, 100% { transform: scale(1); opacity: 0; }
-  87.5% { transform: scale(2.4); opacity: 0.6; }
-}
-
-/* ----- DEFENCE ASSET MOTION (STEALTH AIRCRAFT) — Staged 350ms ----- */
-.aircraft-visual {
-  position: absolute;
-  top: 15%;
-  left: 8%;
-  width: 90px;
-  opacity: 0;
-  pointer-events: none;
-  animation: aircraftEntry 1s ease-out 0.35s forwards, aircraftDrift 18s ease-in-out 1.35s infinite alternate;
-}
-
-@keyframes aircraftEntry {
-  from { opacity: 0; transform: translate(-20px, 12px); }
-  to { opacity: 0.45; transform: translate(0, 0); }
-}
-
-@keyframes aircraftDrift {
-  0% { transform: translate(-10px, 0px) rotate(-1.5deg); opacity: 0.4; }
-  33% { transform: translate(16px, -10px) rotate(0.5deg); opacity: 0.55; }
-  66% { transform: translate(6px, 8px) rotate(-1deg); opacity: 0.45; }
-  100% { transform: translate(-12px, 3px) rotate(-2deg); opacity: 0.35; }
-}
-
-.aircraft-svg {
-  width: 70px;
-  height: 40px;
-  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.25));
-}
-
-.aircraft-contrail {
-  position: absolute;
-  top: 20px;
-  right: 68px;
-  width: 45px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2));
-  transform: translateY(-50%);
-}
-
-/* ----- BLOCKCHAIN NETWORK (3-5 NODES FLOW) — Staged 550ms ----- */
-.blockchain-flow {
-  position: absolute;
-  bottom: 8%;
-  left: 6%;
+.satellite-unit {
+  position: relative;
   width: 250px;
-  opacity: 0;
-  pointer-events: none;
-  animation: bcFlowFadeIn 0.8s ease-out 0.55s forwards;
+  height: 180px;
+  animation: satelliteOrbitMotion 26s ease-in-out infinite alternate;
 }
 
-@keyframes bcFlowFadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes satelliteOrbitMotion {
+  0% { transform: translate(0, 0) rotate(-6deg); }
+  50% { transform: translate(20px, -12px) rotate(2deg); }
+  100% { transform: translate(-14px, 10px) rotate(-8deg); }
 }
 
-.blockchain-flow-svg {
+.satellite-img-3d {
   width: 100%;
   height: auto;
-  overflow: visible;
+  object-fit: contain;
+  filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
 }
 
-.bc-line {
-  stroke: rgba(37, 99, 235, 0.18);
-  stroke-width: 1;
-  stroke-dasharray: 4 3;
-}
-
-/* Travelling data pulses along connecting lines */
-.bc-pulse-line {
-  stroke: #60a5fa;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-dasharray: 20 180;
-  animation: bcPulseTravel 4s linear infinite;
-}
-
-.bc-pulse-1 { animation-delay: 0s; }
-.bc-pulse-2 { animation-delay: 1.3s; }
-.bc-pulse-3 { animation-delay: 2.6s; }
-
-@keyframes bcPulseTravel {
-  0% { stroke-dashoffset: 200; opacity: 0; }
-  15% { opacity: 0.85; }
-  85% { opacity: 0.85; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-
-.bc-node-dot {
-  fill: #3b82f6;
-  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6));
-}
-
-.bc-node-halo {
-  fill: none;
-  stroke: rgba(59, 130, 246, 0.2);
-  stroke-width: 1;
-  animation: bcHaloPulse 3s ease-in-out infinite;
-}
-
-@keyframes bcHaloPulse {
-  0%, 100% { transform-origin: center; transform: scale(1); opacity: 0.3; }
-  50% { transform-origin: center; transform: scale(1.3); opacity: 0.8; }
-}
-
-.bc-node-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 7px;
-  letter-spacing: 0.12em;
-  fill: rgba(148, 163, 184, 0.5);
-  font-weight: 600;
-}
-
-/* ----- ASSET VERIFICATION VISUAL BADGE — Staged 550ms ----- */
-.asset-verif-badge {
+/* Soft, Thin, Semi-transparent Conical Beam */
+.satellite-beam {
   position: absolute;
-  top: 18%;
-  right: 6%;
-  background: rgba(10, 22, 40, 0.75);
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  top: 95px;
+  left: 120px;
+  width: 200px;
+  height: 330px;
+  background: linear-gradient(145deg, rgba(0, 229, 255, 0.45) 0%, rgba(0, 229, 255, 0.08) 55%, transparent 100%);
+  clip-path: polygon(48% 0%, 52% 0%, 100% 100%, 0% 100%);
+  filter: blur(3px);
+  pointer-events: none;
+  animation: commBeamPulse 3.5s ease-in-out infinite alternate;
+  transform-origin: top center;
+}
+
+@keyframes commBeamPulse {
+  0% { opacity: 0.3; transform: scaleX(0.85); }
+  100% { opacity: 0.75; transform: scaleX(1.15); }
+}
+
+/* ─── 4. FIGHTER AIRCRAFT (UPPER RIGHT BESIDE LOGIN CARD) ─── */
+.fighter-pos-wrapper {
+  position: absolute;
+  top: 70px;
+  left: 720px;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 4;
+}
+
+.fighter-unit {
+  position: relative;
+  width: 210px;
+  height: 180px;
+  animation: fighterFlightLoop 22s ease-in-out infinite alternate;
+}
+
+@keyframes fighterFlightLoop {
+  0% { transform: translate(0, 0) rotate(6deg) scale(0.96); }
+  50% { transform: translate(22px, -14px) rotate(10deg) scale(1.02); }
+  100% { transform: translate(-14px, 10px) rotate(4deg) scale(0.94); }
+}
+
+.fighter-img-3d {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.55));
+}
+
+.fighter-contrail {
+  position: absolute;
+  width: 110px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.45) 100%);
+  border-radius: 2px;
+  filter: blur(1.5px);
+}
+
+.contrail-left {
+  top: 145px;
+  left: 10px;
+  transform: rotate(-35deg);
+}
+
+.contrail-right {
+  top: 125px;
+  left: -15px;
+  transform: rotate(-35deg);
+}
+
+.wingman-pos-wrapper {
+  position: absolute;
+  top: 190px;
+  left: 780px;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 3;
+}
+
+.wingman-unit {
+  position: relative;
+  width: 100px;
+  opacity: 0.7;
+  animation: wingmanFollow 22s ease-in-out infinite alternate;
+}
+
+@keyframes wingmanFollow {
+  0% { transform: translate(0, 0) rotate(8deg); }
+  50% { transform: translate(20px, -10px) rotate(12deg); }
+  100% { transform: translate(-10px, 8px) rotate(6deg); }
+}
+
+.wingman-img-3d {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.3));
+}
+
+/* ─── 5. NAVAL DESTROYER (LOWER LEFT ON WATER) ─── */
+.naval-pos-wrapper {
+  position: absolute;
+  bottom: 75px;
+  left: 100px;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 4;
+}
+
+.naval-unit {
+  position: relative;
+  width: 420px;
+  animation: navalDrift 30s ease-in-out infinite alternate;
+}
+
+@keyframes navalDrift {
+  0% { transform: translate(0, 0) rotate(-0.5deg); }
+  50% { transform: translate(16px, -4px) rotate(0.5deg); }
+  100% { transform: translate(-10px, 3px) rotate(-1deg); }
+}
+
+.naval-ship-img-3d {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(0, 229, 255, 0.3));
+}
+
+.naval-water-wake {
+  position: absolute;
+  bottom: 15px;
+  left: -20px;
+  width: 430px;
+  height: 22px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 229, 255, 0.45) 0%, rgba(37, 99, 235, 0.2) 50%, transparent 80%);
+  filter: blur(5px);
+  animation: wakeShimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes wakeShimmer {
+  0% { opacity: 0.5; transform: scaleX(0.95); }
+  100% { opacity: 0.9; transform: scaleX(1.05); }
+}
+
+.naval-radar-ping {
+  position: absolute;
+  top: 25px;
+  left: 200px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  animation: radarPing 4s ease-out infinite;
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.2); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ─── 6. DEFENCE NETWORK NODES & CALLOUT BADGES ─── */
+.cmd-node-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(6, 16, 36, 0.88);
+  border: 1px solid rgba(0, 229, 255, 0.38);
   border-radius: 6px;
-  padding: 10px 14px;
-  min-width: 160px;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  pointer-events: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  opacity: 0;
-  animation: badgeFadeIn 0.8s ease-out 0.55s forwards;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  z-index: 5;
 }
 
-@keyframes badgeFadeIn {
-  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.cmd-node-badge:hover {
+  background: rgba(10, 26, 56, 0.95);
+  border-color: var(--cmd-cyan);
+  box-shadow: 0 0 16px var(--cmd-cyan-glow);
+  transform: translateY(-2px);
 }
 
-.verif-badge-top {
+.cmd-node-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: rgba(37, 99, 235, 0.25);
+  border: 1px solid rgba(0, 229, 255, 0.38);
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  justify-content: center;
+  color: var(--cmd-cyan);
 }
 
-.verif-badge-icon {
-  color: #3b82f6;
-  font-size: 0.8rem;
+.cmd-node-text-group {
+  display: flex;
+  flex-direction: column;
 }
 
-.verif-badge-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
+.cmd-node-title {
+  font-family: var(--cmd-font-mono);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--login-ink-2);
-}
-
-.verif-badge-id {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: #60a5fa;
-  margin-bottom: 6px;
-  letter-spacing: 0.06em;
-}
-
-/* 3-State Dynamic Verification Cycle */
-.verif-badge-cycle {
-  position: relative;
-  height: 16px;
-  overflow: hidden;
-}
-
-.verif-step {
-  position: absolute;
-  left: 0;
-  top: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 600;
   letter-spacing: 0.08em;
-  white-space: nowrap;
+  color: #f1f5f9;
+  text-transform: uppercase;
 }
 
-.verif-step-1 {
-  color: #f59e0b;
-  animation: verifStep1 6s infinite;
+.cmd-node-sub {
+  font-family: var(--cmd-font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--cmd-cyan);
+  text-transform: uppercase;
 }
 
-.verif-step-2 {
-  color: #3b82f6;
-  animation: verifStep2 6s infinite;
+/* Exact Reference Positions */
+.node-satellite { top: 105px; left: 480px; }
+.node-comm { top: 250px; left: 340px; }
+.node-air { top: 75px; left: 780px; }
+.node-naval { bottom: 145px; left: 360px; }
+
+/* ============================================================
+   RIGHT: STABLE LOGIN CONSOLE (0PX PARALLAX)
+   ============================================================ */
+.cmd-console-wrapper {
+  position: relative;
+  z-index: 30;
+  width: 440px;
+  margin-right: 12px;
+  pointer-events: auto;
+  animation: consoleEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.verif-step-3 {
-  color: #22c55e;
-  animation: verifStep3 6s infinite;
+@keyframes consoleEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(18px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
-@keyframes verifStep1 {
-  0%, 28% { opacity: 1; transform: translateY(0); }
-  33%, 100% { opacity: 0; transform: translateY(-8px); }
+.cmd-console-card {
+  position: relative;
+  background: var(--cmd-card-bg);
+  border: 1px solid var(--cmd-card-border);
+  border-radius: 12px;
+  padding: 24px 26px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.65),
+    0 0 28px rgba(0, 229, 255, 0.15),
+    inset 0 0 20px rgba(0, 229, 255, 0.04);
+  backdrop-filter: blur(16px);
+  box-sizing: border-box;
 }
 
-@keyframes verifStep2 {
-  0%, 30% { opacity: 0; transform: translateY(8px); }
-  35%, 62% { opacity: 1; transform: translateY(0); }
-  67%, 100% { opacity: 0; transform: translateY(-8px); }
-}
-
-@keyframes verifStep3 {
-  0%, 64% { opacity: 0; transform: translateY(8px); }
-  69%, 95% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-8px); }
-}
-
-/* ----- SIGNAL / DATA FLOW PATHS — Staged 350ms ----- */
-.signal-paths {
+/* Cyan Corner Tech Brackets */
+.corner-bracket {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  animation: signalFadeIn 0.8s ease-out 0.35s forwards;
-}
-
-@keyframes signalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.signal-path {
-  position: absolute;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.08), transparent);
-}
-
-.signal-path::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 0;
   width: 12px;
-  height: 5px;
-  background: radial-gradient(ellipse, rgba(96, 165, 250, 0.6) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: signalTravel 4s linear infinite;
-}
-
-.signal-path-1 { top: 35%; left: 12%; width: 34%; transform: rotate(-4deg); }
-.signal-path-1::before { animation-delay: 0s; animation-duration: 4s; }
-
-.signal-path-2 { top: 58%; left: 22%; width: 36%; transform: rotate(3deg); }
-.signal-path-2::before { animation-delay: 1.2s; animation-duration: 3.5s; }
-
-.signal-path-3 { top: 76%; left: 10%; width: 42%; transform: rotate(-2deg); }
-.signal-path-3::before { animation-delay: 2.4s; animation-duration: 5s; }
-
-.signal-path-4 { top: 46%; left: 16%; width: 28%; transform: rotate(6deg); }
-.signal-path-4::before { animation-delay: 0.6s; animation-duration: 3s; }
-
-@keyframes signalTravel {
-  0% { left: -2%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { left: 98%; opacity: 0; }
-}
-
-/* ----- DEFENCE ASSET SCAN LINE ----- */
-.defence-scan-line {
-  position: absolute;
-  top: -2px;
-  left: 6%;
-  right: 6%;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(37, 99, 235, 0.05),
-    rgba(96, 165, 250, 0.12),
-    rgba(37, 99, 235, 0.05),
-    transparent
-  );
-  pointer-events: none;
-  animation: scanDown 8s ease-in-out infinite;
-}
-
-.defence-scan-line::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  left: 0;
-  right: 0;
-  height: 25px;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.025), transparent);
+  height: 12px;
+  border-color: var(--cmd-cyan);
   pointer-events: none;
 }
 
-@keyframes scanDown {
-  0% { transform: translateY(-10px); opacity: 0; }
-  5% { opacity: 1; }
-  95% { opacity: 1; }
-  100% { transform: translateY(calc(100vh - 10px)); opacity: 0; }
+.bracket-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--cmd-cyan);
+  border-left: 2px solid var(--cmd-cyan);
+  border-top-left-radius: 12px;
 }
 
-/* ----- COMMUNICATION SIGNAL ARCS ----- */
-.signal-arc {
-  position: absolute;
-  border: 1px solid rgba(37, 99, 235, 0.06);
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  animation: arcFadeIn 1s ease-out 0.4s forwards;
+.bracket-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid var(--cmd-cyan);
+  border-right: 2px solid var(--cmd-cyan);
+  border-top-right-radius: 12px;
 }
 
-.signal-arc-1 {
-  top: 20%;
-  left: 3%;
-  width: 190px;
-  height: 190px;
-  border-right-color: transparent;
-  border-bottom-color: transparent;
-  transform: rotate(-30deg);
+.bracket-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid var(--cmd-cyan);
+  border-left: 2px solid var(--cmd-cyan);
+  border-bottom-left-radius: 12px;
 }
 
-.signal-arc-2 {
-  bottom: 20%;
-  right: 6%;
-  width: 150px;
-  height: 150px;
-  border-left-color: transparent;
-  border-top-color: transparent;
-  transform: rotate(20deg);
+.bracket-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--cmd-cyan);
+  border-right: 2px solid var(--cmd-cyan);
+  border-bottom-right-radius: 12px;
 }
 
-@keyframes arcFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Console Header Lockup */
+.console-header-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
 }
 
-/* ----- TECHNICAL DATA LABELS — Staged 550ms ----- */
-.tech-labels {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.console-nx-mini {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+  border: 1px solid rgba(0, 229, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cmd-font-display);
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: #ffffff;
 }
 
-.tech-label {
-  position: absolute;
-  font-family: 'JetBrains Mono', monospace;
+.console-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.console-header-title {
+  font-family: var(--cmd-font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+}
+
+.console-header-sub {
+  font-family: var(--cmd-font-mono);
   font-size: 0.6rem;
   letter-spacing: 0.14em;
-  color: rgba(96, 165, 250, 0.35);
+  color: var(--cmd-cyan);
+  text-transform: uppercase;
+}
+
+.cmd-card-title {
+  font-family: var(--cmd-font-display);
+  font-weight: 800;
+  font-size: 1.55rem;
+  letter-spacing: 0.05em;
+  color: var(--cmd-cyan);
+  margin: 0 0 4px 0;
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+.cmd-card-instructions {
+  font-size: 0.78rem;
+  color: var(--cmd-text-muted);
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+}
+
+.cmd-card-instructions code {
+  color: var(--cmd-cyan);
+  background: rgba(0, 229, 255, 0.1);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--cmd-font-mono);
+}
+
+/* 4 Demo Roles Grid (2x2) */
+.cmd-demo-section-label {
+  font-family: var(--cmd-font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  color: var(--cmd-cyan);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.cmd-demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cmd-demo-card {
+  background: rgba(8, 22, 44, 0.65);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.cmd-demo-card:hover {
+  background: rgba(12, 30, 60, 0.85);
+  border-color: var(--cmd-cyan);
+  transform: translateY(-1px);
+}
+
+.cmd-demo-card.active {
+  background: rgba(14, 34, 68, 0.95);
+  border-color: var(--cmd-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+}
+
+.cmd-demo-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.cmd-demo-name {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.cmd-demo-role-pill {
+  font-family: var(--cmd-font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pill-admin {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.pill-creator {
+  background: rgba(168, 85, 247, 0.25);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.pill-tech {
+  background: rgba(0, 229, 255, 0.22);
+  color: #38bdf8;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.pill-auditor {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.cmd-demo-email {
+  font-family: var(--cmd-font-mono);
+  font-size: 0.62rem;
+  color: var(--cmd-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Error Banner */
+.cmd-error-banner {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  font-size: 0.74rem;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 6px;
-  opacity: 0;
-  animation: techFadeIn 0.8s ease-out 0.55s both;
+  animation: errorSlide 0.2s ease-out;
 }
 
-@keyframes techFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes errorSlide {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* SECURE NETWORK with subtle scanning shimmer */
-.tech-label-secure {
-  top: 11%;
-  left: 7%;
-  padding: 3px 8px;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  border-radius: 4px;
-  background: rgba(10, 22, 40, 0.5);
-  position: relative;
-  overflow: hidden;
+/* Input Fields */
+.cmd-input-group {
+  margin-bottom: 12px;
 }
 
-.tech-secure-scan {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent);
-  animation: labelScanSweep 6s ease-in-out infinite;
-}
-
-@keyframes labelScanSweep {
-  0%, 30% { left: -60%; }
-  60%, 100% { left: 120%; }
-}
-
-/* BLOCKCHAIN VERIFIED with subtle verification pulse */
-.tech-label-verified {
-  bottom: 24%;
-  right: 7%;
-  padding: 3px 8px;
-  border: 1px solid rgba(59, 130, 246, 0.12);
-  border-radius: 4px;
-  background: rgba(10, 22, 40, 0.5);
-}
-
-.tech-verified-dot {
-  width: 5px;
-  height: 5px;
-  background: #3b82f6;
-  border-radius: 50%;
-  animation: verifiedPulse 4s ease-in-out infinite;
-}
-
-@keyframes verifiedPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 4px rgba(59, 130, 246, 0.4); }
-  50% { transform: scale(1.25); box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
-}
-
-/* ● SYSTEM STATUS: OPERATIONAL — live heartbeat pulse */
-.tech-label-status {
-  top: 8%;
-  right: 10%;
-}
-
-.tech-status-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--login-emerald);
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
-  animation: statusHeartbeat 3s ease-in-out infinite;
-}
-
-@keyframes statusHeartbeat {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(34, 197, 94, 0.4); }
-  50% { transform: scale(1.2); box-shadow: 0 0 12px rgba(34, 197, 94, 0.75); }
-}
-
-.tech-label-node { bottom: 6%; left: 45%; }
-.tech-label-trust { bottom: 35%; left: 5%; }
-
-/* DEFENCE TITLE */
-.defence-title {
-  position: absolute;
-  bottom: 12%;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  opacity: 0;
-  animation: techFadeIn 1s ease-out 0.55s forwards;
-}
-
-.defence-title-main {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: rgba(148, 163, 184, 0.25);
+.cmd-input-label {
+  display: block;
+  font-family: var(--cmd-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--cmd-cyan);
+  margin-bottom: 6px;
   text-transform: uppercase;
 }
 
-.defence-title-sub {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  color: rgba(100, 116, 139, 0.25);
-  margin-top: 4px;
-}
-
-/* =========================================================
-   RIGHT-SIDE — Login Form & Branding
-   ========================================================= */
-
-/* ----- BRANDING — Staged 150ms (Icon) & 250ms (Text) ----- */
-.login-branding {
-  margin-bottom: 28px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.login-brand-icon {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, var(--login-primary), #1e40af);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 900;
-  font-size: 1.1rem;
-  color: #fff;
-  letter-spacing: -0.02em;
-  box-shadow: 0 0 22px rgba(37, 99, 235, 0.2), 0 0 6px rgba(37, 99, 235, 0.12);
-  opacity: 0;
-  animation: brandIconFadeIn 0.6s ease-out 0.15s forwards, iconGlow 4s ease-in-out infinite;
-}
-
-@keyframes brandIconFadeIn {
-  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes iconGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.2), 0 0 6px rgba(37, 99, 235, 0.1); }
-  50% { box-shadow: 0 0 28px rgba(37, 99, 235, 0.3), 0 0 12px rgba(37, 99, 235, 0.18); }
-}
-
-.login-brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  opacity: 0;
-  animation: brandTextFadeIn 0.6s ease-out 0.25s forwards;
-}
-
-@keyframes brandTextFadeIn {
-  from { opacity: 0; transform: translateX(-6px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.login-brand-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--login-ink);
-  letter-spacing: 0.06em;
-}
-
-.login-brand-sub {
-  font-size: 0.6rem;
-  color: var(--login-ink-4);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-}
-
-/* ----- LOGIN CARD — Staged 650ms ----- */
-.login-card {
-  width: 100%;
-  max-width: 440px;
-  background: var(--login-card-bg);
-  border: 1px solid var(--login-border);
-  border-radius: 10px;
-  padding: 34px 30px;
+.cmd-input-box {
   position: relative;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  opacity: 0;
-  animation: cardSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.65s forwards;
-}
-
-.login-card::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 15%;
-  right: 15%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--login-primary), transparent);
-  border-radius: 1px;
-}
-
-.login-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.02), transparent 40%, rgba(37, 99, 235, 0.01));
-  pointer-events: none;
-  animation: cardShimmer 8s ease-in-out infinite;
-}
-
-@keyframes cardSlideUp {
-  from { opacity: 0; transform: translateY(24px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes cardShimmer {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-.login-card:hover {
-  border-color: rgba(37, 99, 235, 0.25);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), 0 0 60px rgba(37, 99, 235, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* ----- CARD HEADER ----- */
-.login-card-header {
-  margin-bottom: 24px;
-}
-
-.login-card-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--login-ink);
-  margin: 0 0 6px;
-  letter-spacing: 0.05em;
-}
-
-.login-card-desc {
-  font-size: 0.8rem;
-  color: var(--login-ink-3);
-  margin: 0;
-  line-height: 1.55;
-}
-
-/* ----- STAGGERED SEQUENCE ----- */
-@keyframes staggerFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.login-stagger-1 { opacity: 0; animation: staggerFadeIn 0.5s ease-out 0.65s forwards; }
-.login-stagger-2 { opacity: 0; animation: staggerFadeIn 0.5s ease-out 0.72s forwards; }
-.login-stagger-4 { opacity: 0; animation: staggerFadeIn 0.4s ease-out 0.1s forwards; }
-.login-stagger-5 { opacity: 0; animation: staggerFadeIn 0.5s ease-out 0.82s forwards; }
-
-/* Role cards staged at 750ms+ */
-.login-stagger-role-1 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.75s forwards; }
-.login-stagger-role-2 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.78s forwards; }
-.login-stagger-role-3 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.81s forwards; }
-.login-stagger-role-4 { opacity: 0; animation: staggerFadeIn 0.45s ease-out 0.84s forwards; }
-
-/* ----- ROLE SELECTOR & CARDS ----- */
-.login-role-group {
-  margin-bottom: 20px;
-}
-
-.login-section-label {
-  font-size: 0.67rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--login-ink-4);
-  margin-bottom: 9px;
-}
-
-.login-role-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.login-role-btn {
-  width: 100%;
-  background: var(--login-navy);
-  border: 1px solid var(--login-border);
-  border-radius: 7px;
-  padding: 10px 12px;
-  cursor: pointer;
-  text-align: left;
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.22s ease,
-              background 0.22s ease,
-              box-shadow 0.22s ease;
   display: flex;
   align-items: center;
-  gap: 11px;
-  position: relative;
-  overflow: hidden;
-  font-family: inherit;
-  color: inherit;
-}
-
-.login-role-btn::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--login-primary);
-  transition: width 0.3s ease;
-}
-
-/* Hover: translateY(-2px to -4px), brighter border, icon glow, brighter background */
-.login-role-btn:hover {
-  border-color: rgba(37, 99, 235, 0.4);
-  background: rgba(37, 99, 235, 0.06);
-  transform: translateY(-3px);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
-}
-
-.login-role-btn:hover::after {
-  width: 100%;
-}
-
-/* Selected: clear blue border, subtle highlight, animated radio indicator, icon emphasis */
-.login-role-btn[data-selected="true"] {
-  border-color: var(--login-primary);
-  background: rgba(37, 99, 235, 0.09);
-  box-shadow: inset 3px 0 0 var(--login-primary), 0 0 22px rgba(37, 99, 235, 0.08);
-}
-
-.login-role-btn[data-selected="true"]::after {
-  width: 100%;
-  background: var(--login-primary);
-}
-
-.login-role-icon {
-  width: 32px;
-  height: 32px;
+  background: rgba(3, 10, 24, 0.75);
+  border: 1px solid rgba(0, 229, 255, 0.28);
   border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.cmd-input-box:focus-within {
+  border-color: var(--cmd-cyan);
+  box-shadow: 0 0 12px var(--cmd-cyan-glow);
+  background: rgba(5, 14, 32, 0.9);
+}
+
+.cmd-input-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95rem;
-  flex-shrink: 0;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  padding: 0 10px;
+  color: var(--cmd-text-muted);
 }
 
-.login-role-btn:hover .login-role-icon {
-  transform: scale(1.08);
-  box-shadow: 0 0 10px currentColor;
+.cmd-input-box:focus-within .cmd-input-icon {
+  color: var(--cmd-cyan);
 }
 
-.login-role-btn[data-selected="true"] .login-role-icon {
-  box-shadow: 0 0 14px currentColor;
-}
-
-.login-role-info {
+.cmd-text-input {
   flex: 1;
-  min-width: 0;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-family: var(--cmd-font-body);
+  padding: 9px 6px 9px 0;
+  outline: none;
 }
 
-.login-role-name {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--login-ink-2);
-  transition: color 0.2s;
+.cmd-text-input::placeholder {
+  color: var(--cmd-text-dim);
 }
 
-.login-role-btn[data-selected="true"] .login-role-name {
-  color: var(--login-ink);
-}
-
-.login-role-did {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  color: var(--login-ink-4);
-  margin-left: 8px;
-}
-
-.login-role-desc {
-  font-size: 0.72rem;
-  color: var(--login-ink-4);
-  margin-top: 2px;
-}
-
-/* Radio Indicator */
-.login-radio {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid var(--login-border);
+.cmd-password-toggle {
+  background: transparent;
+  border: none;
+  color: var(--cmd-text-muted);
+  cursor: pointer;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition: color 0.2s ease;
 }
 
-.login-radio[data-active="true"] {
-  border-color: var(--login-primary);
-  background: var(--login-primary);
-  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+.cmd-password-toggle:hover {
+  color: var(--cmd-cyan);
 }
 
-.login-radio-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #fff;
-  transform: scale(0);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.login-radio[data-active="true"] .login-radio-dot {
-  transform: scale(1);
-}
-
-/* ----- IDENTITY & CREDENTIAL PANEL ----- */
-.login-cred-panel {
-  background: var(--login-navy);
-  border: 1px solid var(--login-border-subtle);
-  border-radius: 6px;
-  padding: 12px 14px;
-  margin-bottom: 18px;
-}
-
-.login-cred-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.login-cred-label {
-  font-size: 0.67rem;
-  color: var(--login-ink-4);
-  width: 90px;
-  flex-shrink: 0;
-}
-
-.login-cred-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  color: #60a5fa;
-}
-
-/* ----- SIGN IN BUTTON ----- */
-.login-submit-btn {
+/* Submit Button */
+.cmd-submit-btn {
   width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, var(--login-primary), #1e40af);
-  color: #fff;
-  border: none;
+  margin-top: 6px;
+  padding: 11px 16px;
   border-radius: 6px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s ease;
+  border: 1px solid rgba(0, 229, 255, 0.65);
+  background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 60%, #00e5ff 100%);
+  color: #ffffff;
+  font-family: var(--cmd-font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 229, 255, 0.35);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.login-submit-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-}
-
-.login-submit-btn:hover:not(:disabled)::before {
-  animation: btnSweep 0.6s ease forwards;
-}
-
-.login-submit-btn:hover:not(:disabled) {
+.cmd-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35), 0 0 40px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 6px 24px rgba(0, 229, 255, 0.55);
 }
 
-.login-btn-content {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.cmd-submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
-.login-btn-arrow {
-  display: inline-block;
-  transition: transform 0.25s ease;
+.cmd-btn-arrow {
+  transition: transform 0.2s ease;
 }
 
-.login-submit-btn:hover:not(:disabled) .login-btn-arrow {
+.cmd-submit-btn:hover:not(:disabled) .cmd-btn-arrow {
   transform: translateX(4px);
 }
 
-.login-submit-btn:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
-}
-
-.login-submit-btn:disabled {
-  background: var(--login-border);
-  color: var(--login-ink-4);
+.cmd-submit-btn:disabled {
+  opacity: 0.75;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
-@keyframes btnSweep {
-  from { left: -60%; }
-  to { left: 120%; }
-}
-
-.login-spinner {
+.cmd-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-top-color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
   border-radius: 50%;
-  animation: spinRotate 0.7s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes spinRotate {
+@keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* ----- SECURE CONNECTION — Staged 850ms ----- */
-.login-security-status {
+/* Security Status Indicator */
+.cmd-security-line {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 16px;
   justify-content: center;
-  opacity: 0;
-  animation: staggerFadeIn 0.5s ease-out 0.85s forwards;
+  gap: 8px;
+  margin-top: 14px;
+  font-family: var(--cmd-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--cmd-emerald);
 }
 
-.login-security-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--login-emerald);
+.cmd-security-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
-  animation: securityPulse 3s ease-in-out infinite;
+  background: var(--cmd-emerald);
+  box-shadow: 0 0 10px var(--cmd-emerald);
+  animation: pulseDot 2.5s ease-in-out infinite;
 }
 
-@keyframes securityPulse {
-  0%, 100% { box-shadow: 0 0 6px rgba(34, 197, 94, 0.4); }
-  50% { box-shadow: 0 0 14px rgba(34, 197, 94, 0.7); }
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 14px var(--cmd-emerald); }
 }
 
-.login-security-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+.cmd-console-footer {
+  font-size: 0.66rem;
+  color: var(--cmd-text-dim);
+  text-align: center;
+  margin: 10px 0 0 0;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   BOTTOM BAR: SOVEREIGN SEAL & HORIZONTAL TRUST PIPELINE
+   ============================================================ */
+.cmd-bottom-bar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 36px 18px 36px;
+  box-sizing: border-box;
+}
+
+/* Bottom Left Sovereign Defence Seal Badge */
+.cmd-defence-seal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(4, 14, 32, 0.75);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.cmd-seal-emblem {
+  color: var(--cmd-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cmd-seal-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmd-seal-title {
+  font-family: var(--cmd-font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: #f1f5f9;
+}
+
+.cmd-seal-sub {
+  font-family: var(--cmd-font-mono);
+  font-size: 0.58rem;
   letter-spacing: 0.14em;
-  color: rgba(34, 197, 94, 0.75);
+  color: var(--cmd-cyan);
   text-transform: uppercase;
 }
 
-/* ----- FOOTER ----- */
-.login-footer {
+/* Bottom Center Trust Pipeline */
+.cmd-trust-pipeline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 6px 20px;
+}
+
+.cmd-pipeline-track {
+  position: absolute;
+  top: 17px;
+  left: 36px;
+  right: 36px;
+  height: 2px;
+  background: rgba(0, 229, 255, 0.2);
+  z-index: 1;
+}
+
+.cmd-pipeline-light-sweep {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 50px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent 0%, var(--cmd-cyan) 50%, transparent 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--cmd-cyan);
+  animation: pipelineSweep 4s ease-in-out infinite;
+}
+
+@keyframes pipelineSweep {
+  0% { left: 0%; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: 90%; opacity: 0; }
+}
+
+.cmd-pipeline-node {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  font-size: 0.72rem;
-  color: var(--login-ink-4);
-  margin-top: 14px;
-  line-height: 1.5;
-  opacity: 0;
-  animation: staggerFadeIn 0.5s ease-out 0.9s forwards;
 }
 
-/* =========================================================
-   RESPONSIVE DESIGN
-   ========================================================= */
+.cmd-pipeline-node-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(3, 12, 28, 0.95);
+  border: 1.5px solid var(--cmd-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cmd-cyan);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+}
 
-/* Tablet (max-width: 1024px) */
-@media (max-width: 1024px) {
-  .login-visual-side {
-    flex: 0 0 40%;
-    padding: 24px;
+.cmd-pipeline-node:hover .cmd-pipeline-node-icon {
+  transform: scale(1.15);
+  box-shadow: 0 0 18px var(--cmd-cyan);
+}
+
+.cmd-pipeline-node-title {
+  font-family: var(--cmd-font-mono);
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: #f1f5f9;
+  text-transform: uppercase;
+}
+
+.cmd-pipeline-node-sub {
+  font-family: var(--cmd-font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  color: var(--cmd-cyan);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   RESPONSIVE LAYOUT (TABLET & MOBILE)
+   ============================================================ */
+@media (max-width: 1280px) {
+  .cmd-hero-column {
+    width: 280px;
   }
-
-  .login-form-side {
-    flex: 1;
-    padding: 32px 36px;
+  .earth-system {
+    width: 400px;
+    height: 400px;
+    left: 44%;
   }
-
-  .radar-container {
-    width: 270px;
-    height: 270px;
+  .satellite-pos-wrapper {
+    left: 170px;
   }
-
-  .satellite-grid {
+  .fighter-pos-wrapper {
+    left: 580px;
+  }
+  .wingman-pos-wrapper {
+    left: 640px;
+  }
+  .naval-pos-wrapper {
+    left: 50px;
     width: 360px;
-    height: 360px;
   }
-
-  .aircraft-visual {
-    display: none;
-  }
-
-  .tech-labels,
-  .signal-paths,
-  .defence-scan-line,
-  .signal-arc {
-    display: none;
-  }
-
-  .blockchain-flow {
-    bottom: 4%;
-    left: 4%;
-    transform: scale(0.85);
-    transform-origin: bottom left;
-  }
-
-  .asset-verif-badge {
-    top: 10%;
-    right: 4%;
-    transform: scale(0.85);
-    transform-origin: top right;
+  .cmd-console-wrapper {
+    width: 400px;
   }
 }
 
-/* Mobile (max-width: 768px) */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .login-page {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  .cmd-main-layout {
     flex-direction: column;
+    gap: 32px;
+    padding: 24px 20px;
   }
-
-  .login-visual-side {
-    flex: none;
-    min-height: auto;
-    padding: 20px;
-    height: 180px;
+  .cmd-hero-column {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    align-items: center;
   }
-
-  .radar-container {
-    width: 150px;
-    height: 150px;
+  .cmd-headline-desc {
+    max-width: 100%;
   }
-
-  .satellite-grid,
-  .tech-labels,
-  .defence-title,
-  .signal-paths,
-  .defence-scan-line,
-  .signal-arc,
-  .aircraft-visual,
-  .blockchain-flow,
-  .asset-verif-badge {
+  .cmd-features-list {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .cmd-scene-center {
+    position: relative;
+    height: 380px;
+    width: 100%;
+  }
+  .earth-system {
+    top: 50%;
+    left: 50%;
+    width: 320px;
+    height: 320px;
+  }
+  .satellite-pos-wrapper {
+    top: 10px;
+    left: 8%;
+  }
+  .fighter-pos-wrapper {
+    top: 20px;
+    left: 68%;
+  }
+  .wingman-pos-wrapper {
     display: none;
   }
-
-  .login-form-side {
-    flex: 1;
-    min-height: auto;
-    padding: 16px 20px 36px;
+  .naval-pos-wrapper {
+    bottom: 20px;
+    left: 5%;
+    width: 280px;
   }
-
-  .login-form-side::before {
-    display: none;
+  .cmd-console-wrapper {
+    width: 100%;
+    max-width: 480px;
+    margin: 0;
   }
-
-  .login-card {
-    padding: 26px 20px;
+  .cmd-bottom-bar {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
   }
 }
 
-/* Small mobile (max-width: 480px) */
-@media (max-width: 480px) {
-  .login-visual-side {
-    height: 130px;
-    padding: 12px;
+@media (max-width: 640px) {
+  .cmd-topbar {
+    padding: 16px 20px;
   }
-
-  .radar-container {
-    width: 110px;
-    height: 110px;
-  }
-
-  .login-form-side {
-    padding: 10px 14px 28px;
-  }
-
-  .login-card {
-    padding: 22px 16px;
-    border-radius: 8px;
-  }
-
-  .login-role-btn {
-    padding: 8px 10px;
-    gap: 8px;
-  }
-
-  .login-role-icon {
-    width: 26px;
-    height: 26px;
-    font-size: 0.85rem;
-  }
-
-  .login-role-did {
+  .cmd-top-telemetry {
     display: none;
+  }
+  .cmd-features-list {
+    flex-direction: column;
+    width: 100%;
+  }
+  .cmd-scene-center {
+    display: none;
+  }
+  .cmd-demo-grid {
+    grid-template-columns: 1fr;
+  }
+  .cmd-trust-pipeline {
+    gap: 14px;
+    padding: 0;
+  }
+  .cmd-pipeline-node-title {
+    font-size: 0.52rem;
+  }
+  .cmd-pipeline-node-sub {
+    font-size: 0.44rem;
   }
 }
 
-/* =========================================================
-   ACCESSIBILITY — PREFERS REDUCED MOTION
-   ========================================================= */
+/* ============================================================
+   ACCESSIBILITY: PREFERS REDUCED MOTION
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  /* Disable all continuous loops & spins */
-  .login-bg::before,
-  .login-bg::after,
-  .login-grid-overlay,
-  .login-scanline,
-  .radar-sweep,
-  .radar-sweep-2,
-  .radar-glow,
-  .radar-point,
-  .radar-point::after,
-  .aircraft-visual,
-  .bc-pulse-line,
-  .bc-node-halo,
-  .verif-step,
-  .signal-path::before,
-  .defence-scan-line,
-  .tech-secure-scan,
-  .tech-verified-dot,
-  .tech-status-dot,
-  .login-brand-icon,
-  .login-card::after,
-  .login-security-dot {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .earth-texture-rotating {
     animation: none !important;
-  }
-
-  /* Reveal static state for cycling verification badge */
-  .verif-step-3 {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  .verif-step-1,
-  .verif-step-2 {
-    display: none !important;
-  }
-
-  /* Show all staged elements immediately without motion */
-  .login-card,
-  .login-branding,
-  .login-brand-icon,
-  .login-brand-text,
-  .login-card-header,
-  .login-stagger-1,
-  .login-stagger-2,
-  .login-stagger-4,
-  .login-stagger-5,
-  .login-stagger-role-1,
-  .login-stagger-role-2,
-  .login-stagger-role-3,
-  .login-stagger-role-4,
-  .radar-container,
-  .tech-label,
-  .defence-title,
-  .login-security-status,
-  .login-footer,
-  .satellite-grid,
-  .blockchain-flow,
-  .asset-verif-badge,
-  .signal-paths,
-  .signal-arc {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  /* Preserve essential structural positioning transforms */
-  .defence-title {
-    transform: translateX(-50%) !important;
-  }
-
-  .satellite-grid {
-    transform: translate(-50%, -50%) !important;
-  }
-
-  .login-submit-btn::before {
-    display: none;
-  }
-
-  .login-submit-btn:hover {
-    transform: none;
-  }
-
-  .login-btn-arrow {
-    transform: none !important;
-  }
-
-  .login-role-btn::after {
-    transition: none;
-  }
-
-  .login-role-btn:hover {
-    transform: none;
   }
 }

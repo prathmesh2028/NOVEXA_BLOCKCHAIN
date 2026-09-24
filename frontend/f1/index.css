@@ -155,12 +155,17 @@ body {
 .sidebar-link:hover {
   color: var(--foreground);
   background: var(--hover-bg);
+  transform: translateX(2px);
+}
+.sidebar-link:hover span {
+  transform: scale(1.08);
 }
 .sidebar-link.active {
   color: var(--primary);
   background: var(--primary-muted);
   border-left: 2px solid var(--primary);
   padding-left: 10px;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.12);
 }
 .sidebar-link svg {
   flex-shrink: 0;
