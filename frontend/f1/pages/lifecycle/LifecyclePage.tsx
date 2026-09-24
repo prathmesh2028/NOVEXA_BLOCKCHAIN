@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Fragment } from "react";
-import PageHeader from "../../components/ui/PageHeader";
+import { Link } from "react-router";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
+import "./LifecyclePage.css";
 
 interface LifecycleRecord {
   id: string;
@@ -198,10 +199,43 @@ const DUMMY_LIFECYCLE_ASSETS: LifecycleRecord[] = [
   },
 ];
 
+function useCountUp(endValue: number, durationMs: number = 700, delayMs: number = 0) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    let animId: number;
+
+    const timeout = setTimeout(() => {
+      const step = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / durationMs, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        setDisplayValue(Math.floor(ease * endValue));
+
+        if (progress < 1) {
+          animId = requestAnimationFrame(step);
+        } else {
+          setDisplayValue(endValue);
+        }
+      };
+      animId = requestAnimationFrame(step);
+    }, delayMs);
+
+    return () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(animId);
+    };
+  }, [endValue, durationMs, delayMs]);
+
+  return displayValue;
+}
+
 export default function LifecyclePage() {
   const [rules, setRules] = useState<any[]>([]);
   const [stateMachine, setStateMachine] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
@@ -228,9 +262,9 @@ export default function LifecyclePage() {
 
   const fetchRules = async () => {
     setLoading(true);
+    setIsRefreshing(true);
     try {
       const data = await api.get<any>("/lifecycle/rules");
-      // Normalize rule properties so snake_case & camelCase both work flawlessly
       const rawRules = data.rules || [];
       const normalized = rawRules.map((r: any) => ({
         from_state: r.from_state || r.from,
@@ -261,7 +295,6 @@ export default function LifecyclePage() {
           description: "Linear progression with terminal states and INSPECTION_OVERDUE exception recovery.",
         }
       );
-      // Don't filter to a specific state by default so all 10 rules appear immediately
       setSelectedState(null);
     } catch {
       // Fallback default rules if offline
@@ -293,6 +326,7 @@ export default function LifecyclePage() {
       setSelectedState(null);
     } finally {
       setLoading(false);
+      setTimeout(() => setIsRefreshing(false), 500);
     }
   };
 
@@ -306,7 +340,6 @@ export default function LifecyclePage() {
         // Handled gracefully in demo mode
       }
 
-      // Update local dummy data so the user sees the state change immediately
       setLifecycleAssets((prev) =>
         prev.map((item) => {
           if (item.asset_id === transitionForm.asset_id) {
@@ -333,7 +366,6 @@ export default function LifecyclePage() {
         })
       );
 
-      alert(`Lifecycle transition to ${transitionForm.to_state} successfully logged on-chain!`);
       setShowTransitionModal(false);
       setTransitionForm({ asset_id: "", to_state: "", reason: "" });
     } catch (err: any) {
@@ -344,7 +376,6 @@ export default function LifecyclePage() {
   };
 
   const openTransitionForAsset = (assetId: string, currentState: string) => {
-    // Recommend next state logically
     let nextState = "ACCEPTED_FOR_ASSEMBLY";
     if (currentState === "SUPPLIER_DECLARED") nextState = "RECEIVED";
     else if (currentState === "RECEIVED") nextState = "INSPECTION_RECORDED";
@@ -387,258 +418,247 @@ export default function LifecyclePage() {
 
   const uniqueRoles = ["QUALITY_INSPECTOR", "PROCUREMENT", "SYSTEM_ADMIN"];
 
+  // Real KPI Computations with animated numbers
+  const totalStates = stateMachine?.states?.length || 7;
+  const totalRules = rules.length || 10;
+  const gatedQACount = rules.filter((r) => r.requires_inspection).length || 3;
+  const gatedEvidenceCount = rules.filter((r) => r.requires_evidence).length || 4;
+
+  const animTotalStates = useCountUp(totalStates, 600, 50);
+  const animTotalRules = useCountUp(totalRules, 700, 100);
+  const animGatedQA = useCountUp(gatedQACount, 650, 150);
+  const animGatedEvidence = useCountUp(gatedEvidenceCount, 750, 200);
+
   return (
-    <div className="internal-page page-fade">
-      <PageHeader
-        title="Asset Lifecycle Engine"
-        subtitle="Finite state machine governing defence asset transitions, inspection checkpoints, and cryptographic custody clearance"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/app/dashboard" },
-          { label: "Quality Inspection", to: "/app/my-assets" },
-          { label: "Lifecycle" },
-        ]}
-        actions={
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              className="btn-primary"
-              onClick={() => {
-                setTransitionForm({
-                  asset_id: "EF-2026-00422",
-                  to_state: "ACCEPTED_FOR_ASSEMBLY",
-                  reason: "QA bench diagnostic completed. Cryptographic hash matched on-chain ledger.",
-                });
-                setShowTransitionModal(true);
-              }}
-            >
-              Execute Transition →
-            </button>
-            <button className="btn-secondary" onClick={fetchRules}>
-              ↻ Refresh
-            </button>
+    <div className="internal-page lc-engine-page">
+      {/* ─── HEADER ─── */}
+      <div className="lc-header-wrapper">
+        <div>
+          <div className="lc-breadcrumbs">
+            <Link to="/app/dashboard">Dashboard</Link>
+            <span className="lc-breadcrumbs-sep">/</span>
+            <Link to="/app/assets">Quality Inspection</Link>
+            <span className="lc-breadcrumbs-sep">/</span>
+            <span style={{ color: "var(--lc-text-highlight)" }}>Lifecycle</span>
           </div>
-        }
-      />
 
-      {/* KPI Intelligence Cards */}
-      <div className="internal-kpi-grid stagger-in-2">
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">TOTAL PIPELINE STATES</div>
-          <div className="internal-kpi-value">{stateMachine?.states?.length || 7}</div>
-          <div className="internal-kpi-sub">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563eb" }} />
-            Discrete custody phases
+          <div className="lc-header-title-row">
+            <h1 className="lc-header-title">
+              Asset Lifecycle Engine
+            </h1>
+            <div className="lc-header-status-pill">
+              <span className="lc-header-status-dot" />
+              <span>DETERMINISTIC FSM • KAVACH CLEARED</span>
+            </div>
+          </div>
+
+          <p className="lc-header-sub">
+            Finite state machine governing defence asset transitions, inspection checkpoints, and cryptographic custody clearance
+          </p>
+        </div>
+
+        <div className="lc-header-actions">
+          <button
+            id="btn-execute-transition"
+            className="lc-btn-primary"
+            onClick={() => {
+              setTransitionForm({
+                asset_id: "EF-2026-00422",
+                to_state: "ACCEPTED_FOR_ASSEMBLY",
+                reason: "QA bench diagnostic completed. Cryptographic hash matched on-chain ledger.",
+              });
+              setShowTransitionModal(true);
+            }}
+          >
+            <span>Execute Transition</span>
+            <span className="lc-btn-arrow">→</span>
+          </button>
+
+          <button
+            id="btn-refresh-lifecycle"
+            className="lc-btn-secondary"
+            onClick={fetchRules}
+            disabled={isRefreshing}
+            aria-label="Refresh Lifecycle Data"
+          >
+            <span className={`lc-refresh-icon ${isRefreshing ? "spinning" : ""}`}>↻</span>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ─── 4 KPI METRIC CARDS ─── */}
+      <div className="lc-kpi-grid">
+        {/* Card 1: Total Pipeline States */}
+        <div className="lc-kpi-card blue">
+          <div className="lc-kpi-top">
+            <span className="lc-kpi-label">TOTAL PIPELINE STATES</span>
+            <div className="lc-kpi-icon-box">◈</div>
+          </div>
+          <div className="lc-kpi-value">{animTotalStates}</div>
+          <div className="lc-kpi-sub">
+            <span className="lc-kpi-dot" />
+            <span>Discrete custody phases</span>
           </div>
         </div>
 
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">TRANSITION RULES</div>
-          <div className="internal-kpi-value" style={{ color: "#3b82f6" }}>
-            {rules.length || 10}
+        {/* Card 2: Transition Rules */}
+        <div className="lc-kpi-card cyan">
+          <div className="lc-kpi-top">
+            <span className="lc-kpi-label">TRANSITION RULES</span>
+            <div className="lc-kpi-icon-box">⚙</div>
           </div>
-          <div className="internal-kpi-sub">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#3b82f6" }} />
-            Deterministic policy gates
-          </div>
-        </div>
-
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">QA INSPECTION GATED</div>
-          <div className="internal-kpi-value" style={{ color: "#f59e0b" }}>
-            {rules.filter((r) => r.requires_inspection).length || 3}
-          </div>
-          <div className="internal-kpi-sub">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />
-            Requires physical QA sign-off
+          <div className="lc-kpi-value">{animTotalRules}</div>
+          <div className="lc-kpi-sub">
+            <span className="lc-kpi-dot" />
+            <span>Deterministic policy gates</span>
           </div>
         </div>
 
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">EVIDENCE REQUIRED</div>
-          <div className="internal-kpi-value" style={{ color: "#22c55e" }}>
-            {rules.filter((r) => r.requires_evidence).length || 4}
+        {/* Card 3: QA Inspection Gated */}
+        <div className="lc-kpi-card amber">
+          <div className="lc-kpi-top">
+            <span className="lc-kpi-label">QA INSPECTION GATED</span>
+            <div className="lc-kpi-icon-box">🔬</div>
           </div>
-          <div className="internal-kpi-sub">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
-            Requires SHA-256 evidence
+          <div className="lc-kpi-value">{animGatedQA}</div>
+          <div className="lc-kpi-sub">
+            <span className="lc-kpi-dot" />
+            <span>Requires physical QA sign-off</span>
+          </div>
+        </div>
+
+        {/* Card 4: Evidence Required */}
+        <div className="lc-kpi-card green">
+          <div className="lc-kpi-top">
+            <span className="lc-kpi-label">EVIDENCE REQUIRED</span>
+            <div className="lc-kpi-icon-box">🛡</div>
+          </div>
+          <div className="lc-kpi-value">{animGatedEvidence}</div>
+          <div className="lc-kpi-sub">
+            <span className="lc-kpi-dot" />
+            <span>Requires SHA-256 evidence</span>
           </div>
         </div>
       </div>
 
-      {/* Visual State Machine Diagram */}
+      {/* ─── STATE MACHINE TOPOLOGY (HERO FEATURE) ─── */}
       {stateMachine && (
-        <div className="internal-card stagger-in-3" style={{ padding: "20px 24px", marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
-                STATE MACHINE TOPOLOGY
+        <div className="lc-topo-card">
+          <div className="lc-topo-header">
+            <div className="lc-topo-title-group">
+              <div className="lc-topo-headline">
+                <span className="lc-topo-live-beacon" />
+                <span>STATE MACHINE TOPOLOGY</span>
               </div>
-              <div style={{ fontSize: "0.8125rem", color: "var(--muted)", marginTop: 2 }}>
-                Click any stage node to highlight its inbound and outbound transition rules
+              <div className="lc-topo-desc">
+                Click any stage node to highlight its inbound and outbound transition policy gates
               </div>
             </div>
+
             {selectedState && (
               <button
-                className="btn-ghost"
-                style={{ fontSize: "0.75rem", color: "#60a5fa" }}
+                className="lc-topo-clear-btn"
                 onClick={() => setSelectedState(null)}
               >
-                Clear Node Selection (Show All 10 Rules)
+                Clear Node Selection (Show All {rules.length || 10} Rules)
               </button>
             )}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", overflowX: "auto", padding: "8px 0 16px 0", gap: 8 }}>
+          {/* Connected Pipeline Track with Moving Telemetry Packet */}
+          <div className="lc-topo-pipeline">
             {stateMachine.states.map((state: string, idx: number) => {
               const isTerminal = stateMachine.terminal_states?.includes(state);
               const isSelected = selectedState === state;
-              const isFirst = idx === 0;
+              const isOverdue = state === "INSPECTION_OVERDUE";
+              const isAccepted = state === "ACCEPTED_FOR_ASSEMBLY";
+              const isRejected = state.includes("REJECT");
+
+              let nodeClass = "lc-topo-node";
+              if (isSelected) nodeClass += " selected";
+              if (isOverdue) nodeClass += " state-overdue";
+              else if (isAccepted) nodeClass += " state-accepted";
+              else if (isRejected) nodeClass += " state-rejected";
 
               return (
-                <div key={state} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+                <div key={state} className="lc-topo-stage-wrapper">
                   <button
+                    className={nodeClass}
                     onClick={() => setSelectedState(state === selectedState ? null : state)}
-                    style={{
-                      padding: "10px 14px",
-                      borderRadius: 8,
-                      background: isSelected
-                        ? "rgba(37, 99, 235, 0.2)"
-                        : isTerminal
-                        ? state.includes("REJECT")
-                          ? "rgba(239, 68, 68, 0.08)"
-                          : "rgba(34, 197, 94, 0.08)"
-                        : "var(--panel-muted, #102038)",
-                      border: `1px solid ${
-                        isSelected
-                          ? "#3b82f6"
-                          : isTerminal
-                          ? state.includes("REJECT")
-                            ? "rgba(239, 68, 68, 0.3)"
-                            : "rgba(34, 197, 94, 0.3)"
-                          : "var(--border, #1e3a60)"
-                      }`,
-                      boxShadow: isSelected ? "0 0 14px rgba(37, 99, 235, 0.4)" : "none",
-                      cursor: "pointer",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      gap: 4,
-                      transition: "all 0.2s ease",
-                      textAlign: "left",
-                    }}
+                    type="button"
+                    aria-pressed={isSelected}
+                    title={`Click to filter rules for ${state.replace(/_/g, " ")}`}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span
-                        style={{
-                          width: 7,
-                          height: 7,
-                          borderRadius: "50%",
-                          background: isTerminal
-                            ? state.includes("REJECT")
-                              ? "#ef4444"
-                              : "#22c55e"
-                            : isFirst
-                            ? "#60a5fa"
-                            : "#3b82f6",
-                          display: "inline-block",
-                        }}
-                      />
-                      <span style={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--muted)", textTransform: "uppercase" }}>
+                    <div className="lc-node-header">
+                      <span className="lc-node-marker" />
+                      <span className="lc-node-stage-num">
                         STAGE 0{idx + 1}
                       </span>
                     </div>
-                    <div
-                      style={{
-                        fontSize: "0.8125rem",
-                        fontWeight: 700,
-                        color: isSelected
-                          ? "#ffffff"
-                          : isTerminal
-                          ? state.includes("REJECT")
-                            ? "#f87171"
-                            : "#4ade80"
-                          : "var(--foreground, #e2e8f0)",
-                      }}
-                    >
+
+                    <div className="lc-node-name">
                       {state.replace(/_/g, " ")}
                     </div>
                   </button>
 
                   {idx < stateMachine.states.length - 1 && (
-                    <div style={{ width: 24, display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", margin: "0 2px" }}>
-                      →
-                    </div>
+                    <div className="lc-topo-connector" title="Deterministic State Transition Vector" />
                   )}
                 </div>
               );
             })}
           </div>
 
-          <div style={{ padding: "8px 12px", background: "rgba(37,99,235,0.06)", borderRadius: 6, fontSize: "0.75rem", color: "#94a3b8" }}>
-            <strong style={{ color: "#e2e8f0" }}>FSM Specification: </strong>
-            {stateMachine.description}
+          {/* FSM Specification Bar with Shimmer Beam */}
+          <div className="lc-fsm-spec-bar">
+            <strong>FSM Specification:</strong>
+            <span>{stateMachine.description}</span>
           </div>
         </div>
       )}
 
-      {/* SECTION TABS: DUMMY ASSETS TRACKER vs TRANSITION RULES */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 16, borderBottom: "1px solid #1e3a60", paddingBottom: 8 }}>
+      {/* ─── SECTION TABS: ASSETS TRACKER vs TRANSITION RULES ─── */}
+      <div className="lc-tabs-bar">
         <button
           type="button"
+          className={`lc-tab-btn ${activeTab === "assets" ? "active" : ""}`}
           onClick={() => setActiveTab("assets")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 6,
-            fontSize: "0.875rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            background: activeTab === "assets" ? "rgba(59, 130, 246, 0.2)" : "transparent",
-            color: activeTab === "assets" ? "#60a5fa" : "#94a3b8",
-            border: activeTab === "assets" ? "1px solid #3b82f6" : "1px solid transparent",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-          }}
         >
-          <span>◈</span> Asset Lifecycle Records ({lifecycleAssets.length} Active Demo Units)
+          <span>◈</span>
+          <span>Asset Lifecycle Records ({lifecycleAssets.length} Active Demo Units)</span>
         </button>
 
         <button
           type="button"
+          className={`lc-tab-btn ${activeTab === "rules" ? "active" : ""}`}
           onClick={() => setActiveTab("rules")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 6,
-            fontSize: "0.875rem",
-            fontWeight: 700,
-            cursor: "pointer",
-            background: activeTab === "rules" ? "rgba(59, 130, 246, 0.2)" : "transparent",
-            color: activeTab === "rules" ? "#60a5fa" : "#94a3b8",
-            border: activeTab === "rules" ? "1px solid #3b82f6" : "1px solid transparent",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-          }}
         >
-          <span>⚙</span> State Transition Rules & Policy Gates ({rules.length || 10})
+          <span>⚙</span>
+          <span>State Transition Rules & Policy Gates ({rules.length || 10})</span>
         </button>
       </div>
 
-      {/* TAB 1: ASSET LIFECYCLE DUMMY DATA SECTION */}
+      {/* ─── TAB 1: ASSET LIFECYCLE RECORDS ─── */}
       {activeTab === "assets" && (
-        <div className="stagger-in-3">
-          {/* Filter Bar for Assets */}
-          <div className="internal-filter-bar" style={{ marginBottom: 16 }}>
-            <input
-              type="text"
-              className="internal-search-input"
-              placeholder="Search tracked assets by ID, model, or serial..."
-              value={assetSearch}
-              onChange={(e) => setAssetSearch(e.target.value)}
-              style={{ flex: 1 }}
-            />
+        <div>
+          {/* Filter Bar */}
+          <div className="lc-filter-bar">
+            <div className="lc-search-box">
+              <span className="lc-search-icon">🔍</span>
+              <input
+                id="input-asset-search"
+                type="text"
+                className="lc-search-input"
+                placeholder="Search tracked assets by ID, model, or serial..."
+                value={assetSearch}
+                onChange={(e) => setAssetSearch(e.target.value)}
+              />
+            </div>
 
             <select
-              className="internal-select"
+              id="select-asset-state"
+              className="lc-select"
               value={assetStateFilter}
               onChange={(e) => setAssetStateFilter(e.target.value)}
             >
@@ -651,17 +671,17 @@ export default function LifecyclePage() {
               <option value="REJECTED_QUARANTINED">REJECTED QUARANTINED</option>
             </select>
 
-            <span style={{ fontSize: "0.75rem", color: "var(--muted)", marginLeft: "auto" }}>
-              Showing {filteredAssets.length} of {lifecycleAssets.length} tracked defence assets
+            <span className="lc-count-badge">
+              ● Showing {filteredAssets.length} of {lifecycleAssets.length} tracked defence assets
             </span>
           </div>
 
           {/* Asset Records Table */}
-          <div className="internal-card" style={{ padding: 0, marginBottom: 20 }}>
-            <div className="internal-table-container">
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 920 }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
+          <div className="lc-table-card">
+            <div className="lc-table-container">
+              <table className="lc-table">
+                <thead className="lc-table-head">
+                  <tr>
                     {[
                       "Asset ID / System",
                       "Model & Serial",
@@ -671,209 +691,176 @@ export default function LifecyclePage() {
                       "Cryptographic Proof",
                       "Action",
                     ].map((h) => (
-                      <th
-                        key={h}
-                        style={{
-                          padding: "12px 14px",
-                          textAlign: "left",
-                          fontSize: "0.6875rem",
-                          color: "var(--muted)",
-                          fontWeight: 700,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {h}
-                      </th>
+                      <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAssets.map((asset) => {
-                    const isExpanded = expandedAssetId === asset.asset_id;
-                    const stagePct = Math.round((asset.stage_number / asset.total_stages) * 100);
+                  {filteredAssets.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: "center", padding: "40px", color: "var(--lc-text-muted)" }}>
+                        No matching defence assets found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAssets.map((asset) => {
+                      const isExpanded = expandedAssetId === asset.asset_id;
+                      const stagePct = Math.round((asset.stage_number / asset.total_stages) * 100);
 
-                    return (
-                      <Fragment key={asset.id}>
-                        <tr
-                          className="interactive-row"
-                          style={{
-                            borderBottom: "1px solid var(--border-subtle)",
-                            background: isExpanded ? "rgba(59, 130, 246, 0.05)" : "transparent",
-                          }}
-                        >
-                          <td style={{ padding: "12px 14px" }}>
-                            <div style={{ fontWeight: 700, color: "#60a5fa", fontFamily: "monospace", fontSize: "0.875rem" }}>
-                              {asset.asset_id}
-                            </div>
-                            <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{asset.name}</div>
-                          </td>
-
-                          <td style={{ padding: "12px 14px" }}>
-                            <div style={{ fontSize: "0.8125rem", color: "#e2e8f0" }}>{asset.model}</div>
-                            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontFamily: "monospace" }}>
-                              {asset.serial}
-                            </div>
-                          </td>
-
-                          <td style={{ padding: "12px 14px" }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                              <StatusBadge status={asset.lifecycle_state as any} size="sm" />
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <div
-                                  style={{
-                                    flex: 1,
-                                    height: 4,
-                                    background: "#1e3a60",
-                                    borderRadius: 2,
-                                    overflow: "hidden",
-                                    width: 80,
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      width: `${stagePct}%`,
-                                      height: "100%",
-                                      background:
-                                        asset.lifecycle_state === "REJECTED_QUARANTINED"
-                                          ? "#ef4444"
-                                          : asset.lifecycle_state === "ACCEPTED_FOR_ASSEMBLY"
-                                          ? "#22c55e"
-                                          : "#3b82f6",
-                                    }}
-                                  />
-                                </div>
-                                <span style={{ fontSize: "0.625rem", color: "#64748b" }}>
-                                  Stage {asset.stage_number}/{asset.total_stages}
-                                </span>
+                      return (
+                        <Fragment key={asset.id}>
+                          <tr className={`lc-table-row ${isExpanded ? "expanded" : ""}`}>
+                            <td>
+                              <div className="lc-asset-id-cell">
+                                {asset.asset_id}
                               </div>
-                            </div>
-                          </td>
+                              <div className="lc-asset-name-sub">{asset.name}</div>
+                            </td>
 
-                          <td style={{ padding: "12px 14px" }}>
-                            <span
-                              style={{
-                                fontSize: "0.75rem",
-                                fontWeight: 600,
-                                color: asset.evidence_status === "Failed" ? "#ef4444" : "#22c55e",
-                              }}
-                            >
-                              {asset.evidence_count}
-                            </span>
-                          </td>
-
-                          <td style={{ padding: "12px 14px" }}>
-                            <div style={{ fontSize: "0.75rem", color: "#e2e8f0", fontWeight: 500 }}>
-                              {asset.last_transition_actor}
-                            </div>
-                            <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>{asset.last_transition_date}</div>
-                          </td>
-
-                          <td style={{ padding: "12px 14px" }}>
-                            <span
-                              style={{
-                                fontSize: "0.6875rem",
-                                fontFamily: "monospace",
-                                padding: "2px 6px",
-                                borderRadius: 3,
-                                background:
-                                  asset.proof_status === "Anchored"
-                                    ? "rgba(34, 197, 94, 0.12)"
-                                    : asset.proof_status === "Quarantined"
-                                    ? "rgba(239, 68, 68, 0.12)"
-                                    : "rgba(245, 158, 11, 0.12)",
-                                color:
-                                  asset.proof_status === "Anchored"
-                                    ? "#4ade80"
-                                    : asset.proof_status === "Quarantined"
-                                    ? "#f87171"
-                                    : "#fbbf24",
-                                border: "1px solid rgba(255,255,255,0.08)",
-                              }}
-                            >
-                              ⬡ {asset.blockchain_tx}
-                            </span>
-                          </td>
-
-                          <td style={{ padding: "12px 14px" }}>
-                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                              <button
-                                className="btn-primary"
-                                style={{ fontSize: "0.75rem", padding: "4px 8px" }}
-                                onClick={() => openTransitionForAsset(asset.asset_id, asset.lifecycle_state)}
-                              >
-                                Transition →
-                              </button>
-                              <button
-                                className="btn-ghost"
-                                style={{ fontSize: "0.75rem", padding: "4px 8px", color: isExpanded ? "#60a5fa" : "#94a3b8" }}
-                                onClick={() => setExpandedAssetId(isExpanded ? null : asset.asset_id)}
-                              >
-                                {isExpanded ? "Hide Audit" : "Audit Trail ▼"}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-
-                        {/* EXPANDABLE AUDIT TRAIL TIMELINE */}
-                        {isExpanded && (
-                          <tr style={{ background: "rgba(10, 22, 40, 0.8)", borderBottom: "1px solid #1e3a60" }}>
-                            <td colSpan={7} style={{ padding: "16px 20px" }}>
-                              <div style={{ marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#60a5fa", display: "flex", alignItems: "center", gap: 6 }}>
-                                  <span>🔒 Cryptographic Custody Trail:</span> {asset.asset_id} — {asset.name}
-                                </div>
-                                <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                                  Supplier: {asset.supplier}
-                                </span>
+                            <td>
+                              <div style={{ fontWeight: 600, color: "var(--lc-text-title)" }}>{asset.model}</div>
+                              <div style={{ fontSize: "0.6875rem", color: "var(--lc-text-muted)", fontFamily: "monospace" }}>
+                                {asset.serial}
                               </div>
+                            </td>
 
-                              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginLeft: 8 }}>
-                                {asset.history.map((step, sIdx) => (
-                                  <div key={sIdx} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                      <div
-                                        style={{
-                                          width: 10,
-                                          height: 10,
-                                          borderRadius: "50%",
-                                          background: sIdx === 0 ? "#22c55e" : "#3b82f6",
-                                          border: "2px solid #0a1628",
-                                        }}
-                                      />
-                                      {sIdx < asset.history.length - 1 && (
-                                        <div style={{ width: 2, height: 28, background: "#1e3a60" }} />
-                                      )}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#e2e8f0" }}>
-                                          {step.state}
-                                        </span>
-                                        <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>
-                                          {step.date}
-                                        </span>
-                                        <span style={{ fontSize: "0.6875rem", color: "#60a5fa" }}>
-                                          by {step.actor}
-                                        </span>
-                                        <span style={{ fontSize: "0.625rem", fontFamily: "monospace", color: "#64748b", marginLeft: "auto" }}>
-                                          Tx: {step.txHash}
-                                        </span>
-                                      </div>
-                                      <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>
-                                        {step.details}
-                                      </div>
-                                    </div>
+                            <td>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                                <StatusBadge status={asset.lifecycle_state as any} size="sm" />
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <div className="lc-progress-track">
+                                    <div
+                                      className="lc-progress-bar"
+                                      style={{
+                                        width: `${stagePct}%`,
+                                        background:
+                                          asset.lifecycle_state === "REJECTED_QUARANTINED"
+                                            ? "#ef4444"
+                                            : asset.lifecycle_state === "ACCEPTED_FOR_ASSEMBLY"
+                                            ? "#22c55e"
+                                            : asset.lifecycle_state === "INSPECTION_OVERDUE"
+                                            ? "#f59e0b"
+                                            : "#3b82f6",
+                                      }}
+                                    />
                                   </div>
-                                ))}
+                                  <span style={{ fontSize: "0.625rem", color: "var(--lc-text-muted)" }}>
+                                    {asset.stage_number}/{asset.total_stages}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td>
+                              <span
+                                style={{
+                                  fontSize: "0.75rem",
+                                  fontWeight: 700,
+                                  color: asset.evidence_status === "Failed" ? "#ef4444" : "#22c55e",
+                                }}
+                              >
+                                {asset.evidence_count}
+                              </span>
+                            </td>
+
+                            <td>
+                              <div style={{ fontSize: "0.75rem", color: "var(--lc-text-title)", fontWeight: 600 }}>
+                                {asset.last_transition_actor}
+                              </div>
+                              <div style={{ fontSize: "0.6875rem", color: "var(--lc-text-muted)" }}>
+                                {asset.last_transition_date}
+                              </div>
+                            </td>
+
+                            <td>
+                              <span
+                                className={`lc-proof-pill ${
+                                  asset.proof_status === "Anchored"
+                                    ? "anchored"
+                                    : asset.proof_status === "Quarantined"
+                                    ? "quarantined"
+                                    : "pending"
+                                }`}
+                              >
+                                ⬡ {asset.blockchain_tx}
+                              </span>
+                            </td>
+
+                            <td>
+                              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <button
+                                  className="lc-btn-primary"
+                                  style={{ fontSize: "0.6875rem", padding: "5px 10px" }}
+                                  onClick={() => openTransitionForAsset(asset.asset_id, asset.lifecycle_state)}
+                                >
+                                  Transition →
+                                </button>
+                                <button
+                                  className="lc-btn-secondary"
+                                  style={{
+                                    fontSize: "0.6875rem",
+                                    padding: "5px 10px",
+                                    color: isExpanded ? "#60a5fa" : "var(--lc-text-muted)",
+                                    borderColor: isExpanded ? "#3b82f6" : "var(--lc-border)",
+                                  }}
+                                  onClick={() => setExpandedAssetId(isExpanded ? null : asset.asset_id)}
+                                >
+                                  {isExpanded ? "Hide Audit" : "Audit Trail ▼"}
+                                </button>
                               </div>
                             </td>
                           </tr>
-                        )}
-                      </Fragment>
-                    );
-                  })}
+
+                          {/* EXPANDABLE AUDIT TRAIL TIMELINE */}
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={7} style={{ padding: 0 }}>
+                                <div className="lc-audit-trail-container">
+                                  <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#60a5fa", display: "flex", alignItems: "center", gap: 6 }}>
+                                      <span>🔒 Cryptographic Custody Trail:</span>
+                                      <span style={{ color: "var(--lc-text-title)" }}>{asset.asset_id} — {asset.name}</span>
+                                    </div>
+                                    <span style={{ fontSize: "0.75rem", color: "var(--lc-text-muted)" }}>
+                                      Supplier: {asset.supplier}
+                                    </span>
+                                  </div>
+
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginLeft: 6 }}>
+                                    {asset.history.map((step, sIdx) => (
+                                      <div key={sIdx} className="lc-audit-step">
+                                        <div className={`lc-audit-node-dot ${sIdx === 0 ? "start" : ""}`} />
+                                        {sIdx < asset.history.length - 1 && <div className="lc-audit-line" />}
+                                        <div style={{ flex: 1 }}>
+                                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                            <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)" }}>
+                                              {step.state}
+                                            </span>
+                                            <span style={{ fontSize: "0.6875rem", color: "var(--lc-text-muted)" }}>
+                                              {step.date}
+                                            </span>
+                                            <span style={{ fontSize: "0.6875rem", color: "#60a5fa" }}>
+                                              by {step.actor}
+                                            </span>
+                                            <span style={{ fontSize: "0.625rem", fontFamily: "monospace", color: "var(--lc-text-muted)", marginLeft: "auto" }}>
+                                              Tx: {step.txHash}
+                                            </span>
+                                          </div>
+                                          <div style={{ fontSize: "0.75rem", color: "var(--lc-text-body)", marginTop: 2 }}>
+                                            {step.details}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -881,22 +868,26 @@ export default function LifecyclePage() {
         </div>
       )}
 
-      {/* TAB 2: TRANSITION RULES & POLICY GATES SECTION */}
+      {/* ─── TAB 2: TRANSITION RULES & POLICY GATES ─── */}
       {activeTab === "rules" && (
-        <div className="stagger-in-3">
-          {/* Filter and Search Bar for Rules */}
-          <div className="internal-filter-bar">
-            <input
-              type="text"
-              className="internal-search-input"
-              placeholder="Filter rules by from-state, to-state, or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ flex: 1 }}
-            />
+        <div>
+          {/* Filter Bar */}
+          <div className="lc-filter-bar">
+            <div className="lc-search-box">
+              <span className="lc-search-icon">🔍</span>
+              <input
+                id="input-rule-search"
+                type="text"
+                className="lc-search-input"
+                placeholder="Filter rules by origin, destination, or description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
             <select
-              className="internal-select"
+              id="select-rule-role"
+              className="lc-select"
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
             >
@@ -908,89 +899,75 @@ export default function LifecyclePage() {
               ))}
             </select>
 
-            <span style={{ fontSize: "0.75rem", color: "var(--muted)", marginLeft: "auto" }}>
-              Showing {filteredRules.length} of {rules.length} transition rules
+            <span className="lc-count-badge">
+              ● Showing {filteredRules.length} of {rules.length} transition rules
             </span>
           </div>
 
           {/* Rules Table */}
-          <div className="internal-card" style={{ padding: 0 }}>
-            <div className="internal-table-container">
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
+          <div className="lc-table-card">
+            <div className="lc-table-container">
+              <table className="lc-table">
+                <thead className="lc-table-head">
+                  <tr>
                     {["Origin State", "Destination State", "Authorized Role", "Evidence Gate", "QA Inspection Gate", "Rule Description"].map((h) => (
-                      <th
-                        key={h}
-                        style={{
-                          padding: "12px 16px",
-                          textAlign: "left",
-                          fontSize: "0.6875rem",
-                          color: "var(--muted)",
-                          fontWeight: 700,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {h}
-                      </th>
+                      <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={6} style={{ padding: "48px 20px", textAlign: "center", color: "var(--muted)" }}>
-                        <div style={{ display: "inline-block", width: 24, height: 24, borderRadius: "50%", border: "2px solid #3b82f6", borderTopColor: "transparent", animation: "orbitRotateSlow 1s linear infinite", marginBottom: 8 }} />
+                      <td colSpan={6} style={{ padding: "48px 20px", textAlign: "center", color: "var(--lc-text-muted)" }}>
+                        <div style={{ display: "inline-block", width: 24, height: 24, borderRadius: "50%", border: "2px solid #3b82f6", borderTopColor: "transparent", animation: "lcSpin 1s linear infinite", marginBottom: 8 }} />
                         <div>Compiling lifecycle state machine rules...</div>
                       </td>
                     </tr>
                   ) : filteredRules.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ padding: "40px", textAlign: "center", color: "var(--muted)" }}>
+                      <td colSpan={6} style={{ padding: "40px", textAlign: "center", color: "var(--lc-text-muted)" }}>
                         No matching transition rules found
                       </td>
                     </tr>
                   ) : (
                     filteredRules.map((rule: any, idx: number) => (
-                      <tr key={idx} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                        <td style={{ padding: "14px 16px", fontWeight: 700, color: "var(--foreground)" }}>
+                      <tr key={idx} className="lc-table-row">
+                        <td style={{ fontWeight: 700, color: "var(--lc-text-title)" }}>
                           {rule.from_state}
                         </td>
-                        <td style={{ padding: "14px 16px", fontWeight: 700, color: "#22c55e" }}>
+                        <td style={{ fontWeight: 700, color: "#22c55e" }}>
                           → {rule.to_state}
                         </td>
-                        <td style={{ padding: "14px 16px" }}>
+                        <td>
                           <span
                             style={{
                               padding: "3px 10px",
-                              background: "rgba(139,92,246,0.1)",
-                              border: "1px solid rgba(139,92,246,0.25)",
+                              background: "rgba(168, 85, 247, 0.12)",
+                              border: "1px solid rgba(168, 85, 247, 0.3)",
                               borderRadius: 6,
                               fontSize: "0.75rem",
                               fontWeight: 600,
-                              color: "#a78bfa",
+                              color: "#c084fc",
                             }}
                           >
                             {rule.allowed_role}
                           </span>
                         </td>
-                        <td style={{ padding: "14px 16px", textAlign: "left" }}>
+                        <td>
                           {rule.requires_evidence ? (
-                            <span style={{ color: "#22c55e", fontWeight: 700, fontSize: "0.875rem" }}>✓ Required</span>
+                            <span style={{ color: "#22c55e", fontWeight: 700, fontSize: "0.8125rem" }}>✓ Required</span>
                           ) : (
-                            <span style={{ color: "var(--muted)" }}>—</span>
+                            <span style={{ color: "var(--lc-text-muted)" }}>—</span>
                           )}
                         </td>
-                        <td style={{ padding: "14px 16px", textAlign: "left" }}>
+                        <td>
                           {rule.requires_inspection ? (
-                            <span style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.875rem" }}>✓ Required</span>
+                            <span style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.8125rem" }}>✓ Required</span>
                           ) : (
-                            <span style={{ color: "var(--muted)" }}>—</span>
+                            <span style={{ color: "var(--lc-text-muted)" }}>—</span>
                           )}
                         </td>
-                        <td style={{ padding: "14px 16px", fontSize: "0.8125rem", color: "var(--muted)" }}>
+                        <td style={{ fontSize: "0.8125rem", color: "var(--lc-text-body)" }}>
                           {rule.description || "System transition policy"}
                         </td>
                       </tr>
@@ -1003,59 +980,49 @@ export default function LifecyclePage() {
         </div>
       )}
 
-      {/* Execute Transition Modal with 1-Click Dummy Autofill */}
+      {/* ─── EXECUTE TRANSITION MODAL ─── */}
       {showTransitionModal && (
         <div
-          className="modal-backdrop"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(3, 7, 18, 0.75)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 20,
+          className="lc-modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowTransitionModal(false);
           }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-transition-title"
         >
-          <div className="internal-card modal-content-animated" style={{ width: "100%", maxWidth: 540, padding: 24, maxHeight: "90vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <div className="lc-modal-card">
+            <div className="lc-modal-header">
               <div>
-                <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--foreground)" }}>Execute Lifecycle State Transition</div>
-                <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Advance defence asset through cryptographic policy gates</div>
+                <h3 id="modal-transition-title" className="lc-modal-title">
+                  Execute Lifecycle State Transition
+                </h3>
+                <div style={{ fontSize: "0.75rem", color: "var(--lc-text-muted)", marginTop: 2 }}>
+                  Advance defence asset through cryptographic policy gates
+                </div>
               </div>
               <button
+                type="button"
+                className="lc-modal-close"
                 onClick={() => setShowTransitionModal(false)}
-                style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.2rem" }}
+                aria-label="Close modal"
               >
                 ✕
               </button>
             </div>
 
-            {/* Quick Fill Dummy Asset Selector */}
-            <div style={{ marginBottom: 16, padding: "10px 12px", background: "rgba(37,99,235,0.08)", borderRadius: 6, border: "1px solid rgba(37,99,235,0.2)" }}>
-              <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#60a5fa", textTransform: "uppercase", marginBottom: 6 }}>
-                ⚡ Quick Fill Dummy Asset for Testing:
+            {/* Quick Fill Dummy Asset Selector for Testing */}
+            <div className="lc-quick-fill-box">
+              <div className="lc-quick-fill-label">
+                ⚡ Quick Fill Asset for Testing:
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {lifecycleAssets.slice(0, 4).map((a) => (
                   <button
                     key={a.asset_id}
                     type="button"
+                    className={`lc-quick-btn ${transitionForm.asset_id === a.asset_id ? "active" : ""}`}
                     onClick={() => quickFillDummyAsset(a)}
-                    style={{
-                      padding: "3px 8px",
-                      borderRadius: 4,
-                      background: transitionForm.asset_id === a.asset_id ? "#2563eb" : "#0d1a2d",
-                      border: "1px solid #1e3a60",
-                      color: "#e2e8f0",
-                      fontSize: "0.6875rem",
-                      cursor: "pointer",
-                    }}
                   >
                     {a.asset_id} ({a.lifecycle_state.split("_")[0]})
                   </button>
@@ -1063,15 +1030,15 @@ export default function LifecyclePage() {
               </div>
             </div>
 
-            <form onSubmit={handleTransition} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <form onSubmit={handleTransition} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Target Asset ID *
                 </label>
                 <input
                   type="text"
-                  className="internal-search-input"
-                  style={{ width: "100%" }}
+                  className="lc-search-input"
+                  style={{ height: 42, paddingLeft: 14 }}
                   value={transitionForm.asset_id}
                   onChange={(e) => setTransitionForm({ ...transitionForm, asset_id: e.target.value })}
                   placeholder="e.g. EF-2026-00421"
@@ -1080,12 +1047,12 @@ export default function LifecyclePage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Target Lifecycle State *
                 </label>
                 <select
-                  className="internal-select"
-                  style={{ width: "100%" }}
+                  className="lc-select"
+                  style={{ width: "100%", height: 42 }}
                   value={transitionForm.to_state}
                   onChange={(e) => setTransitionForm({ ...transitionForm, to_state: e.target.value })}
                   required
@@ -1107,26 +1074,41 @@ export default function LifecyclePage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
+                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Transition Justification & Reason *
                 </label>
                 <textarea
-                  className="internal-search-input"
-                  style={{ width: "100%", minHeight: 80, resize: "vertical" }}
+                  className="lc-search-input"
+                  style={{ width: "100%", height: 80, padding: "10px 14px", resize: "vertical" }}
                   value={transitionForm.reason}
                   onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })}
-                  placeholder="State reason for moving asset to next lifecycle stage..."
-                  rows={2}
+                  placeholder="State reason for advancing asset to next lifecycle stage..."
+                  rows={3}
                   required
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
-                <button type="button" className="btn-secondary" onClick={() => setShowTransitionModal(false)}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+                <button
+                  type="button"
+                  className="lc-btn-secondary"
+                  onClick={() => setShowTransitionModal(false)}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary" disabled={submitting}>
-                  {submitting ? "Transitioning..." : "Execute Transition"}
+                <button
+                  type="submit"
+                  className="lc-btn-primary"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <span className="lc-refresh-icon spinning">↻</span>
+                      Transitioning...
+                    </>
+                  ) : (
+                    "Execute Transition"
+                  )}
                 </button>
               </div>
             </form>
