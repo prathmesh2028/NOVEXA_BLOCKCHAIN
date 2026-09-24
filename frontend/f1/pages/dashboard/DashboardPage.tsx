@@ -592,7 +592,7 @@ function OverviewModal({ onClose }: { onClose: () => void }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "1.1rem", color: "#38bdf8" }}>▶</span>
             <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground, #e2e8f0)" }}>
-              NOVEXA DEFENCE TRUST — PLATFORM OVERVIEW
+              BEL DEFENCE TRUST — PLATFORM OVERVIEW
             </span>
           </div>
           <button
@@ -604,7 +604,7 @@ function OverviewModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <p style={{ fontSize: "0.85rem", color: "#94a3b8", lineHeight: 1.6, marginBottom: 18 }}>
-          NOVEXA Defence Trust is an autonomous, tamper-proof blockchain infrastructure built for sovereign defence asset provenance.
+          BEL Defence Trust is an autonomous, tamper-proof blockchain infrastructure built for sovereign defence asset provenance.
           Components are registered with cryptographic hashes, verified by authenticated quality inspectors, and permanently anchored on-chain with non-transferable digital passports.
         </p>
 
