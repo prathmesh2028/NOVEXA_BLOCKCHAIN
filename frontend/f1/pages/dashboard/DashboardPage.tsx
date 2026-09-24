@@ -48,7 +48,7 @@ function LiveClock() {
     return () => clearInterval(id);
   }, []);
   return (
-    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.75rem", color: "#64748b", letterSpacing: "0.05em" }}>
+    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "0.72rem", color: "#64748b", letterSpacing: "0.05em" }}>
       {time.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })} IST
     </span>
   );
@@ -127,120 +127,459 @@ function KpiCard({ label, value, sub, accent = "#3b82f6", icon, sparklineVariant
   );
 }
 
-/* ── Defence Hero Vector Atmosphere with Parallax & Visible Motion ──── */
-interface HeroVisualProps {
-  parallax: {
-    bg: { x: number; y: number };
-    net: { x: number; y: number };
-    sat: { x: number; y: number };
-    jet: { x: number; y: number };
-  };
+/* ── Indian Tricolour Flag Pill with 24-Spoke Ashoka Chakra ─────────── */
+function IndianTricolourPill() {
+  return (
+    <div className="db-tricolour-pill" title="Republic of India • Bharat">
+      <div className="db-tricolour-stripe stripe-saffron" />
+      <div className="db-tricolour-stripe stripe-white">
+        <div className="db-ashoka-chakra" />
+      </div>
+      <div className="db-tricolour-stripe stripe-green" />
+    </div>
+  );
 }
 
-function DefenceHeroVisual({ parallax }: HeroVisualProps) {
+/* ── Panoramic Indian Defence Command Center Hero Banner ────────────── */
+interface PanoramicHeroProps {
+  user: any;
+  role: string;
+  onWatchOverview: () => void;
+}
+
+function PanoramicIndianDefenceHero({ user, role, onWatchOverview }: PanoramicHeroProps) {
+  const [azimuth, setAzimuth] = useState(242);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAzimuth((prev) => (prev >= 360 ? 0 : prev + 1));
+    }, 220);
+    return () => clearInterval(timer);
+  }, []);
+
+  const greeting = (() => {
+    const h = new Date().getHours();
+    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  })();
+
+  const dateStr = new Date()
+    .toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    .toUpperCase();
+
+  // 11 Strategic Military Command Nodes on India Map
+  const indiaNodes = [
+    { city: "Ladakh", label: "Northern Command", x: 380, y: 40 },
+    { city: "New Delhi", label: "Strategic HQ", x: 385, y: 85 },
+    { city: "Jaipur", label: "Western Command", x: 350, y: 105 },
+    { city: "Lucknow", label: "Central Command", x: 420, y: 110 },
+    { city: "Ahmedabad", label: "Coast Guard HQ", x: 325, y: 145 },
+    { city: "Mumbai", label: "Western Fleet Deck", x: 335, y: 190 },
+    { city: "Hyderabad", label: "Avionics Research", x: 395, y: 200 },
+    { city: "Visakhapatnam", label: "Eastern Fleet Deck", x: 450, y: 200 },
+    { city: "Bengaluru", label: "BEL Defence Complex", x: 380, y: 250 },
+    { city: "Chennai", label: "Southern Sea Command", x: 420, y: 255 },
+    { city: "Kochi", label: "Southern Naval Base", x: 365, y: 295 },
+  ];
+
   return (
-    <svg className="db-hero-bg-visual" viewBox="0 0 600 200" fill="none">
-      <defs>
-        <radialGradient id="heroRadarGlow" cx="70%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#1e3a60" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="heroLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.1" />
-          <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#2563eb" stopOpacity="0.1" />
-        </linearGradient>
-        <linearGradient id="radarArmGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="rgba(56, 189, 248, 0)" />
-          <stop offset="100%" stopColor="rgba(56, 189, 248, 0.7)" />
-        </linearGradient>
-      </defs>
+    <div className="db-hero-panoramic-card">
+      <div className="db-hero-ambient-glow" />
 
-      {/* Background layer (Parallax 2–4px) */}
-      <g transform={`translate(${parallax.bg.x}, ${parallax.bg.y})`}>
-        {/* Radar concentric circular guidelines */}
-        <circle cx="440" cy="100" r="140" stroke="rgba(59, 130, 246, 0.16)" strokeWidth="1" strokeDasharray="4 6" fill="url(#heroRadarGlow)" />
-        <circle cx="440" cy="100" r="95" stroke="rgba(59, 130, 246, 0.22)" strokeWidth="1" />
-        <circle cx="440" cy="100" r="50" stroke="rgba(14, 165, 233, 0.28)" strokeWidth="1" strokeDasharray="2 4" />
+      {/* ─── LEFT COLUMN: TITLE, BADGES, CTAS, 4 TRUST FEATURE BLOCKS ─── */}
+      <div className="db-hero-left-col">
+        <div>
+          <div className="db-hero-eyebrow">
+            SECURE TODAY &nbsp;|&nbsp; STRONGER TOMORROW
+          </div>
 
-        {/* Crosshairs & Angle Lines */}
-        <line x1="300" y1="100" x2="580" y2="100" stroke="rgba(59, 130, 246, 0.15)" strokeWidth="1" />
-        <line x1="440" y1="0" x2="440" y2="200" stroke="rgba(59, 130, 246, 0.15)" strokeWidth="1" />
+          <div className="db-hero-badge-row">
+            <div className="db-hero-ps-pill">
+              <span className="db-status-dot-pulse" style={{ width: 6, height: 6 }} />
+              <span>NOVEXA DEFENCE TRUST • PS 26125 • INDIA</span>
+            </div>
+            <span style={{ fontSize: "0.7rem", color: "#64748b", fontFamily: "'JetBrains Mono', monospace" }}>
+              {dateStr}
+            </span>
+          </div>
 
-        {/* Continuous rotating radar sweep arm */}
-        <line x1="440" y1="100" x2="575" y2="100" stroke="url(#radarArmGrad)" strokeWidth="1.5" className="db-radar-sweep-arm" />
-      </g>
+          <h1 className="db-hero-headline">
+            <span className="db-title-navy">BLOCKCHAIN-BASED</span>
+            <span className="db-title-electric">SECURE PLATFORM</span>
+            <span className="db-title-navy">FOR DEFENCE ASSETS</span>
+          </h1>
 
-      {/* Network Communication Mesh Layer (Parallax 4–7px) */}
-      <g transform={`translate(${parallax.net.x}, ${parallax.net.y})`}>
-        {/* Network communication lines */}
-        <path d="M 220,130 Q 330,70 480,45" stroke="url(#heroLineGrad)" strokeWidth="1.5" strokeDasharray="4 4" />
-        <path d="M 220,130 Q 330,150 440,100" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="1" />
+          <p className="db-hero-description">
+            Identity-verified, role-governed, evidence-backed, and blockchain-certified asset management
+            for defence component records. Every action traceable. Every claim verifiable.
+          </p>
 
-        {/* Data Stream traveling between command nodes */}
-        <path d="M 220,130 Q 330,70 480,45" stroke="#38bdf8" strokeWidth="2" fill="none" className="db-data-stream-1" />
-        <path d="M 220,130 Q 330,150 440,100" stroke="#22c55e" strokeWidth="1.8" fill="none" className="db-data-stream-3" />
+          <div className="db-hero-cta-group">
+            <a href="#dashboard-metrics" className="db-cta-primary">
+              <span>Access Platform</span>
+              <span style={{ fontSize: "0.95rem" }}>→</span>
+            </a>
 
-        {/* Telemetry nodes with varied breathing rates */}
-        <g transform="translate(220, 130)">
-          <circle cx="0" cy="0" r="8" fill="none" stroke="#38bdf8" strokeWidth="1" className="db-node-pulse-1" />
-          <circle cx="0" cy="0" r="3.5" fill="#38bdf8" />
-        </g>
-        <g transform="translate(440, 100)">
-          <circle cx="0" cy="0" r="10" fill="none" stroke="#22c55e" strokeWidth="1" className="db-node-pulse-2" />
-          <circle cx="0" cy="0" r="4.5" fill="#22c55e" />
-        </g>
-      </g>
+            <button type="button" className="db-cta-secondary" onClick={onWatchOverview}>
+              <span style={{ color: "#2563eb", fontSize: "0.8rem" }}>▶</span>
+              <span>Watch Overview</span>
+            </button>
+          </div>
 
-      {/* Naval Ship Patrol Layer (Continuous motion + wake) */}
-      <g className="db-anim-naval">
-        <g opacity="0.85">
-          {/* Waterline wake ripples */}
-          <ellipse cx="0" cy="8" rx="24" ry="3" fill="none" stroke="rgba(56, 189, 248, 0.45)" strokeWidth="1" className="db-naval-wake" />
-          {/* Ship hull */}
-          <path d="M -20,4 L 20,4 L 14,-4 L -12,-4 Z" fill="rgba(24, 48, 80, 0.85)" stroke="#38bdf8" strokeWidth="1" />
-          {/* Bridge tower & mast */}
-          <rect x="-4" y="-9" width="8" height="5" fill="#3b82f6" />
-          <line x1="0" y1="-9" x2="0" y2="-13" stroke="#60a5fa" strokeWidth="1" />
-          <circle cx="0" cy="-13" r="1.5" fill="#22c55e" />
-        </g>
-      </g>
+          <div className="db-hero-user-meta">
+            <span>{greeting}, <strong>{user?.name?.split(" ")[0]}</strong></span>
+            <span>·</span>
+            <span>Signed in as <RoleBadge role={role as any} size="sm" /></span>
+            <span>·</span>
+            <span style={{ color: "#22c55e", fontWeight: 600 }}>✓ Identity Verified</span>
+            <span>·</span>
+            <span className="meta-id" style={{ fontSize: "0.7rem" }}>{user?.actor?.did || "DID:BEL:01"}</span>
+          </div>
+        </div>
 
-      {/* Defence Satellite Layer (Parallax 8–12px + 26s Orbit Motion) */}
-      <g transform={`translate(${parallax.sat.x}, ${parallax.sat.y})`}>
-        <g className="db-anim-satellite">
-          {/* Signal beam down to ground radar node */}
-          <line x1="0" y1="0" x2="-45" y2="60" stroke="#38bdf8" strokeDasharray="3 4" className="db-satellite-beam" />
-          {/* Satellite body */}
-          <rect x="-9" y="-5" width="18" height="10" rx="2" fill="#0284c7" stroke="#38bdf8" strokeWidth="1" />
-          {/* Solar array wings */}
-          <rect x="-28" y="-4" width="15" height="8" rx="1" fill="rgba(56,189,248,0.6)" stroke="#38bdf8" strokeWidth="0.8" />
-          <line x1="-20" y1="-4" x2="-20" y2="4" stroke="#0369a1" strokeWidth="0.8" />
-          <rect x="13" y="-4" width="15" height="8" rx="1" fill="rgba(56,189,248,0.6)" stroke="#38bdf8" strokeWidth="0.8" />
-          <line x1="21" y1="-4" x2="21" y2="4" stroke="#0369a1" strokeWidth="0.8" />
-          {/* Optical lens */}
-          <circle cx="0" cy="0" r="2.5" fill="#ffffff" />
-          <circle cx="0" cy="0" r="4.5" fill="none" stroke="#22c55e" strokeWidth="0.8" />
-        </g>
-      </g>
+        {/* 4 Feature Indicator Blocks along Base */}
+        <div className="db-trust-feature-grid">
+          <div className="db-trust-feature-item">
+            <div className="db-trust-feat-icon" style={{ color: "#2563eb" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <div>
+              <div className="db-trust-feat-title">TRUST</div>
+              <div className="db-trust-feat-sub">Immutable Records</div>
+            </div>
+          </div>
 
-      {/* Stealth Fighter Aircraft Layer (Parallax 10–14px + 20s Flight Path) */}
-      <g transform={`translate(${parallax.jet.x}, ${parallax.jet.y})`}>
-        <g className="db-anim-fighter">
-          {/* Engine exhaust plume */}
-          <line x1="-22" y1="0" x2="-6" y2="0" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" className="db-fighter-trail" />
-          <line x1="-32" y1="0" x2="-20" y2="0" stroke="rgba(56,189,248,0.3)" strokeWidth="1" strokeDasharray="2 3" />
-          {/* Aircraft fuselage & swept wings */}
+          <div className="db-trust-feature-item">
+            <div className="db-trust-feat-icon" style={{ color: "#0284c7" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
+            <div>
+              <div className="db-trust-feat-title">TRANSPARENCY</div>
+              <div className="db-trust-feat-sub">End-to-End Visibility</div>
+            </div>
+          </div>
+
+          <div className="db-trust-feature-item">
+            <div className="db-trust-feat-icon" style={{ color: "#22c55e" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <div>
+              <div className="db-trust-feat-title">SECURITY</div>
+              <div className="db-trust-feat-sub">Role-Based Access</div>
+            </div>
+          </div>
+
+          <div className="db-trust-feature-item">
+            <IndianTricolourPill />
+            <div>
+              <div className="db-trust-feat-title">SOVEREIGN</div>
+              <div className="db-trust-feat-sub">Built for Bharat</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── CENTER PANORAMIC VISUAL: INDIA MAP, SATELLITE, JET, SHIP, LANDMARK ─── */}
+      <div className="db-hero-center-visual">
+        <svg className="db-panoramic-svg" viewBox="0 0 680 340" fill="none">
+          <defs>
+            <radialGradient id="indiaHaloGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#00e5ff" stopOpacity="0.15" />
+              <stop offset="60%" stopColor="#2563eb" stopOpacity="0.04" />
+              <stop offset="100%" stopColor="transparent" />
+            </radialGradient>
+            <linearGradient id="satBeamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#00e5ff" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#2563eb" stopOpacity="0.1" />
+            </linearGradient>
+            <linearGradient id="jetTrailGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="transparent" />
+              <stop offset="50%" stopColor="#00e5ff" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#38bdf8" />
+            </linearGradient>
+          </defs>
+
+          {/* India Regional Halo */}
+          <circle cx="380" cy="180" r="160" fill="url(#indiaHaloGrad)" className="db-map-halo" />
+
+          {/* Subtle India Gate Monument Line-Art (Silhouette) */}
+          <g transform="translate(485, 230) scale(0.65)" className="db-landmark-india-gate" opacity="0.35">
+            <rect x="0" y="50" width="70" height="12" rx="1" />
+            <rect x="6" y="16" width="58" height="34" />
+            <path d="M 23 50 L 23 28 Q 35 18 47 28 L 47 50 Z" fill="rgba(37,99,235,0.08)" />
+            <rect x="12" y="8" width="46" height="8" rx="1" />
+            <rect x="18" y="0" width="34" height="8" rx="1" />
+          </g>
+
+          {/* India Peninsula Map Path */}
           <path
-            d="M 22,0 L 4,-6 L -8,-14 L -4,-3 L -12,0 L -4,3 L -8,14 L 4,6 Z"
-            fill="#38bdf8"
-            stroke="#93c5fd"
-            strokeWidth="0.8"
-            opacity="0.95"
+            d="M 370 20 
+               C 385 22, 395 35, 410 42
+               C 425 50, 440 60, 435 75
+               C 430 85, 445 95, 455 110
+               C 470 125, 460 145, 445 160
+               C 440 175, 455 190, 465 210
+               C 455 230, 435 245, 415 270
+               C 395 295, 375 315, 365 330
+               C 355 310, 345 280, 340 250
+               C 335 225, 320 205, 315 180
+               C 310 160, 300 145, 290 135
+               C 285 120, 310 100, 325 85
+               C 335 70, 345 50, 355 35 Z"
+            className="db-map-india-land"
           />
-        </g>
-      </g>
-    </svg>
+
+          {/* Cyber Mesh Connections between India Nodes */}
+          <path d="M 380 40 L 385 85 L 350 105 L 325 145 L 335 190 L 380 250 L 365 295" stroke="rgba(56, 189, 248, 0.4)" strokeWidth="1" strokeDasharray="3 3" />
+          <path d="M 385 85 L 420 110 L 450 200 L 420 255 L 380 250" stroke="rgba(56, 189, 248, 0.35)" strokeWidth="1" strokeDasharray="3 3" />
+          <path d="M 335 190 L 395 200 L 450 200" stroke="rgba(0, 229, 255, 0.35)" strokeWidth="1" />
+          <path d="M 395 200 L 380 250" stroke="rgba(34, 197, 94, 0.35)" strokeWidth="1" />
+
+          {/* Traveling Cyber Data Packets */}
+          <path d="M 385 85 L 395 200 L 380 250" stroke="#00e5ff" strokeWidth="1.8" fill="none" className="db-data-stream-1" />
+          <path d="M 335 190 L 395 200 L 450 200" stroke="#22c55e" strokeWidth="1.8" fill="none" className="db-data-stream-2" />
+
+          {/* 11 Military Strategic Command Nodes with Labels */}
+          {indiaNodes.map((n, idx) => (
+            <g key={n.city}>
+              <circle cx={n.x} cy={n.y} r="10" className="db-hero-node-ring" style={{ animationDelay: `${(idx * 0.35).toFixed(2)}s` }} />
+              <circle cx={n.x} cy={n.y} r="3.5" className="db-hero-node-dot" />
+              <text x={n.x + 8} y={n.y + 3} className="db-hero-node-label">
+                {n.city}
+              </text>
+            </g>
+          ))}
+
+          {/* Upper Left: Defence Communication Satellite */}
+          <g className="db-hero-anim-satellite" transform="translate(180, 55)">
+            <line x1="0" y1="0" x2="205" y2="30" className="db-hero-satellite-beam" />
+            {/* Satellite Body & Solar Arrays */}
+            <rect x="-10" y="-6" width="20" height="12" rx="2" fill="#0284c7" stroke="#00e5ff" strokeWidth="1" />
+            <rect x="-30" y="-5" width="16" height="10" rx="1" fill="rgba(0, 229, 255, 0.6)" stroke="#00e5ff" strokeWidth="0.8" />
+            <line x1="-22" y1="-5" x2="-22" y2="5" stroke="#0369a1" strokeWidth="0.8" />
+            <rect x="14" y="-5" width="16" height="10" rx="1" fill="rgba(0, 229, 255, 0.6)" stroke="#00e5ff" strokeWidth="0.8" />
+            <line x1="22" y1="-5" x2="22" y2="5" stroke="#0369a1" strokeWidth="0.8" />
+            <circle cx="0" cy="0" r="3" fill="#ffffff" />
+            <circle cx="0" cy="0" r="5" fill="none" stroke="#22c55e" strokeWidth="0.8" />
+          </g>
+
+          {/* Upper Right: 5th-Gen Stealth Fighter Jet */}
+          <g className="db-hero-anim-fighter" transform="translate(520, 60)">
+            <line x1="-30" y1="-2" x2="-6" y2="-2" stroke="url(#jetTrailGrad)" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="-30" y1="2" x2="-6" y2="2" stroke="url(#jetTrailGrad)" strokeWidth="2.5" strokeLinecap="round" />
+            {/* Fighter Jet Fuselage */}
+            <path
+              d="M 24,0 L 6,-7 L -10,-18 L -5,-4 L -16,0 L -5,4 L -10,18 L 6,7 Z"
+              fill="#0ea5e9"
+              stroke="#e0f2fe"
+              strokeWidth="0.8"
+              filter="drop-shadow(0 2px 8px rgba(0, 229, 255, 0.4))"
+            />
+          </g>
+
+          {/* Lower Center/Left: Naval Guided Missile Destroyer */}
+          <g className="db-hero-anim-naval" transform="translate(240, 260)">
+            <ellipse cx="0" cy="10" rx="30" ry="4" fill="none" stroke="rgba(56, 189, 248, 0.55)" strokeWidth="1.2" className="db-hero-naval-wake" />
+            {/* Ship Hull */}
+            <path d="M -26,5 L 26,5 L 18,-5 L -16,-5 Z" fill="rgba(15, 32, 54, 0.95)" stroke="#38bdf8" strokeWidth="1" />
+            {/* Superstructure & Bridge Mast */}
+            <rect x="-6" y="-11" width="10" height="6" fill="#0284c7" />
+            <line x1="0" y1="-11" x2="0" y2="-16" stroke="#00e5ff" strokeWidth="1.2" />
+            <circle cx="0" cy="-16" r="1.8" fill="#22c55e" />
+          </g>
+        </svg>
+      </div>
+
+      {/* ─── RIGHT COLUMN: RADAR PANEL + TRUST CHAIN + SYSTEM MONITOR ─── */}
+      <div className="db-hero-right-col">
+        {/* 1. Tactical Radar Command Panel (Always Dark Command Surface) */}
+        <div className="db-tactical-radar-panel">
+          <div className="db-radar-bezel" />
+
+          <div className="db-radar-header">
+            <div className="db-radar-node-tag">
+              <span className="db-status-dot-pulse" style={{ width: 6, height: 6 }} />
+              <span>NODE: NOVEXA-01 • ENCRYPTED • LIVE</span>
+            </div>
+            <div className="db-radar-sih-tag">SIH 2026 • PS 26125</div>
+          </div>
+
+          <div className="db-radar-body-grid">
+            {/* Readiness Counters */}
+            <div className="db-readiness-counters">
+              <div className="db-readiness-item">
+                <span className="db-readiness-val">12</span>
+                <span className="db-readiness-lbl">SATELLITES</span>
+              </div>
+              <div className="db-readiness-item">
+                <span className="db-readiness-val">08</span>
+                <span className="db-readiness-lbl">AIR UNITS</span>
+              </div>
+              <div className="db-readiness-item">
+                <span className="db-readiness-val">05</span>
+                <span className="db-readiness-lbl">NAVAL UNITS</span>
+              </div>
+              <div className="db-readiness-item">
+                <span className="db-readiness-val">18</span>
+                <span className="db-readiness-lbl">GROUND UNITS</span>
+              </div>
+            </div>
+
+            {/* Circular Radar Scope */}
+            <div className="db-radar-scope-wrapper">
+              <div className="db-radar-scope">
+                <div className="db-radar-ring db-radar-ring-1" />
+                <div className="db-radar-ring db-radar-ring-2" />
+                <div className="db-radar-ring db-radar-ring-3" />
+                <div className="db-radar-ring db-radar-ring-4" />
+                <div className="db-radar-axis-h" />
+                <div className="db-radar-axis-v" />
+                <div className="db-radar-sweep-beam" />
+                <div className="db-radar-blip blip-1" />
+                <div className="db-radar-blip blip-2" />
+                <div className="db-radar-blip blip-3" />
+                <div className="db-radar-pin" />
+              </div>
+            </div>
+
+            {/* Mini India Map Locator in Radar Scope */}
+            <div className="db-radar-india-mini">
+              <svg width="45" height="55" viewBox="0 0 100 120" fill="none">
+                <path
+                  d="M 50 10 C 60 20, 80 40, 70 70 C 60 90, 50 110, 48 115 C 45 100, 30 80, 25 65 C 20 50, 40 20, 50 10 Z"
+                  fill="rgba(56, 189, 248, 0.15)"
+                  stroke="#38bdf8"
+                  strokeWidth="1.5"
+                />
+                <circle cx="50" cy="45" r="4" fill="#22c55e" style={{ filter: "drop-shadow(0 0 4px #22c55e)" }} />
+              </svg>
+            </div>
+          </div>
+
+          {/* Telemetry Readouts */}
+          <div className="db-radar-telemetry-grid">
+            <div className="db-telemetry-box">
+              <span className="db-tel-lbl">LAT</span>
+              <span className="db-tel-val">20.6139° N</span>
+            </div>
+            <div className="db-telemetry-box">
+              <span className="db-tel-lbl">LON</span>
+              <span className="db-tel-val">77.2090° E</span>
+            </div>
+            <div className="db-telemetry-box">
+              <span className="db-tel-lbl">ALT</span>
+              <span className="db-tel-val">11,400 M</span>
+            </div>
+            <div className="db-telemetry-box">
+              <span className="db-tel-lbl">SPD</span>
+              <span className="db-tel-val">MACH 1.8</span>
+            </div>
+            <div className="db-telemetry-box">
+              <span className="db-tel-lbl">HDG</span>
+              <span className="db-tel-val">042°</span>
+            </div>
+          </div>
+
+          {/* Status Checklist */}
+          <div className="db-radar-checklist">
+            <span>✓ SYSTEMS ONLINE</span>
+            <span>✓ DATA ENCRYPTED</span>
+            <span>✓ BLOCKCHAIN SYNCED</span>
+            <span>✓ THREAT MONITORING</span>
+          </div>
+
+          {/* Footer Bar */}
+          <div className="db-radar-footer">
+            <div className="db-radar-active-status">
+              <span className="db-status-dot-pulse" style={{ width: 6, height: 6 }} />
+              <span>STATUS: ACTIVE</span>
+            </div>
+            <div className="db-radar-az-status">AZ: {azimuth}°</div>
+          </div>
+        </div>
+
+        {/* 2. Trust Verification Chain Card (Matches Reference) */}
+        <div className="db-trust-chain-card">
+          <div className="db-chain-header">
+            <span className="db-chain-title">TRUST VERIFICATION CHAIN</span>
+            <span className="db-chain-tag">ON-CHAIN CONSENSUS</span>
+          </div>
+
+          <div className="db-chain-steps-track">
+            <div className="db-chain-rail-line">
+              <div className="db-chain-energy-beam" />
+            </div>
+
+            {[
+              { name: "ASSET", sub: "Registered" },
+              { name: "VERIFY", sub: "SHA-256" },
+              { name: "BLOCKCHAIN", sub: "Minted" },
+              { name: "AUDIT", sub: "Logged" },
+              { name: "TRUST", sub: "Certified" },
+            ].map((step) => (
+              <div key={step.name} className="db-chain-node-box">
+                <div className="db-chain-node-dot">
+                  <div className="db-chain-node-inner" />
+                </div>
+                <span className="db-chain-node-name">{step.name}</span>
+                <span className="db-chain-node-sub">{step.sub}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Live System Monitor Card (Matches Reference) */}
+        <div className="db-system-monitor-card">
+          <div className="db-monitor-header">
+            <span className="db-monitor-title">LIVE SYSTEM MONITOR</span>
+            <div className="db-monitor-badge">
+              <span className="db-status-dot-pulse" style={{ width: 6, height: 6 }} />
+              <span>OPERATIONAL • SECURE</span>
+            </div>
+          </div>
+
+          <div className="db-monitor-rows-stack">
+            {[
+              { name: "Platform Core", lat: 13, status: "Operational" },
+              { name: "Blockchain Node", lat: 28, status: "Synced" },
+              { name: "Asset Registry", lat: 16, status: "Online" },
+              { name: "Verification Engine", lat: 24, status: "Operational" },
+            ].map((row, idx) => (
+              <div key={row.name} className="db-monitor-row-item">
+                <div className="db-monitor-row-left">
+                  <span className="db-monitor-row-icon">⬡</span>
+                  <div className="db-monitor-row-text">
+                    <span className="db-monitor-row-name">{row.name}</span>
+                    <span className="db-monitor-row-latency">Latency: {row.lat} ms</span>
+                  </div>
+                </div>
+
+                <svg className="db-monitor-sparkline" viewBox="0 0 50 16" fill="none">
+                  <path
+                    d={idx % 2 === 0 ? "M 0 10 Q 12 4 25 8 T 50 5" : "M 0 12 Q 15 14 30 6 T 50 8"}
+                    stroke="#38bdf8"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+
+                <div className="db-monitor-row-status">
+                  <span className="db-status-dot-pulse" style={{ width: 5, height: 5 }} />
+                  <span>{row.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -293,50 +632,19 @@ function DefenceTrustVisual({
               </radialGradient>
             </defs>
 
-            {/* Ambient center background glow */}
             <circle cx="145" cy="145" r="90" fill="url(#centerGlowV4)" />
-
-            {/* Periodic Expanding Shockwave Ring (3.5s) */}
-            <circle
-              cx="145"
-              cy="145"
-              r="105"
-              stroke="#38bdf8"
-              fill="none"
-              className="db-orbit-pulse-ring"
-            />
-
-            {/* Static outer guideline */}
+            <circle cx="145" cy="145" r="105" stroke="#38bdf8" fill="none" className="db-orbit-pulse-ring" />
             <circle cx="145" cy="145" r="132" stroke="rgba(59, 130, 246, 0.15)" strokeWidth="1" fill="none" />
 
-            {/* Outer rotating dashed orbit ring (Clockwise 30s) */}
             <g className="db-orbit-outer">
-              <circle
-                cx="145"
-                cy="145"
-                r="120"
-                stroke="rgba(96, 165, 250, 0.45)"
-                strokeWidth="1.5"
-                strokeDasharray="5 8"
-                fill="none"
-              />
+              <circle cx="145" cy="145" r="120" stroke="rgba(96, 165, 250, 0.45)" strokeWidth="1.5" strokeDasharray="5 8" fill="none" />
               <circle cx="145" cy="25" r="3.5" fill="#60a5fa" />
               <circle cx="265" cy="145" r="3" fill="#38bdf8" />
               <circle cx="25" cy="145" r="3" fill="#38bdf8" />
               <circle cx="145" cy="265" r="2.5" fill="#22c55e" />
             </g>
 
-            {/* Progress Arc background track */}
-            <circle
-              cx="145"
-              cy="145"
-              r={radius}
-              stroke="var(--border-subtle, #172d4c)"
-              strokeWidth="9"
-              fill="none"
-            />
-
-            {/* Active Progress Arc */}
+            <circle cx="145" cy="145" r={radius} stroke="var(--border-subtle, #172d4c)" strokeWidth="9" fill="none" />
             <circle
               cx="145"
               cy="145"
@@ -351,28 +659,17 @@ function DefenceTrustVisual({
               style={{ transition: "stroke-dashoffset 1s ease" }}
             />
 
-            {/* Traveling node on outer orbit (12s Continuous Orbit) */}
             <g className="db-orbit-traveler">
               <circle cx="145" cy="25" r="5" fill="#22c55e" style={{ filter: "drop-shadow(0 0 6px #22c55e)" }} />
             </g>
 
-            {/* Inner counter-rotating ring (Counter-Clockwise 22s) */}
             <g className="db-orbit-inner">
-              <circle
-                cx="145"
-                cy="145"
-                r="72"
-                stroke="rgba(56, 189, 248, 0.35)"
-                strokeWidth="1"
-                strokeDasharray="3 6"
-                fill="none"
-              />
+              <circle cx="145" cy="145" r="72" stroke="rgba(56, 189, 248, 0.35)" strokeWidth="1" strokeDasharray="3 6" fill="none" />
               <circle cx="145" cy="73" r="2.5" fill="#93c5fd" />
               <circle cx="217" cy="145" r="2.5" fill="#93c5fd" />
             </g>
           </svg>
 
-          {/* Central Text Value Overlay with Breathing Glow */}
           <div className="db-orbital-center">
             <span className="db-trust-score">{clamped}%</span>
             <span className="db-trust-score-label">TRUST INTEGRITY</span>
@@ -380,7 +677,6 @@ function DefenceTrustVisual({
         </div>
       </div>
 
-      {/* 4-Item Telemetry Matrix */}
       <div className="db-telemetry-grid">
         <div className="db-telemetry-item">
           <div className="db-telemetry-icon" style={{ color: "#22c55e" }}>✓</div>
@@ -428,7 +724,6 @@ function DefenceTrustVisual({
 function DefenceAssetActivityCard({ summary }: { summary: DashboardSummary | null }) {
   const breakdown = summary?.lifecycle_breakdown ?? {};
   const total = summary?.total_assets ?? 0;
-  const [hoveredStage, setHoveredStage] = useState<string | null>(null);
 
   const stages = [
     { key: "ACCEPTED_FOR_ASSEMBLY", label: "Accepted for Assembly", color: "#22c55e", desc: "Production Ready" },
@@ -449,92 +744,31 @@ function DefenceAssetActivityCard({ summary }: { summary: DashboardSummary | nul
           </div>
         </div>
         <Link to="/app/assets" className="btn-secondary" style={{ fontSize: "0.75rem", padding: "4px 12px" }}>
-          View Asset Registry →
+          Explore Registry →
         </Link>
       </div>
 
-      {/* Top 3 High-Level Metrics */}
-      <div className="db-pipeline-overview">
-        <div className="db-pipeline-stat" style={{ background: "rgba(37,99,235,0.06)", borderColor: "rgba(37,99,235,0.18)" }}>
-          <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>TOTAL ASSETS</div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--foreground, #e2e8f0)", marginTop: 4, fontFamily: "'Barlow Condensed', sans-serif" }}>{total}</div>
-        </div>
-        <div className="db-pipeline-stat" style={{ background: "rgba(34,197,94,0.06)", borderColor: "rgba(34,197,94,0.18)" }}>
-          <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>ASSEMBLY CLEARED</div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#22c55e", marginTop: 4, fontFamily: "'Barlow Condensed', sans-serif" }}>
-            {breakdown["ACCEPTED_FOR_ASSEMBLY"] ?? 0}
-          </div>
-        </div>
-        <div className="db-pipeline-stat" style={{ background: "rgba(245,158,11,0.06)", borderColor: "rgba(245,158,11,0.18)" }}>
-          <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>INSPECTION QUEUE</div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#f59e0b", marginTop: 4, fontFamily: "'Barlow Condensed', sans-serif" }}>
-            {breakdown["RECEIVED"] ?? 0}
-          </div>
-        </div>
-      </div>
-
-      {/* Stacked Bar with Interactive Hover Focus */}
-      <div className="db-stacked-chart-container">
-        <div className="db-stacked-bar">
-          {stages.map((st) => {
-            const count = breakdown[st.key] ?? 0;
-            const pct = total > 0 ? (count / total) * 100 : 0;
-            if (pct <= 0) return null;
-            const isHovered = hoveredStage === st.key;
-            const isAnyHovered = hoveredStage !== null;
-            return (
-              <div
-                key={st.key}
-                className="db-stacked-segment"
-                onMouseEnter={() => setHoveredStage(st.key)}
-                onMouseLeave={() => setHoveredStage(null)}
-                style={{
-                  width: `${pct}%`,
-                  background: st.color,
-                  opacity: isAnyHovered && !isHovered ? 0.45 : 1,
-                  filter: isHovered ? `drop-shadow(0 0 8px ${st.color})` : "none",
-                }}
-                title={`${st.label}: ${count} (${Math.round(pct)}%)`}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Individual Stage Breakdown */}
-      <div className="db-lifecycle-list">
-        {stages.map((st) => {
-          const count = breakdown[st.key] ?? 0;
+      <div className="db-lifecycle-bars">
+        {stages.map((s) => {
+          const count = breakdown[s.key] ?? 0;
           const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-          const isHovered = hoveredStage === st.key;
           return (
-            <div
-              key={st.key}
-              className="db-lifecycle-item"
-              onMouseEnter={() => setHoveredStage(st.key)}
-              onMouseLeave={() => setHoveredStage(null)}
-              style={{
-                background: isHovered ? "rgba(30, 58, 96, 0.25)" : undefined,
-              }}
-            >
+            <div key={s.key} className="db-lifecycle-row">
               <div className="db-lifecycle-meta">
-                <div className="db-lifecycle-name">
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: st.color, display: "inline-block", flexShrink: 0 }} />
-                  <span>{st.label}</span>
-                  <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>({st.desc})</span>
-                </div>
-                <div className="db-lifecycle-count">
-                  <span>{count}</span>
-                  <span style={{ color: "#64748b", fontSize: "0.75rem", marginLeft: 6 }}>({pct}%)</span>
-                </div>
+                <span className="db-lifecycle-label">
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, display: "inline-block" }} />
+                  {s.label}
+                </span>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: s.color }}>
+                  {count} <span style={{ color: "#64748b", fontWeight: 500 }}>({pct}%)</span>
+                </span>
               </div>
-              <div className="db-progress-track">
+              <div className="db-lifecycle-track">
                 <div
-                  className="db-progress-fill"
+                  className="db-lifecycle-fill"
                   style={{
-                    width: `${pct}%`,
-                    background: `linear-gradient(90deg, ${st.color}99 0%, ${st.color} 100%)`,
-                    boxShadow: isHovered ? `0 0 10px ${st.color}` : pct > 0 ? `0 0 6px ${st.color}40` : "none",
+                    width: `${Math.max(pct, count > 0 ? 5 : 0)}%`,
+                    background: s.color,
                   }}
                 />
               </div>
@@ -546,7 +780,7 @@ function DefenceAssetActivityCard({ summary }: { summary: DashboardSummary | nul
   );
 }
 
-/* ── Live Activity Feed with Animated Flow ──────────────────────────── */
+/* ── Live Activity Feed ─────────────────────────────────────────────── */
 function LiveActivityFeed({ auditEvents }: { auditEvents: AuditEventResponse[] }) {
   return (
     <div className="db-v4-card">
@@ -564,7 +798,6 @@ function LiveActivityFeed({ auditEvents }: { auditEvents: AuditEventResponse[] }
 
       {auditEvents.length > 0 ? (
         <div className="db-activity-feed">
-          {/* Vertical timeline line with traveling light flow */}
           <div className="db-activity-timeline-line">
             <div className="db-activity-timeline-pulse" />
           </div>
@@ -574,7 +807,7 @@ function LiveActivityFeed({ auditEvents }: { auditEvents: AuditEventResponse[] }
             const nodeColor = isSuccess ? "#22c55e" : e.result === "FAILED" ? "#ef4444" : "#f59e0b";
             return (
               <div key={e.id} className="db-activity-item">
-                <div className="db-activity-node" style={{ borderColor: nodeColor, color: nodeColor }} />
+                <div className="db-activity-node" style={{ borderColor: nodeColor }} />
                 <div className="db-activity-content">
                   <div className="db-activity-title">{e.action}</div>
                   <div className="db-activity-meta">
@@ -612,7 +845,7 @@ function LiveActivityFeed({ auditEvents }: { auditEvents: AuditEventResponse[] }
   );
 }
 
-/* ── Global Defence Network Card with Traveling Mesh Packets ────────── */
+/* ── Global Defence Network Card with Subtle Indian Tricolour Accent ── */
 function GlobalDefenceNetworkCard() {
   const nodes = [
     { city: "New Delhi", label: "Strategic HQ", x: 420, y: 85, color: "#38bdf8", pulseClass: "db-node-pulse-1" },
@@ -624,9 +857,12 @@ function GlobalDefenceNetworkCard() {
 
   return (
     <div className="db-v4-card db-network-card">
-      <div className="db-card-header" style={{ marginBottom: 12 }}>
+      <div className="db-card-header" style={{ marginBottom: 10 }}>
         <div>
-          <div className="db-card-title" style={{ color: "#38bdf8" }}>GLOBAL DEFENCE NETWORK</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="db-card-title" style={{ color: "#38bdf8" }}>GLOBAL DEFENCE NETWORK</div>
+            <IndianTricolourPill />
+          </div>
           <div className="db-card-subtitle">
             Real-time encrypted mesh telemetry & distributed ledger synchronization
           </div>
@@ -640,41 +876,27 @@ function GlobalDefenceNetworkCard() {
       </div>
 
       <div className="db-network-map-wrapper">
-        <svg className="db-network-svg" viewBox="0 0 600 230" fill="none">
-          <defs>
-            <radialGradient id="netGlobeGlowV4" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#1e3a60" stopOpacity="0.65" />
-              <stop offset="100%" stopColor="#08131f" stopOpacity="0" />
-            </radialGradient>
-          </defs>
+        <svg className="db-network-svg" viewBox="0 0 600 220" fill="none">
+          <ellipse cx="300" cy="110" rx="270" ry="95" stroke="rgba(30, 58, 96, 0.45)" strokeWidth="1" strokeDasharray="3 6" fill="rgba(6, 16, 32, 0.4)" />
+          <ellipse cx="300" cy="110" rx="190" ry="70" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" strokeDasharray="4 4" />
+          <line x1="30" y1="110" x2="570" y2="110" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" />
 
-          {/* Background Grid Lat/Long Lines */}
-          <ellipse cx="300" cy="115" rx="270" ry="95" stroke="rgba(30, 58, 96, 0.45)" strokeWidth="1" strokeDasharray="3 6" fill="url(#netGlobeGlowV4)" />
-          <ellipse cx="300" cy="115" rx="190" ry="70" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" strokeDasharray="4 4" />
-          <line x1="30" y1="115" x2="570" y2="115" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" />
-
-          {/* India Regional Highlight Boundary Arc with Pulsing Glow */}
+          {/* India Regional Highlight Boundary */}
           <path
-            d="M 370,60 Q 425,75 480,95 Q 430,175 415,175 Q 370,125 370,60 Z"
-            fill="rgba(56, 189, 248, 0.06)"
-            stroke="rgba(56, 189, 248, 0.35)"
+            d="M 370,55 Q 425,70 480,90 Q 430,170 415,170 Q 370,120 370,55 Z"
+            fill="rgba(56, 189, 248, 0.08)"
+            stroke="rgba(56, 189, 248, 0.4)"
             strokeWidth="1.5"
             strokeDasharray="4 4"
           />
 
-          {/* Static Mesh Guidelines between defence nodes */}
           <path d="M 420,85 L 385,118 L 415,145 L 425,124 L 470,105 L 420,85 Z" stroke="rgba(59, 130, 246, 0.35)" strokeWidth="1.2" strokeDasharray="3 3" />
-          <path d="M 420,85 L 415,145" stroke="rgba(34, 197, 94, 0.3)" strokeWidth="1" />
-
-          {/* Traveling Data Packets along the Mesh Paths */}
           <path d="M 420,85 L 385,118 L 415,145" stroke="#38bdf8" strokeWidth="2" fill="none" className="db-data-stream-1" />
           <path d="M 415,145 L 425,124 L 470,105" stroke="#22c55e" strokeWidth="2" fill="none" className="db-data-stream-2" />
-          <path d="M 470,105 L 420,85" stroke="#f59e0b" strokeWidth="1.8" fill="none" className="db-data-stream-3" />
 
-          {/* Defense Nodes with Staggered Breathing Pulses */}
           {nodes.map((n) => (
             <g key={n.city} transform={`translate(${n.x}, ${n.y})`}>
-              <circle cx="0" cy="0" r="10" fill="none" stroke={n.color} strokeWidth="1" className={n.pulseClass} />
+              <circle cx="0" cy="0" r="10" fill="none" stroke={n.color} strokeWidth="1" />
               <circle cx="0" cy="0" r="4.5" fill={n.color} />
               <text x="8" y="3" fill="#cbd5e1" fontSize="9" fontWeight="600" letterSpacing="0.04em">
                 {n.city}
@@ -684,7 +906,6 @@ function GlobalDefenceNetworkCard() {
         </svg>
       </div>
 
-      {/* Network Live Telemetry Indicators */}
       <div className="db-network-stats">
         <div className="db-network-stat-box">
           <div style={{ fontSize: "0.625rem", color: "#64748b", fontWeight: 700 }}>ACTIVE NODES</div>
@@ -775,7 +996,7 @@ function DefenceTrustBanner() {
         <h3
           className="font-display"
           style={{
-            fontSize: "1.5rem",
+            fontSize: "1.45rem",
             fontWeight: 700,
             margin: "0 0 8px",
             color: "var(--foreground, #e2e8f0)",
@@ -807,39 +1028,70 @@ function DefenceTrustBanner() {
   );
 }
 
+/* ── Interactive Overview Video / Architecture Modal ────────────────── */
+function OverviewModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="db-overview-modal-backdrop" onClick={onClose}>
+      <div className="db-overview-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "1.1rem", color: "#38bdf8" }}>▶</span>
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "1.25rem", fontWeight: 700, color: "var(--foreground, #e2e8f0)" }}>
+              NOVEXA DEFENCE TRUST — PLATFORM OVERVIEW
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "1.2rem", padding: "2px 6px" }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", lineHeight: 1.6, marginBottom: 18 }}>
+          NOVEXA Defence Trust is an autonomous, tamper-proof blockchain infrastructure built for sovereign defence asset provenance.
+          Components are registered with cryptographic hashes, verified by authenticated quality inspectors, and permanently anchored on-chain with non-transferable digital passports.
+        </p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+          <div style={{ padding: "12px", background: "rgba(37, 99, 235, 0.08)", borderRadius: "8px", border: "1px solid rgba(37, 99, 235, 0.25)" }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#38bdf8", marginBottom: 4 }}>1. REGISTRATION</div>
+            <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Component telemetry and vendor manifest hashing.</div>
+          </div>
+          <div style={{ padding: "12px", background: "rgba(34, 197, 94, 0.08)", borderRadius: "8px", border: "1px solid rgba(34, 197, 94, 0.25)" }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#22c55e", marginBottom: 4 }}>2. VERIFICATION</div>
+            <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Multi-signatory quality audit and lab report hashing.</div>
+          </div>
+          <div style={{ padding: "12px", background: "rgba(139, 92, 246, 0.08)", borderRadius: "8px", border: "1px solid rgba(139, 92, 246, 0.25)" }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#a855f7", marginBottom: 4 }}>3. ON-CHAIN MINT</div>
+            <div style={{ fontSize: "0.72rem", color: "#64748b" }}>Non-fungible passport minting on defence ledger.</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <button className="btn-secondary" onClick={onClose} style={{ fontSize: "0.8125rem", padding: "6px 16px" }}>
+            Close
+          </button>
+          <Link to="/app/verification" className="btn-primary" onClick={onClose} style={{ fontSize: "0.8125rem", padding: "6px 16px" }}>
+            Open Verification Center →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════
-   MAIN COMMAND CENTER PAGE COMPONENT
+   MAIN COMMAND CENTER DASHBOARD COMPONENT
    ════════════════════════════════════════════════════════════════════ */
 export default function DashboardPage() {
   const { user, role } = useAuth();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [auditEvents, setAuditEvents] = useState<AuditEventResponse[]>([]);
   const [certifications, setCertifications] = useState<CertificationResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  /* ── Mouse Parallax Coordinates for Decorative Elements Only ─── */
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-
-  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (e.clientX - cx) / (rect.width / 2);
-    const dy = (e.clientY - cy) / (rect.height / 2);
-    setMouseOffset({ x: dx, y: dy });
-  };
-
-  const handleHeroMouseLeave = () => {
-    setMouseOffset({ x: 0, y: 0 });
-  };
-
-  const parallax = {
-    bg: { x: mouseOffset.x * 3, y: mouseOffset.y * 2 },
-    net: { x: mouseOffset.x * 6, y: mouseOffset.y * 4 },
-    sat: { x: mouseOffset.x * 10, y: mouseOffset.y * 7 },
-    jet: { x: mouseOffset.x * 13, y: mouseOffset.y * 9 },
-  };
+  const [, setLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
+  const [showOverview, setShowOverview] = useState(false);
 
   const loadData = () => {
     setError(null);
@@ -850,11 +1102,11 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
 
     auditService.listAuditEvents({ page_size: 5 })
-      .then(r => setAuditEvents(r.items || []))
+      .then((r) => setAuditEvents(r.items || []))
       .catch(console.error);
 
     certificationService.listCertifications({ page_size: 5 })
-      .then(r => setCertifications(r.items || []))
+      .then((r) => setCertifications(r.items || []))
       .catch(console.error);
   };
 
@@ -870,94 +1122,21 @@ export default function DashboardPage() {
 
   if (!user || !role) return null;
 
-  const greeting = (() => {
-    const h = new Date().getHours();
-    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-  })();
-
-  const dateStr = new Date()
-    .toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-    .toUpperCase();
-
   const total = summary?.total_assets || 1;
   const issues = summary?.failed_verifications || 0;
   const trustScore = Math.max(90, Math.round(((total - issues) / total) * 100 * 10) / 10);
 
   return (
     <div className="db-v4-container page-fade">
-      {/* ── ROW 1: Command / Greeting Hero Panel with Parallax ───── */}
-      <div
-        className="db-hero-card"
-        onMouseMove={handleHeroMouseMove}
-        onMouseLeave={handleHeroMouseLeave}
-      >
-        <DefenceHeroVisual parallax={parallax} />
-
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 640 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span className="db-status-dot-pulse" />
-            <span style={{ color: "#38bdf8", letterSpacing: "0.1em", fontSize: "0.7rem", fontWeight: 700 }}>
-              COMMAND DASHBOARD · NOVEXA DEFENCE TRUST · {dateStr}
-            </span>
-          </div>
-
-          <h1
-            className="font-display"
-            style={{
-              fontSize: "clamp(1.6rem, 2.8vw, 2.25rem)",
-              fontWeight: 700,
-              color: "var(--foreground, #e2e8f0)",
-              margin: "0 0 6px",
-              letterSpacing: "-0.01em",
-              lineHeight: 1.15,
-            }}
-          >
-            {greeting}, {user.name.split(" ")[0]} 👋
-          </h1>
-
-          <p style={{ fontSize: "0.875rem", color: "#94a3b8", margin: "0 0 12px", lineHeight: 1.4 }}>
-            Command your defence ecosystem with trusted, tamper-proof cryptographic intelligence.
-          </p>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", fontSize: "0.8125rem", color: "#64748b" }}>
-            <span>Signed in as <RoleBadge role={role} size="sm" /></span>
-            <span style={{ color: "var(--border, #1e3a60)" }}>·</span>
-            <span style={{ color: "#22c55e", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
-              ✓ Identity Verified
-            </span>
-            <span style={{ color: "var(--border, #1e3a60)" }}>·</span>
-            <span className="meta-id" style={{ fontSize: "0.75rem" }}>{user.actor?.did || "—"}</span>
-          </div>
-        </div>
-
-        {/* Right Status Pill & Clock */}
-        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
-          <div className="node-badge" style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(56, 189, 248, 0.3)" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", flexShrink: 0, boxShadow: "0 0 6px #22c55e" }} />
-            NODE: NOVEXA-01 · ENCRYPTED · LIVE
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span
-              style={{
-                padding: "3px 10px",
-                background: "rgba(37,99,235,0.1)",
-                border: "1px solid rgba(37,99,235,0.25)",
-                borderRadius: "12px",
-                fontSize: "0.6875rem",
-                color: "#94a3b8",
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-              }}
-            >
-              DEFENCE TRUST CHAIN
-            </span>
-            <LiveClock />
-          </div>
-        </div>
-      </div>
+      {/* ── ROW 1: Panoramic Indian Defence Command Hero Banner ──── */}
+      <PanoramicIndianDefenceHero
+        user={user}
+        role={role}
+        onWatchOverview={() => setShowOverview(true)}
+      />
 
       {/* ── ROW 2: 5 KPI Metric Cards ────────────────────────────── */}
-      <div className="db-kpi-grid">
+      <div id="dashboard-metrics" className="db-kpi-grid">
         <KpiCard
           label="Total Defence Assets"
           value={totalAssets}
@@ -1023,6 +1202,9 @@ export default function DashboardPage() {
         <RecentCertificationsSection certifications={certifications} />
         <DefenceTrustBanner />
       </div>
+
+      {/* Overview Modal */}
+      {showOverview && <OverviewModal onClose={() => setShowOverview(false)} />}
     </div>
   );
 }

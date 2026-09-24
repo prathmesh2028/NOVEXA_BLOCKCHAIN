@@ -46,18 +46,22 @@ export default function Topbar() {
               left: 10,
               top: "50%",
               transform: "translateY(-50%)",
-              color: "#475569",
-              fontSize: "0.75rem",
+              color: "#64748b",
+              display: "flex",
+              alignItems: "center",
               pointerEvents: "none",
             }}
           >
-            ◎
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
           </span>
           <input
             className="input-field"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search assets, certifications, transactions…"
+            placeholder="Search assets, records, certifications…"
             style={{ paddingLeft: 30, fontSize: "0.8125rem", height: 32, padding: "0 12px 0 30px" }}
           />
         </div>
@@ -91,21 +95,33 @@ export default function Topbar() {
       {/* Notifications */}
       <button
         className="btn-ghost"
-        style={{ position: "relative", padding: "6px 8px" }}
+        style={{ position: "relative", padding: "6px 8px", display: "flex", alignItems: "center", justifyContent: "center" }}
         title="Notifications"
       >
-        ◫
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
         <span
           style={{
             position: "absolute",
-            top: 3,
-            right: 3,
-            width: 7,
-            height: 7,
+            top: 2,
+            right: 2,
+            minWidth: 14,
+            height: 14,
             background: "#ef4444",
-            borderRadius: "50%",
+            borderRadius: "7px",
+            fontSize: "0.55rem",
+            fontWeight: 700,
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 2px",
           }}
-        />
+        >
+          1
+        </span>
       </button>
 
       {/* User chip */}

@@ -1,49 +1,58 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NOVEXA DEFENCE TRUST — DASHBOARD V4 CINEMATIC COMMAND CENTER
-   Reference-Accurate Animated Defence Command Center (Light & Dark Mode)
+   NOVEXA DEFENCE TRUST — DASHBOARD FINAL VISUAL UPGRADE
+   Reference-Accurate Indian Defence Command Center (Light & Dark Mode)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Container Layout ─────────────────────────────────────────────────────── */
+/* ── Container Layout & Theme Surfaces ────────────────────────────────────── */
 .db-v4-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
   width: 100%;
-  max-width: 1680px;
+  max-width: 1720px;
   margin: 0 auto;
-  padding-bottom: 32px;
+  padding-bottom: 36px;
   position: relative;
+}
+
+/* Light Mode: 80% Clean Enterprise, 20% Deep Navy Atmosphere (Slightly Darker) */
+[data-theme="light"] .db-v4-container {
+  color: #0f172a;
+}
+
+[data-theme="dark"] .db-v4-container {
+  color: #f8fafc;
 }
 
 /* ── Base Card Architecture ───────────────────────────────────────────────── */
 .db-v4-card {
   background: var(--panel, #0c1828);
   border: 1px solid var(--border-subtle, #172d4c);
-  border-radius: 14px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 22px 24px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease,
-              box-shadow 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease;
 }
 
 .db-v4-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(59, 130, 246, 0.45);
-  box-shadow: 0 10px 32px -4px rgba(37, 99, 235, 0.18);
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 28px -4px rgba(37, 99, 235, 0.2);
 }
 
 [data-theme="light"] .db-v4-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 18px rgba(37, 99, 235, 0.04);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(37, 99, 235, 0.04);
 }
 
 [data-theme="light"] .db-v4-card:hover {
   border-color: #93c5fd;
-  box-shadow: 0 10px 28px -4px rgba(37, 99, 235, 0.14);
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.12);
 }
 
 /* ── Card Headers ─────────────────────────────────────────────────────────── */
@@ -51,14 +60,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   position: relative;
   z-index: 1;
 }
 
 .db-card-title {
   font-family: 'Barlow Condensed', 'Inter', sans-serif;
-  font-size: 1.0625rem;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -79,44 +88,988 @@
   color: #64748b;
 }
 
-/* ── Hero Command Header ──────────────────────────────────────────────────── */
-.db-hero-card {
-  background: linear-gradient(135deg, #091527 0%, #050d1a 50%, #0d1e38 100%);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 16px;
-  padding: 28px 32px;
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. PANORAMIC INDIAN DEFENCE COMMAND HERO BANNER (MATCHES REFERENCE IMAGE)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.db-hero-panoramic-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: linear-gradient(135deg, #050d1a 0%, #091629 55%, #0d1f3b 100%);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 20px;
+  padding: 26px 30px;
+  min-height: 480px;
+}
+
+[data-theme="light"] .db-hero-panoramic-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 50%, #e2effe 100%);
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 10px 32px -6px rgba(37, 99, 235, 0.12), inset 0 1px 0 #ffffff;
+}
+
+/* Ambient Electromagnetic Glow in Dark Mode */
+.db-hero-ambient-glow {
+  position: absolute;
+  top: 10%;
+  left: 25%;
+  width: 50%;
+  height: 80%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.12) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 75%);
+  filter: blur(40px);
+  pointer-events: none;
+  animation: heroGlowPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlowPulse {
+  0% { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ── Hero Left Column (Identity, Title, CTAs, 4 Indicators) ─────────────── */
+.db-hero-left-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+  max-width: 620px;
+}
+
+.db-hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #0284c7;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+[data-theme="dark"] .db-hero-eyebrow {
+  color: #38bdf8;
+}
+
+.db-hero-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.db-hero-ps-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  letter-spacing: 0.05em;
+}
+
+[data-theme="dark"] .db-hero-ps-pill {
+  background: rgba(37, 99, 235, 0.18);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #60a5fa;
+}
+
+/* 3-Line High Impact Headline */
+.db-hero-headline {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(2.2rem, 3.8vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.03;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.db-title-navy {
+  color: #0f172a;
+}
+
+[data-theme="dark"] .db-title-navy {
+  color: #f8fafc;
+}
+
+.db-title-electric {
+  color: #2563eb;
+  text-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .db-title-electric {
+  color: #00e5ff;
+  text-shadow: 0 0 24px rgba(0, 229, 255, 0.35);
+}
+
+.db-hero-description {
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 22px;
+  max-width: 540px;
+}
+
+[data-theme="dark"] .db-hero-description {
+  color: #94a3b8;
+}
+
+/* CTA Action Buttons */
+.db-hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.db-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  transition: all 0.16s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.db-cta-primary:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+}
+
+.db-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+[data-theme="dark"] .db-cta-secondary {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.db-cta-secondary:hover {
+  background: rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px);
+}
+
+/* User Identity Line */
+.db-hero-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* 4 Trust Feature Blocks along Hero Base */
+.db-trust-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-top: auto;
+}
+
+.db-trust-feature-item {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.18s ease;
+}
+
+[data-theme="dark"] .db-trust-feature-item {
+  background: rgba(10, 22, 42, 0.7);
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.db-trust-feature-item:hover {
+  transform: translateY(-2px);
+  border-color: #38bdf8;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
+}
+
+.db-trust-feat-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-trust-feat-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .db-trust-feat-title {
+  color: #f8fafc;
+}
+
+.db-trust-feat-sub {
+  font-size: 0.65rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* Subtle Indian Flag / Tricolour Accent with Ashoka Chakra */
+.db-tricolour-pill {
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.db-tricolour-stripe {
+  flex: 1;
+  width: 100%;
+}
+
+.stripe-saffron { background: #ff9933; }
+.stripe-white   { background: #ffffff; position: relative; }
+.stripe-green   { background: #138808; }
+
+.db-ashoka-chakra {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  border: 0.6px solid #000080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Hero Center Visual: India Map & Defence Assets Layer ────────────────── */
+.db-hero-center-visual {
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 32%;
+  bottom: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-panoramic-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* India Map Silhouette Styling */
+.db-map-india-land {
+  fill: rgba(37, 99, 235, 0.05);
+  stroke: rgba(56, 189, 248, 0.35);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.15));
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .db-map-india-land {
+  fill: rgba(14, 165, 233, 0.08);
+  stroke: rgba(0, 229, 255, 0.45);
+  filter: drop-shadow(0 0 14px rgba(0, 229, 255, 0.2));
+}
+
+/* India Map Breathing Halo */
+.db-map-halo {
+  animation: indiaMapHaloBreathe 6s ease-in-out infinite alternate;
+}
+
+@keyframes indiaMapHaloBreathe {
+  0% { opacity: 0.35; transform: scale(0.98); }
+  100% { opacity: 0.85; transform: scale(1.02); }
+}
+
+/* Strategic Military Nodes on India Map */
+.db-hero-node-dot {
+  fill: #00e5ff;
+  filter: drop-shadow(0 0 5px #00e5ff);
+}
+
+.db-hero-node-ring {
+  stroke: #00e5ff;
+  stroke-width: 1;
+  animation: heroNodeRingPulse 3.5s ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes heroNodeRingPulse {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.db-hero-node-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5px;
+  font-weight: 700;
+  fill: #0284c7;
+  letter-spacing: 0.04em;
+  text-anchor: start;
+}
+
+[data-theme="dark"] .db-hero-node-label {
+  fill: #7dd3fc;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+/* Subtle Indian Landmark (India Gate Line Art) */
+.db-landmark-india-gate {
+  stroke: rgba(37, 99, 235, 0.28);
+  stroke-width: 1;
+  fill: rgba(37, 99, 235, 0.03);
+}
+
+[data-theme="dark"] .db-landmark-india-gate {
+  stroke: rgba(56, 189, 248, 0.3);
+  fill: rgba(56, 189, 248, 0.04);
+}
+
+/* Satellite Orbital Drift Animation */
+.db-hero-anim-satellite {
+  animation: heroSatelliteDrift 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes heroSatelliteDrift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(12px, -8px) rotate(3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Satellite Laser Beam to India */
+.db-hero-satellite-beam {
+  stroke: url(#satBeamGrad);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  animation: satBeamPulse 3.5s ease-in-out infinite;
+}
+
+@keyframes satBeamPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.95; }
+}
+
+/* Stealth Fighter Aircraft Flight Path */
+.db-hero-anim-fighter {
+  animation: heroFighterBanking 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes heroFighterBanking {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(18px, -10px) rotate(4deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Naval Destroyer Warship Patrol & Water Wake */
+.db-hero-anim-naval {
+  animation: heroNavalPatrol 32s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes heroNavalPatrol {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(14px, -3px); }
+  100% { transform: translate(0, 0); }
+}
+
+.db-hero-naval-wake {
+  animation: navalWakeShimmer 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes navalWakeShimmer {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.85); }
+  50% { opacity: 0.85; transform: scaleX(1.15); }
+}
+
+/* ── Hero Right Column: Command Center Chassis Modules ──────────────────── */
+.db-hero-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+/* 1. Tactical Radar Command Panel (Always Defence Navy Chassis) */
+.db-tactical-radar-panel {
+  background: linear-gradient(180deg, #091526 0%, #060e1a 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: inset 0 1px 0 rgba(147, 197, 253, 0.25), 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+  color: #f1f5f9;
+}
+
+.db-radar-bezel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 35%, #2563eb 70%, transparent 100%);
+}
+
+.db-radar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
+}
+
+.db-radar-node-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  letter-spacing: 0.04em;
+}
+
+.db-radar-sih-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+/* Radar Scope and Side Counters Layout */
+.db-radar-body-grid {
+  display: grid;
+  grid-template-columns: 85px 1fr 65px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* Readiness Asset Counter Columns */
+.db-readiness-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.db-readiness-item {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.db-readiness-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.db-readiness-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+/* Circular Radar Scope Display */
+.db-radar-scope-wrapper {
+  display: flex;
+  justify-content: center;
   position: relative;
+}
+
+.db-radar-scope {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  position: relative;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(6, 14, 26, 0.98) 75%);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: inset 0 0 18px rgba(14, 165, 233, 0.25), 0 0 14px rgba(56, 189, 248, 0.2);
   overflow: hidden;
-  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-[data-theme="light"] .db-hero-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 60%, #e2effe 100%);
-  border: 1px solid #bfdbfe;
-  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.08), inset 0 1px 0 #ffffff;
-}
-
-.db-hero-bg-visual {
+.db-radar-ring {
   position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.db-radar-ring-1 { width: 32px; height: 32px; }
+.db-radar-ring-2 { width: 64px; height: 64px; }
+.db-radar-ring-3 { width: 96px; height: 96px; }
+.db-radar-ring-4 { width: 126px; height: 126px; border-color: rgba(56, 189, 248, 0.35); }
+
+.db-radar-axis-h {
+  position: absolute;
+  top: 50%;
+  left: 0;
   right: 0;
+  height: 1px;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.db-radar-axis-v {
+  position: absolute;
+  left: 50%;
   top: 0;
   bottom: 0;
-  width: 62%;
+  width: 1px;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+/* 360° Continuous Radar Sweep Arm */
+.db-radar-sweep-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(56, 189, 248, 0.1) 320deg, rgba(56, 189, 248, 0.65) 360deg);
+  animation: radarSweepLoop 4s linear infinite;
   pointer-events: none;
-  overflow: hidden;
-  opacity: 0.95;
-  mask-image: linear-gradient(to right, transparent 0%, black 25%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 25%);
 }
 
-[data-theme="light"] .db-hero-bg-visual {
-  opacity: 0.6;
+@keyframes radarSweepLoop {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* ── KPI Grid & Cards ─────────────────────────────────────────────────────── */
+.db-radar-blip {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+  animation: radarBlipPulse 2.8s ease-in-out infinite;
+}
+
+.blip-1 { top: 32%; left: 62%; animation-delay: 0.3s; }
+.blip-2 { top: 68%; left: 38%; animation-delay: 1.1s; }
+.blip-3 { top: 48%; left: 75%; animation-delay: 1.9s; }
+
+@keyframes radarBlipPulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+.db-radar-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #38bdf8;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+/* Mini India Silhouette in Radar Side */
+.db-radar-india-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+
+/* Radar Telemetry Information Row */
+.db-radar-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(56, 189, 248, 0.15);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+  margin-bottom: 6px;
+}
+
+.db-telemetry-box {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.db-tel-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.52rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.db-tel-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+/* Checklist Row */
+.db-radar-checklist {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  color: #22c55e;
+  font-weight: 600;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+/* Radar Footer Status Bar */
+.db-radar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding-top: 4px;
+}
+
+.db-radar-active-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #22c55e;
+}
+
+.db-radar-az-status {
+  color: #94a3b8;
+}
+
+/* 2. Trust Verification Chain Panel (Matches Reference) */
+.db-trust-chain-card {
+  background: var(--panel, #0c1828);
+  border: 1px solid var(--border-subtle, #1e3a60);
+  border-radius: 8px;
+  padding: 10px 14px;
+  position: relative;
+}
+
+[data-theme="light"] .db-trust-chain-card {
+  background: #ffffff;
+  border-color: #dbeafe;
+}
+
+.db-chain-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.db-chain-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--foreground, #e2e8f0);
+  text-transform: uppercase;
+}
+
+[data-theme="light"] .db-chain-title {
+  color: #0f172a;
+}
+
+.db-chain-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+[data-theme="dark"] .db-chain-tag {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.db-chain-steps-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+}
+
+.db-chain-rail-line {
+  position: absolute;
+  top: 13px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: rgba(37, 99, 235, 0.2);
+  z-index: 1;
+}
+
+[data-theme="dark"] .db-chain-rail-line {
+  background: rgba(56, 189, 248, 0.25);
+}
+
+.db-chain-energy-beam {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 45px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, transparent 100%);
+  animation: chainEnergyTravel 3.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+@keyframes chainEnergyTravel {
+  0% { left: 0%; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: 88%; opacity: 0; }
+}
+
+.db-chain-node-box {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.db-chain-node-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--panel, #0c1828);
+  border: 1.5px solid #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.35);
+}
+
+[data-theme="light"] .db-chain-node-dot {
+  background: #ffffff;
+}
+
+.db-chain-node-inner {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+}
+
+.db-chain-node-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--foreground, #e2e8f0);
+}
+
+[data-theme="light"] .db-chain-node-name {
+  color: #0f172a;
+}
+
+.db-chain-node-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  color: #64748b;
+}
+
+/* 3. Live System Monitor Panel (Matches Reference) */
+.db-system-monitor-card {
+  background: var(--panel, #0c1828);
+  border: 1px solid var(--border-subtle, #1e3a60);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+[data-theme="light"] .db-system-monitor-card {
+  background: #ffffff;
+  border-color: #dbeafe;
+}
+
+.db-monitor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.db-monitor-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--foreground, #e2e8f0);
+  text-transform: uppercase;
+}
+
+[data-theme="light"] .db-monitor-title {
+  color: #0f172a;
+}
+
+.db-monitor-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 1px 7px;
+  border-radius: 3px;
+}
+
+.db-monitor-rows-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.db-monitor-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: rgba(37, 99, 235, 0.04);
+  border: 1px solid var(--border-subtle, #172d4c);
+  border-radius: 5px;
+}
+
+[data-theme="light"] .db-monitor-row-item {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.db-monitor-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-monitor-row-icon {
+  font-size: 0.8rem;
+  color: #2563eb;
+}
+
+[data-theme="dark"] .db-monitor-row-icon {
+  color: #38bdf8;
+}
+
+.db-monitor-row-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-monitor-row-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--foreground, #e2e8f0);
+}
+
+[data-theme="light"] .db-monitor-row-name {
+  color: #0f172a;
+}
+
+.db-monitor-row-latency {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.56rem;
+  color: #64748b;
+}
+
+.db-monitor-sparkline {
+  width: 50px;
+  height: 16px;
+}
+
+.db-monitor-row-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. KPI METRIC CARDS (ROW 2)
+   ═══════════════════════════════════════════════════════════════════════════ */
 .db-kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -132,17 +1085,17 @@
 .db-kpi-card {
   background: var(--panel, #0c1828);
   border: 1px solid var(--border-subtle, #172d4c);
-  border-radius: 14px;
-  padding: 20px 22px;
+  border-radius: 12px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease,
-              box-shadow 0.25s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
   animation: dbCardEntrance 0.5s ease-out backwards;
 }
@@ -161,7 +1114,7 @@
 
 [data-theme="light"] .db-kpi-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #dbeafe;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
@@ -190,9 +1143,9 @@
 }
 
 .db-kpi-icon-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +1186,7 @@
   gap: 6px;
 }
 
-/* ── KPI Sparkline Draw ───────────────────────────────────────────────────── */
+/* Sparkline Draw */
 .db-kpi-sparkline {
   width: 72px;
   height: 28px;
@@ -248,12 +1201,12 @@
 }
 
 @keyframes dbSparklineDraw {
-  to {
-    stroke-dashoffset: 0;
-  }
+  to { stroke-dashoffset: 0; }
 }
 
-/* ── Two-Column Grid Sections ─────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. TWO-COLUMN SECTIONS (ROWS 3, 4, 5)
+   ═══════════════════════════════════════════════════════════════════════════ */
 .db-two-col-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -308,8 +1261,8 @@
 
 .db-orbital-svg-box {
   position: relative;
-  width: 290px;
-  height: 290px;
+  width: 280px;
+  height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,7 +1295,6 @@
   color: var(--foreground, #e2e8f0);
   letter-spacing: -0.02em;
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.45);
-  animation: dbTrustCenterGlow 3.5s ease-in-out infinite;
 }
 
 [data-theme="light"] .db-trust-score {
@@ -384,6 +1336,22 @@
   animation: dbTrustOuterPulse 3.5s ease-out infinite;
 }
 
+@keyframes dbOrbitClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dbOrbitCounterClockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes dbTrustOuterPulse {
+  0% { transform: scale(0.92); opacity: 0.7; }
+  50% { transform: scale(1.08); opacity: 0.15; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
 /* 4-Item Telemetry Matrix */
 .db-telemetry-grid {
   display: grid;
@@ -397,275 +1365,147 @@
 .db-telemetry-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  background: rgba(30, 58, 96, 0.15);
-  border: 1px solid var(--border-subtle, #172d4c);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.db-telemetry-item:hover {
-  background: rgba(37, 99, 235, 0.12);
-  border-color: rgba(59, 130, 246, 0.4);
-  transform: translateX(2px);
-}
-
-[data-theme="light"] .db-telemetry-item {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-}
-
-[data-theme="light"] .db-telemetry-item:hover {
-  background: #f0f7ff;
-  border-color: #93c5fd;
+  gap: 10px;
 }
 
 .db-telemetry-icon {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
 }
 
 .db-telemetry-title {
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: #64748b;
+  text-transform: uppercase;
 }
 
 .db-telemetry-status {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--foreground, #e2e8f0);
-  margin-top: 1px;
 }
 
 [data-theme="light"] .db-telemetry-status {
-  color: #1e293b;
+  color: #0f172a;
 }
 
-/* ── Asset Activity & Lifecycle ───────────────────────────────────────────── */
-.db-pipeline-overview {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.db-pipeline-stat {
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid;
-  transition: transform 0.2s ease;
-}
-
-.db-pipeline-stat:hover {
-  transform: translateY(-2px);
-}
-
-.db-stacked-chart-container {
-  margin-bottom: 20px;
-}
-
-.db-stacked-bar {
-  display: flex;
-  height: 20px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--border-subtle, #172d4c);
-  gap: 2px;
-}
-
-[data-theme="light"] .db-stacked-bar {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-}
-
-.db-stacked-segment {
-  height: 100%;
-  border-radius: 3px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  animation: dbBarGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.db-stacked-segment:hover {
-  opacity: 1 !important;
-  transform: scaleY(1.15);
-  z-index: 2;
-  box-shadow: 0 0 10px currentColor;
-}
-
-.db-lifecycle-list {
+/* ── Lifecycle Card ───────────────────────────────────────────────────────── */
+.db-lifecycle-bars {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.db-lifecycle-item {
+.db-lifecycle-row {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  transition: background 0.2s ease;
-}
-
-.db-lifecycle-item:hover {
-  background: rgba(30, 58, 96, 0.15);
-}
-
-[data-theme="light"] .db-lifecycle-item:hover {
-  background: #f8fafc;
 }
 
 .db-lifecycle-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.775rem;
+  font-size: 0.78rem;
 }
 
-.db-lifecycle-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.db-lifecycle-label {
   font-weight: 600;
   color: var(--foreground, #e2e8f0);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-[data-theme="light"] .db-lifecycle-name {
-  color: #1e293b;
-}
-
-.db-lifecycle-count {
-  font-weight: 700;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.95rem;
-  color: var(--foreground, #e2e8f0);
-}
-
-[data-theme="light"] .db-lifecycle-count {
+[data-theme="light"] .db-lifecycle-label {
   color: #0f172a;
 }
 
-.db-progress-track {
+.db-lifecycle-track {
   width: 100%;
-  height: 6px;
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: 3px;
+  height: 8px;
+  background: rgba(30, 58, 96, 0.25);
+  border-radius: 4px;
   overflow: hidden;
+  position: relative;
 }
 
-[data-theme="light"] .db-progress-track {
+[data-theme="light"] .db-lifecycle-track {
   background: #e2e8f0;
 }
 
-.db-progress-fill {
+.db-lifecycle-fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: dbBarGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes dbBarGrow {
-  from {
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-  to {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
 }
 
 /* ── Live Activity Feed ───────────────────────────────────────────────────── */
 .db-activity-feed {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   position: relative;
-  padding-left: 20px;
+  padding-left: 14px;
 }
 
 .db-activity-timeline-line {
   position: absolute;
-  left: 7px;
-  top: 10px;
-  bottom: 10px;
+  top: 6px;
+  bottom: 6px;
+  left: 3px;
   width: 2px;
-  background: linear-gradient(180deg, #3b82f6 0%, rgba(59, 130, 246, 0.2) 100%);
-  overflow: hidden;
+  background: var(--border-subtle, #152b4a);
 }
 
 .db-activity-timeline-pulse {
   position: absolute;
-  left: 0;
   top: 0;
-  width: 2px;
+  left: 0;
+  width: 100%;
   height: 35px;
-  background: linear-gradient(180deg, transparent, #38bdf8, #22c55e, transparent);
-  animation: dbTimelineFlow 3.2s ease-in-out infinite;
+  background: linear-gradient(180deg, transparent 0%, #38bdf8 50%, transparent 100%);
+  animation: timelinePulseFlow 3s ease-in-out infinite;
 }
 
-@keyframes dbTimelineFlow {
-  0% { transform: translateY(-35px); opacity: 0; }
+@keyframes timelinePulseFlow {
+  0% { top: 0%; opacity: 0; }
   20% { opacity: 1; }
   80% { opacity: 1; }
-  100% { transform: translateY(260px); opacity: 0; }
+  100% { top: 85%; opacity: 0; }
 }
 
 .db-activity-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
-  position: relative;
-  transition: transform 0.2s ease;
-  animation: dbActivitySlideUp 0.45s ease-out backwards;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(30, 58, 96, 0.12);
+  border: 1px solid var(--border-subtle, #172d4c);
+  transition: all 0.18s ease;
 }
 
-.db-activity-item:nth-child(2) { animation-delay: 0.08s; }
-.db-activity-item:nth-child(3) { animation-delay: 0.16s; }
-.db-activity-item:nth-child(4) { animation-delay: 0.24s; }
-.db-activity-item:nth-child(5) { animation-delay: 0.32s; }
-.db-activity-item:nth-child(6) { animation-delay: 0.40s; }
-
-@keyframes dbActivitySlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+[data-theme="light"] .db-activity-item {
+  background: #f8fafc;
+  border-color: #e2e8f0;
 }
 
 .db-activity-item:hover {
   transform: translateX(3px);
+  border-color: #3b82f6;
 }
 
 .db-activity-node {
-  position: absolute;
-  left: -20px;
-  width: 14px;
-  height: 14px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--panel, #0c1828);
-  border: 2px solid #3b82f6;
-  box-shadow: 0 0 8px currentColor;
-  transition: transform 0.2s ease;
-  z-index: 1;
-}
-
-[data-theme="light"] .db-activity-node {
-  background: #ffffff;
-}
-
-.db-activity-item:hover .db-activity-node {
-  transform: scale(1.3);
+  border: 2px solid #38bdf8;
+  margin-top: 4px;
+  flex-shrink: 0;
 }
 
 .db-activity-content {
@@ -674,7 +1514,7 @@
 }
 
 .db-activity-title {
-  font-size: 0.8125rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--foreground, #e2e8f0);
 }
@@ -684,36 +1524,28 @@
 }
 
 .db-activity-meta {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #64748b;
-  margin-top: 2px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 2px;
 }
 
 /* ── Global Defence Network Card ─────────────────────────────────────────── */
 .db-network-card {
-  background: #08131f;
-  border: 1px solid #1a365d;
-  border-radius: 14px;
-  position: relative;
-  overflow: hidden;
-}
-
-[data-theme="light"] .db-network-card {
-  background: #0a172c;
-  border-color: #1e3a60;
+  display: flex;
+  flex-direction: column;
 }
 
 .db-network-map-wrapper {
   position: relative;
   width: 100%;
-  height: 235px;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  margin-bottom: 12px;
 }
 
 .db-network-svg {
@@ -725,382 +1557,173 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(30, 58, 96, 0.4);
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle, #172d4c);
 }
 
 .db-network-stat-box {
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.db-network-stat-box:hover {
-  border-color: rgba(56, 189, 248, 0.5);
-  transform: translateY(-2px);
-}
-
-/* ── Promotional / Trust Banner ──────────────────────────────────────────── */
-.db-promo-banner {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.16) 0%, rgba(6, 182, 212, 0.1) 50%, rgba(12, 24, 40, 0.95) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  border-radius: 14px;
-  padding: 24px 28px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+}
+
+/* ── Promotional Trust Banner ─────────────────────────────────────────────── */
+.db-promo-banner {
+  background: linear-gradient(135deg, #0a1b38 0%, #061124 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 12px;
+  padding: 24px 28px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.db-promo-banner:hover {
-  border-color: rgba(56, 189, 248, 0.5);
-  box-shadow: 0 8px 30px -4px rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 [data-theme="light"] .db-promo-banner {
-  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 50%, #ffffff 100%);
-  border: 1px solid #93c5fd;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0effe 100%);
+  border-color: #bfdbfe;
 }
 
 .db-promo-graphic {
   position: absolute;
-  right: -20px;
-  top: -20px;
-  bottom: -20px;
-  width: 320px;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 240px;
+  height: 140px;
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-[data-theme="light"] .db-promo-graphic {
-  opacity: 0.5;
-}
-
-/* ── Buttons Micro-Interactions ───────────────────────────────────────────── */
-.btn-primary {
-  display: inline-flex;
+/* ── Overview Video Modal ─────────────────────────────────────────────────── */
+.db-overview-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 18, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.2s ease,
-              background 0.2s ease;
+  padding: 20px;
+  animation: modalFade 0.25s ease-out;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: transform 0.2s ease,
-              border-color 0.2s ease,
-              background 0.2s ease;
+.db-overview-modal-card {
+  background: var(--panel, #0c1828);
+  border: 1px solid var(--border, #1e3a60);
+  border-radius: 14px;
+  max-width: 640px;
+  width: 100%;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  position: relative;
 }
 
-.btn-secondary:hover {
-  transform: translateY(-1px);
-  border-color: #3b82f6;
+[data-theme="light"] .db-overview-modal-card {
+  background: #ffffff;
+  border-color: #bfdbfe;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   CINEMATIC KEYFRAME ANIMATIONS (DEFENCE SYSTEMS)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* 1. Orbit Rotations */
-@keyframes dbOrbitClockwise {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes dbOrbitCounterClockwise {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
-}
-
-/* 2. Trust Outer Pulse & Breathing Glow */
-@keyframes dbTrustOuterPulse {
-  0% {
-    r: 105;
-    opacity: 0.65;
-    stroke-width: 2;
+/* ── Responsive Rules ─────────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .db-hero-panoramic-card {
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
-  50% {
-    r: 135;
-    opacity: 0.2;
-    stroke-width: 1;
-  }
-  100% {
-    r: 145;
-    opacity: 0;
-    stroke-width: 0.5;
+  .db-hero-center-visual {
+    display: none;
   }
 }
 
-@keyframes dbTrustCenterGlow {
-  0%, 100% {
-    text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
-    opacity: 0.95;
+@media (max-width: 768px) {
+  .db-v4-container {
+    gap: 16px;
   }
-  50% {
-    text-shadow: 0 0 28px rgba(56, 189, 248, 0.75), 0 0 40px rgba(34, 197, 94, 0.35);
-    opacity: 1;
+  .db-hero-panoramic-card {
+    padding: 16px 14px;
+    min-height: auto;
+    gap: 18px;
   }
-}
-
-/* 3. Defence Satellite Visible Motion (26s) */
-@keyframes dbSatelliteOrbit {
-  0% {
-    transform: translate(450px, 30px) rotate(-6deg);
-    opacity: 0.85;
+  .db-hero-headline {
+    font-size: clamp(1.4rem, 5.5vw, 2.1rem);
+    margin-bottom: 10px;
   }
-  25% {
-    transform: translate(490px, 48px) rotate(0deg);
-    opacity: 1;
+  .db-hero-description {
+    font-size: 0.8rem;
+    margin-bottom: 16px;
   }
-  50% {
-    transform: translate(525px, 32px) rotate(6deg);
-    opacity: 0.9;
+  .db-hero-cta-group {
+    margin-bottom: 16px;
   }
-  75% {
-    transform: translate(480px, 20px) rotate(2deg);
-    opacity: 0.95;
+  .db-hero-user-meta {
+    margin-bottom: 14px;
+    font-size: 0.7rem;
   }
-  100% {
-    transform: translate(450px, 30px) rotate(-6deg);
-    opacity: 0.85;
+  .db-trust-feature-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
-}
-
-.db-anim-satellite {
-  animation: dbSatelliteOrbit 26s ease-in-out infinite;
-  will-change: transform;
-}
-
-/* Faint signal beam projecting from satellite to earth */
-@keyframes dbSatelliteBeamPulse {
-  0%, 100% {
-    opacity: 0.15;
-    stroke-width: 1;
+  .db-trust-feature-item {
+    padding: 7px 8px;
   }
-  50% {
-    opacity: 0.55;
-    stroke-width: 1.6;
+  .db-trust-feat-sub {
+    font-size: 0.58rem;
   }
-}
-
-.db-satellite-beam {
-  animation: dbSatelliteBeamPulse 4s ease-in-out infinite;
-}
-
-/* 4. Stealth Fighter Aircraft Visible Motion (20s) */
-@keyframes dbFighterFlight {
-  0% {
-    transform: translate(250px, 160px) scale(0.85);
-    opacity: 0;
+  .db-tactical-radar-panel {
+    padding: 10px;
   }
-  10% {
-    opacity: 0.9;
+  .db-radar-body-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
-  50% {
-    transform: translate(410px, 95px) scale(1.02);
-    opacity: 1;
+  .db-readiness-counters {
+    flex-direction: row;
+    justify-content: space-around;
   }
-  90% {
-    opacity: 0.85;
+  .db-radar-india-mini {
+    display: none;
   }
-  100% {
-    transform: translate(570px, 40px) scale(0.9);
-    opacity: 0;
+  .db-radar-telemetry-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .db-kpi-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-.db-anim-fighter {
-  animation: dbFighterFlight 20s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  will-change: transform;
-}
-
-/* Fighter exhaust trail */
-@keyframes dbFighterTrailPulse {
-  0%, 100% {
-    opacity: 0.4;
-    stroke-width: 1.5;
+@media (max-width: 480px) {
+  .db-trust-feature-grid {
+    grid-template-columns: 1fr;
   }
-  50% {
-    opacity: 0.9;
-    stroke-width: 2.5;
+  .db-chain-steps-track {
+    gap: 6px;
   }
-}
-
-.db-fighter-trail {
-  animation: dbFighterTrailPulse 1.2s ease-in-out infinite;
-}
-
-/* 5. Naval Vessel Movement & Waterline Wake (30s) */
-@keyframes dbNavalPatrol {
-  0% {
-    transform: translate(360px, 168px);
+  .db-chain-node-name {
+    font-size: 0.5rem;
   }
-  50% {
-    transform: translate(415px, 165px);
+  .db-chain-node-sub {
+    display: none;
   }
-  100% {
-    transform: translate(360px, 168px);
+  .db-monitor-sparkline {
+    display: none;
   }
 }
 
-.db-anim-naval {
-  animation: dbNavalPatrol 30s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes dbShipWakeRipples {
-  0% {
-    opacity: 0.2;
-    transform: scaleX(0.7);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scaleX(1.2);
-  }
-  100% {
-    opacity: 0.2;
-    transform: scaleX(0.7);
-  }
-}
-
-.db-naval-wake {
-  animation: dbShipWakeRipples 3.5s ease-in-out infinite;
-  transform-origin: center;
-}
-
-/* 6. Network Nodes Staggered Breathing */
-@keyframes dbNodeBreathe1 {
-  0%, 100% { transform: scale(1); opacity: 0.55; }
-  50% { transform: scale(1.35); opacity: 1; }
-}
-
-@keyframes dbNodeBreathe2 {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.4); opacity: 0.95; }
-}
-
-@keyframes dbNodeBreathe3 {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.3); opacity: 1; }
-}
-
-.db-node-pulse-1 { animation: dbNodeBreathe1 3.2s ease-in-out infinite; transform-origin: center; }
-.db-node-pulse-2 { animation: dbNodeBreathe2 4.1s ease-in-out 1.2s infinite; transform-origin: center; }
-.db-node-pulse-3 { animation: dbNodeBreathe3 3.7s ease-in-out 2.4s infinite; transform-origin: center; }
-.db-node-pulse-4 { animation: dbNodeBreathe1 4.5s ease-in-out 0.8s infinite; transform-origin: center; }
-.db-node-pulse-5 { animation: dbNodeBreathe2 3.9s ease-in-out 1.8s infinite; transform-origin: center; }
-
-/* 7. Data Packet Motion on SVG Lines */
-@keyframes dbDataPacketFlow1 {
-  0% { stroke-dashoffset: 160; opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-
-@keyframes dbDataPacketFlow2 {
-  0% { stroke-dashoffset: 220; opacity: 0; }
-  20% { opacity: 0.9; }
-  80% { opacity: 0.9; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-
-.db-data-stream-1 {
-  stroke-dasharray: 20 140;
-  animation: dbDataPacketFlow1 3.5s linear infinite;
-}
-
-.db-data-stream-2 {
-  stroke-dasharray: 25 195;
-  animation: dbDataPacketFlow2 4.8s linear 1.5s infinite;
-}
-
-.db-data-stream-3 {
-  stroke-dasharray: 18 120;
-  animation: dbDataPacketFlow1 4.2s linear 0.7s infinite;
-}
-
-/* 8. Status Pulse Dot */
-.db-status-dot-pulse {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-  display: inline-block;
-  animation: dbPulseRing 2.6s infinite;
-}
-
-@keyframes dbPulseRing {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.75); }
-  70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
-
-/* 9. Card Entrance Animation */
-@keyframes dbCardEntrance {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 10. Radar Scan Arm inside Hero */
-@keyframes dbRadarSweepFast {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.db-radar-sweep-arm {
-  transform-origin: 440px 100px;
-  animation: dbRadarSweepFast 7s linear infinite;
-}
-
-/* ── Accessibility & Reduced Motion ───────────────────────────────────────── */
+/* ── Accessibility: Reduced Motion ────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .db-orbit-outer,
-  .db-orbit-inner,
-  .db-orbit-traveler,
-  .db-orbit-pulse-ring,
-  .db-anim-satellite,
-  .db-anim-fighter,
-  .db-anim-naval,
-  .db-node-pulse-1,
-  .db-node-pulse-2,
-  .db-node-pulse-3,
-  .db-node-pulse-4,
-  .db-node-pulse-5,
-  .db-data-stream-1,
-  .db-data-stream-2,
-  .db-data-stream-3,
-  .db-radar-sweep-arm,
-  .db-status-dot-pulse,
-  .db-activity-timeline-pulse,
-  .db-sparkline-path,
-  .db-stacked-segment,
-  .db-progress-fill,
-  .db-kpi-card,
-  .db-activity-item {
-    animation: none !important;
-    transition: none !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
   .db-sparkline-path {
     stroke-dashoffset: 0 !important;
