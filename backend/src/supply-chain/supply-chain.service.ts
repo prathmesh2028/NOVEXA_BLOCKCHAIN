@@ -30,11 +30,16 @@ export class SupplyChainService {
 
   // SUPPLIERS
   async getSuppliers() {
-    const list = await this.prisma.supplier.findMany({
-      include: { facilities: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    return list.map((s) => this.formatSupplier(s));
+    try {
+      const list = await this.prisma.supplier.findMany({
+        include: { facilities: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      return list.map((s) => this.formatSupplier(s));
+    } catch (err: any) {
+      this.logger.warn(`DB offline — returning empty suppliers list: ${err.message}`);
+      return [];
+    }
   }
 
   async getSupplier(id: string) {
@@ -90,7 +95,12 @@ export class SupplyChainService {
 
   // FACILITIES
   async getFacilities() {
-    return this.prisma.facility.findMany({ include: { supplier: true } });
+    try {
+      return await this.prisma.facility.findMany({ include: { supplier: true } });
+    } catch (err: any) {
+      this.logger.warn(`DB offline — returning empty facilities list: ${err.message}`);
+      return [];
+    }
   }
 
   async createFacility(data: any, userId: string) {
@@ -131,7 +141,12 @@ export class SupplyChainService {
 
   // LOTS
   async getLots() {
-    return this.prisma.lot.findMany({ include: { supplier: true } });
+    try {
+      return await this.prisma.lot.findMany({ include: { supplier: true } });
+    } catch (err: any) {
+      this.logger.warn(`DB offline — returning empty lots list: ${err.message}`);
+      return [];
+    }
   }
 
   async createLot(data: any, userId: string) {
@@ -178,7 +193,12 @@ export class SupplyChainService {
 
   // SHIPMENTS
   async getShipments() {
-    return this.prisma.shipment.findMany({ include: { dispatchFacility: true, receiveFacility: true } });
+    try {
+      return await this.prisma.shipment.findMany({ include: { dispatchFacility: true, receiveFacility: true } });
+    } catch (err: any) {
+      this.logger.warn(`DB offline — returning empty shipments list: ${err.message}`);
+      return [];
+    }
   }
 
   async createShipment(data: any, userId: string) {
