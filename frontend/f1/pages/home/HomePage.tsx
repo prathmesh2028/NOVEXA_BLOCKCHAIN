@@ -273,26 +273,25 @@ export default function HomePage() {
         <div className="home-hero-left">
           {/* Top Micro Label */}
           <div className="home-micro-label hero-stagger-1">
-            SECURE TODAY &nbsp;|&nbsp; STRONGER TOMORROW
+            BEL • DEFENCE TECHNOLOGY • SECURE DIGITAL TRUST
           </div>
 
           {/* Defence Trust Pill Badge */}
           <div className="home-pill-badge hero-stagger-2">
             <span className="operational-dot" />
-            <span>NOVEXA DEFENCE TRUST • PS 26125 • INDIA</span>
+            <span>BEL DEFENCE TRUST • PS 26125 • INDIA</span>
           </div>
 
           {/* 3-Line High Impact Hero Title */}
-          <h1 className="home-hero-title hero-stagger-3">
-            <span className="title-navy">BLOCKCHAIN-BASED</span>
-            <span className="title-electric">SECURE PLATFORM</span>
-            <span className="title-navy">FOR DEFENCE ASSETS</span>
+          <h1 className="home-hero-title hero-stagger-3" style={{ fontSize: "clamp(2.1rem, 3.8vw, 3.25rem)" }}>
+            <span className="title-navy">BEL DEFENCE TRUST</span>
+            <span className="title-electric">BLOCKCHAIN-SECURED PLATFORM</span>
+            <span className="title-navy">FOR INDIA&apos;S DEFENCE ASSETS</span>
           </h1>
 
           {/* Hero Description */}
           <p className="home-hero-desc hero-stagger-4">
-            Identity-verified, role-governed, evidence-backed, and blockchain-certified asset management
-            for defence component records. Every action traceable. Every claim verifiable.
+            Secure, traceable and verifiable digital trust for mission-critical defence assets.
           </p>
 
           {/* CTA Action Buttons */}

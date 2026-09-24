@@ -130,7 +130,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 lineHeight: 1.1,
               }}
             >
-              NOVEXA
+              BEL
             </div>
             <div style={{ fontSize: "0.6rem", color: "#60a5fa", letterSpacing: "0.08em", fontWeight: 600 }}>
               DEFENCE TRUST
