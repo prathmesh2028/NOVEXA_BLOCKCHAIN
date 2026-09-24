@@ -7,6 +7,7 @@ import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
 import { CERTIFICATION_TYPES, CERTIFICATION_STATUSES, VERIFICATION_STATUSES } from "./certificationData";
 import type { CertificationStatus } from "./certificationData";
+import { useAuth } from "../../context/AuthContext";
 
 
 export default function CertificationsPage() {
