@@ -14,7 +14,7 @@
     "outDir": "./dist",
     "rootDir": "./",
     "lib": ["es2020"],
-    "types": ["node"]
+    "types": ["node", "mocha", "chai", "@nomicfoundation/hardhat-toolbox", "@nomicfoundation/hardhat-ethers"]
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"],
