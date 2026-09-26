@@ -165,7 +165,11 @@ describe('UsersService', () => {
       expect(result.items[0].roles).toContain('ADMIN');
     });
 
-    it('throws database error when database is offline', async () => {
+    it('throws database error when database is offline in production mode', async () => {
+      // Set production mode to disable fallback
+      process.env.APP_ENV = 'production';
+      process.env.NODE_ENV = 'production';
+
       mockPrisma.user.findMany.mockRejectedValue(new Error('DB offline'));
       mockPrisma.user.count.mockRejectedValue(new Error('DB offline'));
 

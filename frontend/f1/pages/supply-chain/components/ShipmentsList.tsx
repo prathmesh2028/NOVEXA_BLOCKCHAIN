@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { supplyChainService, ShipmentResponse, FacilityResponse, LotResponse } from "../../../services/supply-chain";
+import { supplyChainService, ShipmentResponse, FacilityResponse } from "../../../services/supply-chain";
 import StatusBadge from "../../../components/ui/StatusBadge";
 
 const overlay: React.CSSProperties = {
@@ -27,7 +27,6 @@ const lbl: React.CSSProperties = {
 export default function ShipmentsList() {
   const [shipments, setShipments] = useState<ShipmentResponse[]>([]);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
-  const [lots, setLots] = useState<LotResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -36,12 +35,9 @@ export default function ShipmentsList() {
 
   const [originId, setOriginId] = useState("");
   const [destId, setDestId] = useState("");
-  const [lotId, setLotId] = useState("");
-  const [carrier, setCarrier] = useState("");
   const [tracking, setTracking] = useState("");
-  const [eta, setEta] = useState("");
 
-  useEffect(() => { load(); loadFacilities(); loadLots(); }, []);
+  useEffect(() => { load(); loadFacilities(); }, []);
 
   const load = async () => {
     try {
@@ -56,22 +52,14 @@ export default function ShipmentsList() {
       const d = await supplyChainService.listFacilities();
       const list: FacilityResponse[] = (d as any).items || (d as any) || [];
       setFacilities(list);
-      if (list.length > 0) setOriginId(list[0].id);
-      if (list.length > 1) setDestId(list[1].id);
-    } catch (e) { console.error(e); }
-  };
-
-  const loadLots = async () => {
-    try {
-      const d = await supplyChainService.listLots();
-      setLots((d as any).items || (d as any) || []);
+      if (list.length > 0) setOriginId(list[0].id); // Use database ID
+      if (list.length > 1) setDestId(list[1].id); // Use database ID
     } catch (e) { console.error(e); }
   };
 
   const openModal = () => {
     setOriginId(facilities[0]?.id || ""); setDestId(facilities[1]?.id || "");
-    setLotId(lots[0]?.id || ""); setCarrier("");
-    setTracking(`TRK-${Date.now().toString(36).toUpperCase()}`); setEta("");
+    setTracking(`TRK-${Date.now().toString(36).toUpperCase()}`);
     setStatus(null); setShowModal(true);
   };
 
@@ -84,27 +72,42 @@ export default function ShipmentsList() {
     try {
       await supplyChainService.createShipment({
         shipmentId: `SHP-${Date.now().toString(36).toUpperCase()}`,
-        lotId: lotId || undefined,
-        originFacilityId: originId,
-        destinationFacilityId: destId,
-        carrier: carrier.trim() || undefined,
+        dispatchFacilityId: originId, // Use database ID
+        receiveFacilityId: destId, // Use database ID
         trackingNumber: tracking.trim() || undefined,
-        estimatedArrival: eta || undefined,
       });
-      setStatus({ type: "success", msg: "Shipment dispatched successfully!" });
+      setStatus({ type: "success", msg: "Shipment created successfully!" });
       await load();
       setTimeout(() => { setShowModal(false); setStatus(null); }, 1400);
     } catch (err: any) {
-      setStatus({ type: "error", msg: err?.data?.message || err?.message || "Failed to dispatch shipment." });
+      setStatus({ type: "error", msg: err?.data?.message || err?.message || "Failed to create shipment." });
     } finally { setIsSubmitting(false); }
+  };
+
+  const handleDispatch = async (id: string) => {
+    try {
+      await supplyChainService.dispatchShipment(id);
+      await load();
+    } catch (err: any) {
+      console.error("Failed to dispatch shipment:", err);
+    }
+  };
+
+  const handleReceive = async (id: string) => {
+    try {
+      await supplyChainService.receiveShipment(id);
+      await load();
+    } catch (err: any) {
+      console.error("Failed to receive shipment:", err);
+    }
   };
 
   const filtered = shipments.filter(s =>
     !search ||
     (s.shipment_id || "").toLowerCase().includes(search.toLowerCase()) ||
     ((s as any).shipmentId || "").toLowerCase().includes(search.toLowerCase()) ||
-    (s.lot?.lot_id || "").toLowerCase().includes(search.toLowerCase()) ||
-    (s.destination_facility?.name || "").toLowerCase().includes(search.toLowerCase())
+    ((s as any).dispatchFacility?.name || "").toLowerCase().includes(search.toLowerCase()) ||
+    ((s as any).receiveFacility?.name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const destFacilities = facilities.filter(f => f.id !== originId);
@@ -121,7 +124,7 @@ export default function ShipmentsList() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-              {["Shipment ID", "Lot", "Origin", "Destination", "Tracking", "Status"].map(h => (
+              {["Shipment ID", "Origin", "Destination", "Tracking", "Status", "Actions"].map(h => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
@@ -131,16 +134,32 @@ export default function ShipmentsList() {
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading shipments…</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No shipments found. Click <strong>+ Dispatch Shipment</strong> to create one.</td></tr>
-            ) : filtered.map(s => (
-              <tr key={s.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                <td style={{ padding: "12px 14px" }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{s.shipment_id || (s as any).shipmentId || s.id}</span></td>
-                <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.lot?.lot_id || (s as any).lotId || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{s.origin_facility?.name || (s as any).dispatchFacility?.name || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>{s.destination_facility?.name || (s as any).receiveFacility?.name || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{s.tracking_number || (s as any).trackingNumber || "—"}</td>
-                <td style={{ padding: "12px 14px" }}><StatusBadge status={(s as any).status || "PENDING"} size="sm" /></td>
-              </tr>
-            ))}
+            ) : filtered.map(s => {
+              const status = (s as any).status || "PREPARING";
+              return (
+                <tr key={s.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                  <td style={{ padding: "12px 14px" }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{s.shipment_id || (s as any).shipmentId || s.id}</span></td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{(s as any).dispatchFacility?.name || s.origin_facility?.name || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>{(s as any).receiveFacility?.name || s.destination_facility?.name || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{s.tracking_number || (s as any).trackingNumber || "—"}</td>
+                  <td style={{ padding: "12px 14px" }}><StatusBadge status={status} size="sm" /></td>
+                  <td style={{ padding: "12px 14px" }}>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {status === "PREPARING" && (
+                        <button className="btn-ghost" style={{ fontSize: "0.75rem", padding: "4px 8px" }} onClick={() => handleDispatch(s.id)}>
+                          Dispatch
+                        </button>
+                      )}
+                      {status === "DISPATCHED" && (
+                        <button className="btn-ghost" style={{ fontSize: "0.75rem", padding: "4px 8px" }} onClick={() => handleReceive(s.id)}>
+                          Receive
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -177,38 +196,19 @@ export default function ShipmentsList() {
                   <label style={lbl}>Origin Facility <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={originId} onChange={e => { setOriginId(e.target.value); setDestId(""); }} required>
                     <option value="">— Select origin —</option>
-                    {facilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId || f.id}]</option>)}
+                    {facilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId}]</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={lbl}>Destination Facility <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={destId} onChange={e => setDestId(e.target.value)} required>
                     <option value="">— Select destination —</option>
-                    {destFacilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId || f.id}]</option>)}
+                    {destFacilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId}]</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={lbl}>Attached Lot <span style={{ fontWeight: 400, fontSize: "0.68rem", textTransform: "none" }}>(optional)</span></label>
-                  <select style={{ ...inp, cursor: "pointer" }} value={lotId} onChange={e => setLotId(e.target.value)}>
-                    <option value="">— No lot attached —</option>
-                    {lots.map(l => <option key={l.id} value={l.id}>
-                      {l.lot_id || (l as any).lotId || l.id}{l.description || (l as any).materialType ? ` — ${l.description || (l as any).materialType}` : ""}
-                    </option>)}
-                  </select>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <label style={lbl}>Carrier / Transport</label>
-                    <input style={inp} type="text" placeholder="e.g. DRDO Secure Courier" value={carrier} onChange={e => setCarrier(e.target.value)} />
-                  </div>
-                  <div>
-                    <label style={lbl}>Tracking Number</label>
-                    <input style={inp} type="text" placeholder="Auto-generated" value={tracking} onChange={e => setTracking(e.target.value)} />
-                  </div>
-                </div>
-                <div>
-                  <label style={lbl}>Estimated Arrival</label>
-                  <input style={inp} type="date" value={eta} onChange={e => setEta(e.target.value)} />
+                  <label style={lbl}>Tracking Number</label>
+                  <input style={inp} type="text" placeholder="Auto-generated" value={tracking} onChange={e => setTracking(e.target.value)} />
                 </div>
               </form>
             </div>
