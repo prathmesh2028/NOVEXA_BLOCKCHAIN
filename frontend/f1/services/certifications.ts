@@ -41,5 +41,9 @@ export const certificationService = {
 
   createCertification: async (data: { asset_id: string; batch_id?: string; certificate_image?: string; image_name?: string }) => {
     return api.post<CertificationResponse>('/certifications', data);
+  },
+
+  revokeCertification: async (id: string, reason?: string) => {
+    return api.post<CertificationResponse>(`/certifications/${id}/revoke`, { reason });
   }
 };

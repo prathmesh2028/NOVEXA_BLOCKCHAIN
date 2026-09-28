@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Req, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Patch, Query } from '@nestjs/common';
 import { SupplyChainService } from './supply-chain.service';
 import { JwtAuthGuard } from '../identity/auth/guards/jwt-auth.guard';
 import { CasbinGuard } from '../identity/auth/guards/casbin.guard';
@@ -56,5 +56,37 @@ export class SupplyChainController {
   @Patch('shipments/:id/receive')
   receiveShipment(@Param('id') id: string, @Req() req: any) {
     return this.supplyChainService.receiveShipment(id, req.user?.id || req.user?.sub || 'system');
+  }
+
+  // CUSTODY TRANSFERS
+  @Get('custody-transfers')
+  getCustodyTransfers() {
+    return this.supplyChainService.getCustodyTransfers();
+  }
+
+  @Post('custody-transfers')
+  createCustodyTransfer(@Body() body: any, @Req() req: any) {
+    return this.supplyChainService.createCustodyTransfer(body, req.user?.id || req.user?.sub || 'system');
+  }
+
+  @Patch('custody-transfers/:id/accept')
+  acceptCustodyTransfer(@Param('id') id: string, @Req() req: any) {
+    return this.supplyChainService.acceptCustodyTransfer(id, req.user?.id || req.user?.sub || 'system');
+  }
+
+  @Patch('custody-transfers/:id/reject')
+  rejectCustodyTransfer(@Param('id') id: string, @Body() body: { reason?: string }, @Req() req: any) {
+    return this.supplyChainService.rejectCustodyTransfer(id, body?.reason || 'No reason provided', req.user?.id || req.user?.sub || 'system');
+  }
+
+  // SUPPLY CHAIN EVENTS
+  @Get('events')
+  getSupplyChainEvents(@Query('entity_type') entityType?: string, @Query('entity_id') entityId?: string) {
+    return this.supplyChainService.getSupplyChainEvents({ entityType, entityId });
+  }
+
+  @Post('events')
+  createSupplyChainEvent(@Body() body: any, @Req() req: any) {
+    return this.supplyChainService.createSupplyChainEvent(body, req.user?.id || req.user?.sub || 'system');
   }
 }
