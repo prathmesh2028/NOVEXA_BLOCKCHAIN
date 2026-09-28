@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { useState, useEffect } from "react";
 import ThemeToggle from "../ui/ThemeToggle";
+import BelIconMark from "../ui/BelIconMark";
 
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -59,7 +60,7 @@ export default function PublicNavbar() {
               flexShrink: 0,
             }}
           >
-            NX
+            <BelIconMark size={18} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
             <span

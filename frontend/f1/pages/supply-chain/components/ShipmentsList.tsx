@@ -9,19 +9,19 @@ const overlay: React.CSSProperties = {
   zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
 };
 const modal: React.CSSProperties = {
-  background: "#08131f", border: "1px solid #1e3a60", borderRadius: 12,
+  background: "var(--card, #171717)", border: "1px solid var(--border, #2a2a2a)", borderRadius: 12,
   width: "100%", maxWidth: 520, maxHeight: "88vh",
   display: "flex", flexDirection: "column", overflow: "hidden",
   boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)",
 };
 const inp: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", background: "#040b14",
-  border: "1px solid #1e3a60", borderRadius: 6,
-  color: "#f8fafc", fontSize: "0.8125rem", outline: "none", boxSizing: "border-box",
+  width: "100%", padding: "9px 12px", background: "var(--input-bg, #171717)",
+  border: "1px solid var(--input-border, #303030)", borderRadius: 6,
+  color: "var(--foreground, #f5f5f5)", fontSize: "0.8125rem", outline: "none", boxSizing: "border-box",
 };
 const lbl: React.CSSProperties = {
   display: "block", fontSize: "0.72rem", fontWeight: 700,
-  color: "#94a3b8", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em",
+  color: "var(--muted, #a3a3a3)", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em",
 };
 
 export default function ShipmentsList() {
@@ -112,16 +112,27 @@ export default function ShipmentsList() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-        <input type="text" className="internal-search-input" placeholder="Filter by shipment ID, lot, or destination…"
-          value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 360 }} />
-        <button className="btn-primary" onClick={openModal}>+ Dispatch Shipment</button>
+        <div className="sc-search-wrapper">
+          <span className="sc-search-icon">🔍</span>
+          <input
+            type="text"
+            className="sc-search-input"
+            placeholder="Filter by shipment ID, lot, or destination…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button className="sc-action-btn" onClick={openModal}>
+          <span style={{ fontSize: "1rem", lineHeight: 1 }}>+</span>
+          <span>Dispatch Shipment</span>
+        </button>
       </div>
 
-      <div className="internal-table-container">
+      <div className="sc-table-wrapper internal-table-container">
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-              {["Shipment ID", "Lot", "Origin", "Destination", "Tracking", "Status"].map(h => (
+              {["Shipment ID", "Lot", "Origin", "Destination / Transit Route", "Tracking", "Status"].map(h => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
@@ -131,25 +142,39 @@ export default function ShipmentsList() {
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading shipments…</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No shipments found. Click <strong>+ Dispatch Shipment</strong> to create one.</td></tr>
-            ) : filtered.map(s => (
-              <tr key={s.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                <td style={{ padding: "12px 14px" }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{s.shipment_id || (s as any).shipmentId || s.id}</span></td>
-                <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.lot?.lot_id || (s as any).lotId || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{s.origin_facility?.name || (s as any).dispatchFacility?.name || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>{s.destination_facility?.name || (s as any).receiveFacility?.name || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{s.tracking_number || (s as any).trackingNumber || "—"}</td>
-                <td style={{ padding: "12px 14px" }}><StatusBadge status={(s as any).status || "PENDING"} size="sm" /></td>
-              </tr>
-            ))}
+            ) : filtered.map((s, idx) => {
+              const originName = s.origin_facility?.name || (s as any).dispatchFacility?.name || "Origin Site";
+              const destName = s.destination_facility?.name || (s as any).receiveFacility?.name || "Destination Site";
+              return (
+                <tr
+                  key={s.id}
+                  className="interactive-row sc-table-row"
+                  style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
+                >
+                  <td style={{ padding: "12px 14px" }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{s.shipment_id || (s as any).shipmentId || s.id}</span></td>
+                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.lot?.lot_id || (s as any).lotId || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{originName}</td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>
+                    <div className="sc-shipment-track">
+                      <span style={{ color: "var(--muted)" }}>{originName}</span>
+                      <span className="sc-shipment-arrow">→</span>
+                      <span style={{ fontWeight: 600 }}>{destName}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{s.tracking_number || (s as any).trackingNumber || "—"}</td>
+                  <td style={{ padding: "12px 14px" }}><StatusBadge status={(s as any).status || "PENDING"} size="sm" /></td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {showModal && createPortal(
-        <div style={overlay} onClick={() => !isSubmitting && setShowModal(false)}>
-          <div style={modal} onClick={e => e.stopPropagation()}>
+        <div className="sc-modal-overlay" onClick={() => !isSubmitting && setShowModal(false)}>
+          <div className="sc-modal-box" onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid #1e3a60", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0a1727" }}>
+            <div className="sc-modal-header" style={{ padding: "18px 24px", borderBottom: "1px solid #1e3a60", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0a1727" }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#f8fafc" }}>Dispatch Shipment</h3>
                 <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#64748b" }}>Create a custody transfer between registered facilities.</p>
@@ -213,7 +238,7 @@ export default function ShipmentsList() {
               </form>
             </div>
             {/* Footer */}
-            <div style={{ padding: "14px 24px", borderTop: "1px solid #1e3a60", background: "#0a1727", flexShrink: 0, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <div className="sc-modal-footer" style={{ padding: "14px 24px", borderTop: "1px solid #1e3a60", background: "#0a1727", flexShrink: 0, display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting}
                 style={{ padding: "8px 18px", borderRadius: 6, border: "1px solid #1e3a60", background: "transparent", color: "#94a3b8", cursor: "pointer", fontSize: "0.875rem" }}>Cancel</button>
               <button type="submit" form="dispatch-shipment-form" className="btn-primary" disabled={isSubmitting || facilities.length < 2}

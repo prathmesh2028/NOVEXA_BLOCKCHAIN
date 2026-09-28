@@ -10,19 +10,19 @@ const overlay: React.CSSProperties = {
   zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
 };
 const modal: React.CSSProperties = {
-  background: "#08131f", border: "1px solid #1e3a60", borderRadius: 12,
+  background: "var(--card, #171717)", border: "1px solid var(--border, #2a2a2a)", borderRadius: 12,
   width: "100%", maxWidth: 540, maxHeight: "88vh",
   display: "flex", flexDirection: "column", overflow: "hidden",
   boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)",
 };
 const inp: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", background: "#040b14",
-  border: "1px solid #1e3a60", borderRadius: 6,
-  color: "#f8fafc", fontSize: "0.8125rem", outline: "none", boxSizing: "border-box",
+  width: "100%", padding: "9px 12px", background: "var(--input-bg, #171717)",
+  border: "1px solid var(--input-border, #303030)", borderRadius: 6,
+  color: "var(--foreground, #f5f5f5)", fontSize: "0.8125rem", outline: "none", boxSizing: "border-box",
 };
 const lbl: React.CSSProperties = {
   display: "block", fontSize: "0.72rem", fontWeight: 700,
-  color: "#94a3b8", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em",
+  color: "var(--muted, #a3a3a3)", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em",
 };
 
 export default function SuppliersList() {
@@ -90,12 +90,23 @@ export default function SuppliersList() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-        <input type="text" className="internal-search-input" placeholder="Filter suppliers by name, ID, or type…"
-          value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 360 }} />
-        <button className="btn-primary" id="add-supplier-btn" onClick={openModal}>+ Add Supplier</button>
+        <div className="sc-search-wrapper">
+          <span className="sc-search-icon">🔍</span>
+          <input
+            type="text"
+            className="sc-search-input"
+            placeholder="Filter suppliers by name, ID, or type…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button className="sc-action-btn" id="add-supplier-btn" onClick={openModal}>
+          <span style={{ fontSize: "1rem", lineHeight: 1 }}>+</span>
+          <span>Add Supplier</span>
+        </button>
       </div>
 
-      <div className="internal-table-container">
+      <div className="sc-table-wrapper internal-table-container">
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
@@ -109,14 +120,23 @@ export default function SuppliersList() {
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading suppliers…</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No suppliers found. Click <strong>+ Add Supplier</strong> to register one.</td></tr>
-            ) : filtered.map(s => {
+            ) : filtered.map((s, idx) => {
               const suppId = s.supplier_id || (s as any).supplierId || s.id;
               const type = s.type || (s as any).contactInfo?.type || "Tier-1 OEM";
               const contact = s.contact_email || (s as any).contactInfo?.contactEmail || s.contact_phone || "—";
               const certs = s.certifications || (s as any).contactInfo?.certifications || "ISO 9001";
               return (
-                <tr key={s.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                  <td style={{ padding: "12px 14px" }}><span className="meta-id" style={{ color: "#3b82f6", fontWeight: 600 }}>{suppId}</span></td>
+                <tr
+                  key={s.id}
+                  className="interactive-row sc-table-row"
+                  style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
+                >
+                  <td style={{ padding: "12px 14px" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center" }}>
+                      <span className="sc-supplier-verified-dot" title="Active Vetted Contractor" />
+                      <span className="meta-id" style={{ color: "#3b82f6", fontWeight: 600 }}>{suppId}</span>
+                    </span>
+                  </td>
                   <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.name}</td>
                   <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{type}</td>
                   <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{contact}</td>
@@ -131,11 +151,11 @@ export default function SuppliersList() {
 
       {/* ── MODAL via Portal (escapes transform/overflow of ancestors) ── */}
       {showModal && createPortal(
-        <div style={overlay} onClick={() => !isSubmitting && setShowModal(false)}>
-          <div style={modal} onClick={e => e.stopPropagation()}>
+        <div className="sc-modal-overlay" onClick={() => !isSubmitting && setShowModal(false)}>
+          <div className="sc-modal-box" onClick={e => e.stopPropagation()}>
 
             {/* Header */}
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid #1e3a60", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0a1727" }}>
+            <div className="sc-modal-header" style={{ padding: "18px 24px", borderBottom: "1px solid #1e3a60", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0a1727" }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#f8fafc" }}>Register New Supplier</h3>
                 <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#64748b" }}>Enlist a qualified defence contractor onto KavachTrust supply chain ledger.</p>
@@ -197,7 +217,7 @@ export default function SuppliersList() {
             </div>
 
             {/* Footer — always visible */}
-            <div style={{ padding: "14px 24px", borderTop: "1px solid #1e3a60", background: "#0a1727", flexShrink: 0, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <div className="sc-modal-footer" style={{ padding: "14px 24px", borderTop: "1px solid #1e3a60", background: "#0a1727", flexShrink: 0, display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting}
                 style={{ padding: "8px 18px", borderRadius: 6, border: "1px solid #1e3a60", background: "transparent", color: "#94a3b8", cursor: "pointer", fontSize: "0.875rem" }}>
                 Cancel

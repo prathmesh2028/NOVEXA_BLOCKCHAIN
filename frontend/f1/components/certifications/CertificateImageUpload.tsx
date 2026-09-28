@@ -184,8 +184,8 @@ export default function CertificateImageUpload({
             alignItems: "center",
             gap: 14,
             padding: 12,
-            background: "#081322",
-            border: "1px solid #1e3a60",
+            background: "var(--panel-muted, #F1F1F2)",
+            border: "1px solid var(--border, #DADADA)",
             borderRadius: 6,
           }}
         >
@@ -195,8 +195,8 @@ export default function CertificateImageUpload({
               height: 64,
               borderRadius: 6,
               overflow: "hidden",
-              border: "1px solid rgba(59, 130, 246, 0.4)",
-              background: "#030712",
+              border: "1px solid var(--border, rgba(59, 130, 246, 0.4))",
+              background: "var(--card, #FFFFFF)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -219,7 +219,7 @@ export default function CertificateImageUpload({
               style={{
                 fontSize: "0.8125rem",
                 fontWeight: 600,
-                color: "#e2e8f0",
+                color: "var(--foreground, #171717)",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -230,11 +230,12 @@ export default function CertificateImageUpload({
             <div
               style={{
                 fontSize: "0.6875rem",
-                color: "#22c55e",
+                color: "#16a34a",
                 marginTop: 2,
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
+                fontWeight: 600,
               }}
             >
               <span>✓</span> Attached to Soulbound Minting Payload
@@ -246,11 +247,12 @@ export default function CertificateImageUpload({
                 marginTop: 6,
                 background: "none",
                 border: "none",
-                color: "#60a5fa",
+                color: "var(--primary, #2563eb)",
                 fontSize: "0.75rem",
                 cursor: "pointer",
                 padding: 0,
                 textDecoration: "underline",
+                fontWeight: 500,
               }}
             >
               Replace Image
@@ -265,19 +267,19 @@ export default function CertificateImageUpload({
           onClick={() => fileInputRef.current?.click()}
           style={{
             padding: "18px 16px",
-            border: isDragging ? "2px dashed #3b82f6" : "1px dashed #224268",
+            border: isDragging ? "2px dashed #2563eb" : "1px dashed var(--border, #DADADA)",
             borderRadius: 6,
-            background: isDragging ? "rgba(59, 130, 246, 0.08)" : "#091424",
+            background: isDragging ? "rgba(37, 99, 235, 0.08)" : "var(--panel-muted, #F1F1F2)",
             cursor: "pointer",
             textAlign: "center",
             transition: "all 0.2s ease",
           }}
         >
           <div style={{ fontSize: "1.5rem", marginBottom: 6 }}>🛡️</div>
-          <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#cbd5e1" }}>
+          <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--foreground, #171717)" }}>
             Click to upload or drag & drop certificate image / seal
           </div>
-          <div style={{ fontSize: "0.6875rem", color: "#64748b", marginTop: 4 }}>
+          <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", marginTop: 4 }}>
             Supported formats: PNG, JPG, WEBP, SVG (Max 5MB)
           </div>
         </div>
@@ -289,7 +291,7 @@ export default function CertificateImageUpload({
           style={{
             fontSize: "0.6875rem",
             fontWeight: 600,
-            color: "#64748b",
+            color: "var(--subtle-text, #707070)",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
             marginBottom: 6,
@@ -306,11 +308,11 @@ export default function CertificateImageUpload({
               style={{
                 padding: "4px 9px",
                 borderRadius: 4,
-                background: "rgba(15, 29, 49, 0.9)",
-                border: `1px solid ${preset.color}33`,
-                color: "#cbd5e1",
+                background: "var(--card, #FFFFFF)",
+                border: `1px solid ${preset.color}40`,
+                color: "var(--foreground, #171717)",
                 fontSize: "0.6875rem",
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
@@ -322,8 +324,8 @@ export default function CertificateImageUpload({
                 e.currentTarget.style.background = `${preset.color}15`;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = `${preset.color}33`;
-                e.currentTarget.style.background = "rgba(15, 29, 49, 0.9)";
+                e.currentTarget.style.borderColor = `${preset.color}40`;
+                e.currentTarget.style.background = "var(--card, #FFFFFF)";
               }}
             >
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: preset.color }} />

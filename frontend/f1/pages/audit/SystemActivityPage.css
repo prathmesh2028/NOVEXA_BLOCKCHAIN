@@ -1,0 +1,279 @@
+/* ==========================================================================
+   BEL DEFENCE TRUST — SYSTEM ACTIVITY / AUDIT EVENT LEDGER
+   ChatGPT-Inspired Black / Charcoal / Gray Enterprise UI
+   Scoped strictly to .system-activity-page-root
+   ========================================================================== */
+
+.system-activity-page-root {
+  max-width: 1600px;
+  margin: 0 auto;
+  color: #a3a3a3;
+  animation: sysActPageFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sysActPageFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Tamper-Evident Notice Banner ─────────────────────────────────────────── */
+.sysact-notice-box {
+  padding: 12px 18px;
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sysact-notice-strong {
+  color: #f5f5f5;
+  font-weight: 600;
+}
+
+/* ── Filter Tabs ─────────────────────────────────────────────────────────── */
+.sysact-filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sysact-filter-tab {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #737373;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sysact-filter-tab:hover {
+  border-color: #383838;
+  color: #d4d4d4;
+}
+
+.sysact-filter-tab.active {
+  background: #242424;
+  border-color: #383838;
+  color: #f5f5f5;
+  font-weight: 600;
+}
+
+/* ── Event Ledger Timeline & Cards ────────────────────────────────────────── */
+.sysact-timeline-container {
+  position: relative;
+}
+
+.sysact-timeline-rail {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #262626;
+}
+
+.sysact-event-item {
+  padding-left: 48px;
+  position: relative;
+  margin-bottom: 8px;
+  animation: sysActItemFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes sysActItemFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sysact-event-dot {
+  position: absolute;
+  left: 12px;
+  top: 16px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  z-index: 1;
+  animation: sysActDotPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.2s ease;
+}
+
+@keyframes sysActDotPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.sysact-event-dot.success {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1.5px solid #22c55e;
+  color: #16a34a;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.25);
+}
+
+.sysact-event-dot.failed {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1.5px solid #ef4444;
+  color: #dc2626;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.25);
+}
+
+.sysact-event-dot.warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1.5px solid #f59e0b;
+  color: #d97706;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.25);
+}
+
+.sysact-event-card {
+  padding: 14px 18px;
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sysact-event-card:hover {
+  background: #202020;
+  border-color: #383838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.sysact-event-card.expanded {
+  background: #1c1c1c;
+  border-color: #404040;
+}
+
+.sysact-event-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+.sysact-event-sub {
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+  margin-top: 2px;
+}
+
+.sysact-event-detail-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #262626;
+}
+
+.sysact-badge-supply-chain {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #222222;
+  border: 1px solid #303030;
+  color: #d4d4d4;
+}
+
+/* ── Light Mode Support ───────────────────────────────────────────────────── */
+[data-theme="light"] .system-activity-page-root,
+.theme-light .system-activity-page-root {
+  color: #171717;
+}
+
+[data-theme="light"] .sysact-notice-box,
+.theme-light .sysact-notice-box,
+[data-theme="light"] .sysact-event-card,
+.theme-light .sysact-event-card {
+  background: #ffffff;
+  border-color: #dadada;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .sysact-notice-strong,
+.theme-light .sysact-notice-strong,
+[data-theme="light"] .sysact-event-title,
+.theme-light .sysact-event-title {
+  color: #171717;
+  font-weight: 700;
+}
+
+[data-theme="light"] .sysact-event-sub,
+.theme-light .sysact-event-sub {
+  color: #707070;
+}
+
+[data-theme="light"] .sysact-filter-tab,
+.theme-light .sysact-filter-tab {
+  border-color: #dadada;
+  color: #4a4a4a;
+  font-weight: 500;
+}
+
+[data-theme="light"] .sysact-filter-tab:hover,
+.theme-light .sysact-filter-tab:hover {
+  border-color: #cfcfcf;
+  color: #171717;
+}
+
+[data-theme="light"] .sysact-filter-tab.active,
+.theme-light .sysact-filter-tab.active {
+  background: #f1f1f2;
+  border-color: #cfcfcf;
+  color: #171717;
+  font-weight: 700;
+}
+
+[data-theme="light"] .sysact-timeline-rail,
+.theme-light .sysact-timeline-rail {
+  background: #dadada;
+}
+
+[data-theme="light"] .sysact-event-card:hover,
+.theme-light .sysact-event-card:hover {
+  background: #f7f7f8;
+  border-color: #cfcfcf;
+}
+
+[data-theme="light"] .sysact-event-card.expanded,
+.theme-light .sysact-event-card.expanded {
+  background: #f1f1f2;
+  border-color: #cfcfcf;
+}
+
+[data-theme="light"] .sysact-event-detail-box,
+.theme-light .sysact-event-detail-box {
+  border-color: #eaeaea;
+}
+
+[data-theme="light"] .sysact-badge-supply-chain,
+.theme-light .sysact-badge-supply-chain {
+  background: #f1f1f2;
+  border-color: #dadada;
+  color: #4a4a4a;
+  font-weight: 600;
+}

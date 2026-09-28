@@ -8,6 +8,8 @@ import { certificationService } from "../../services/certifications";
 import { CERTIFICATION_TYPES, CERTIFICATION_STATUSES, VERIFICATION_STATUSES } from "./certificationData";
 import type { CertificationStatus } from "./certificationData";
 import { useAuth } from "../../context/AuthContext";
+import CertificateImageUpload from "../../components/certifications/CertificateImageUpload";
+import "./CertificationsPage.css";
 
 
 export default function CertificationsPage() {
@@ -243,51 +245,51 @@ export default function CertificationsPage() {
       }
     > = {
       Valid: {
-        bg: "rgba(34, 197, 94, 0.12)",
-        text: "#22c55e",
-        border: "rgba(34, 197, 94, 0.3)",
+        bg: "rgba(34, 197, 94, 0.08)",
+        text: "#4ade80",
+        border: "rgba(34, 197, 94, 0.25)",
         dot: "#22c55e",
       },
 
       VALID: {
-        bg: "rgba(34, 197, 94, 0.12)",
-        text: "#22c55e",
-        border: "rgba(34, 197, 94, 0.3)",
+        bg: "rgba(34, 197, 94, 0.08)",
+        text: "#4ade80",
+        border: "rgba(34, 197, 94, 0.25)",
         dot: "#22c55e",
       },
 
       CONFIRMED: {
-        bg: "rgba(34, 197, 94, 0.12)",
-        text: "#22c55e",
-        border: "rgba(34, 197, 94, 0.3)",
+        bg: "rgba(34, 197, 94, 0.08)",
+        text: "#4ade80",
+        border: "rgba(34, 197, 94, 0.25)",
         dot: "#22c55e",
       },
 
       Expiring: {
-        bg: "rgba(245, 158, 11, 0.12)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.25)",
         dot: "#f59e0b",
       },
 
       Expired: {
-        bg: "rgba(239, 68, 68, 0.12)",
-        text: "#ef4444",
-        border: "rgba(239, 68, 68, 0.3)",
+        bg: "rgba(239, 68, 68, 0.08)",
+        text: "#f87171",
+        border: "rgba(239, 68, 68, 0.25)",
         dot: "#ef4444",
       },
 
       PENDING: {
-        bg: "rgba(245, 158, 11, 0.12)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.25)",
         dot: "#f59e0b",
       },
 
       Pending: {
-        bg: "rgba(245, 158, 11, 0.12)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.25)",
         dot: "#f59e0b",
       },
     };
@@ -343,37 +345,37 @@ export default function CertificationsPage() {
       }
     > = {
       Verified: {
-        bg: "rgba(16, 185, 129, 0.12)",
-        text: "#10b981",
-        border: "rgba(16, 185, 129, 0.3)",
+        bg: "rgba(34, 197, 94, 0.08)",
+        text: "#4ade80",
+        border: "rgba(34, 197, 94, 0.25)",
         icon: "✓",
       },
 
       "Pending Verification": {
-        bg: "rgba(245, 158, 11, 0.12)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.25)",
         icon: "◷",
       },
 
       "Verification Required": {
-        bg: "rgba(239, 68, 68, 0.12)",
-        text: "#ef4444",
-        border: "rgba(239, 68, 68, 0.3)",
+        bg: "rgba(239, 68, 68, 0.08)",
+        text: "#f87171",
+        border: "rgba(239, 68, 68, 0.25)",
         icon: "⚠",
       },
 
       CONFIRMED: {
-        bg: "rgba(16, 185, 129, 0.12)",
-        text: "#10b981",
-        border: "rgba(16, 185, 129, 0.3)",
+        bg: "rgba(34, 197, 94, 0.08)",
+        text: "#4ade80",
+        border: "rgba(34, 197, 94, 0.25)",
         icon: "✓",
       },
 
       PENDING: {
-        bg: "rgba(245, 158, 11, 0.12)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.25)",
         icon: "◷",
       },
     };
@@ -414,35 +416,35 @@ export default function CertificationsPage() {
       { text: string; bg: string }
     > = {
       "Safety Certification": {
-        text: "#38bdf8",
-        bg: "rgba(56, 189, 248, 0.1)",
+        text: "#d4d4d4",
+        bg: "#242424",
       },
 
       "Operational Certification": {
-        text: "#a78bfa",
-        bg: "rgba(167, 139, 250, 0.1)",
+        text: "#d4d4d4",
+        bg: "#242424",
       },
 
       "Maintenance Certification": {
-        text: "#fbbf24",
-        bg: "rgba(251, 191, 36, 0.1)",
+        text: "#d4d4d4",
+        bg: "#242424",
       },
 
       "Quality Certification": {
-        text: "#34d399",
-        bg: "rgba(52, 211, 153, 0.1)",
+        text: "#d4d4d4",
+        bg: "#242424",
       },
 
       "Compliance Certification": {
-        text: "#f472b6",
-        bg: "rgba(244, 114, 182, 0.1)",
+        text: "#d4d4d4",
+        bg: "#242424",
       },
     };
 
     const c =
       colorMap[String(type)] || {
-        text: "#94a3b8",
-        bg: "rgba(148, 163, 184, 0.1)",
+        text: "#a3a3a3",
+        bg: "#202020",
       };
 
     return (
@@ -542,11 +544,7 @@ export default function CertificationsPage() {
 
   return (
     <div
-      className="page-fade"
-      style={{
-        maxWidth: "1600px",
-        margin: "0 auto",
-      }}
+      className="certifications-page-root"
     >
       {/* ======================================================
           HEADER
@@ -626,7 +624,7 @@ export default function CertificationsPage() {
           label="Total Issued"
           value={stats.total.toString()}
           icon="◆"
-          accent="#38bdf8"
+          accent="#f5f5f5"
           sub="Sovereign military records"
         />
 
@@ -650,7 +648,7 @@ export default function CertificationsPage() {
           label="Confirmed On-Chain"
           value={stats.verified.toString()}
           icon="⬡"
-          accent="#a855f7"
+          accent="#e5e5e5"
           sub="Cryptographically anchored"
         />
       </div>
@@ -660,14 +658,7 @@ export default function CertificationsPage() {
       ====================================================== */}
 
       <div
-        className="panel"
-        style={{
-          padding: "16px 20px",
-          marginBottom: 20,
-          background: "#0a1320",
-          border: "1px solid #1e3a60",
-          borderRadius: "8px",
-        }}
+        className="cert-toolbar"
       >
         <div
           style={{
@@ -676,27 +667,16 @@ export default function CertificationsPage() {
             gap: "14px",
             alignItems: "center",
             justifyContent: "space-between",
+            width: "100%",
           }}
         >
           {/* SEARCH */}
 
           <div
-            style={{
-              flex: "1 1 300px",
-              minWidth: "260px",
-              position: "relative",
-            }}
+            className="cert-search-wrap"
           >
             <span
-              style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#64748b",
-                fontSize: "0.875rem",
-                pointerEvents: "none",
-              }}
+              className="cert-search-icon"
             >
               🔍
             </span>
@@ -708,16 +688,7 @@ export default function CertificationsPage() {
               onChange={(e) =>
                 setSearch(e.target.value)
               }
-              style={{
-                width: "100%",
-                padding: "9px 36px 9px 36px",
-                background: "#060d17",
-                border: "1px solid #1e3a60",
-                borderRadius: "6px",
-                color: "#e2e8f0",
-                fontSize: "0.8125rem",
-                outline: "none",
-              }}
+              className="cert-search-input"
             />
 
             {search && (
@@ -745,12 +716,7 @@ export default function CertificationsPage() {
           {/* FILTERS */}
 
           <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "10px",
-              alignItems: "center",
-            }}
+            className="cert-filters-group"
           >
             {/* TYPE */}
 
@@ -759,17 +725,7 @@ export default function CertificationsPage() {
               onChange={(e) =>
                 setTypeFilter(e.target.value)
               }
-              style={{
-                padding: "8px 12px",
-                background: "#060d17",
-                border: "1px solid #1e3a60",
-                borderRadius: "6px",
-                color: "#cbd5e1",
-                fontSize: "0.75rem",
-                fontWeight: 500,
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="cert-select"
             >
               <option value="ALL">
                 All Certification Types
@@ -789,17 +745,7 @@ export default function CertificationsPage() {
               onChange={(e) =>
                 setStatusFilter(e.target.value)
               }
-              style={{
-                padding: "8px 12px",
-                background: "#060d17",
-                border: "1px solid #1e3a60",
-                borderRadius: "6px",
-                color: "#cbd5e1",
-                fontSize: "0.75rem",
-                fontWeight: 500,
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="cert-select"
             >
               <option value="ALL">
                 All Statuses
@@ -819,17 +765,7 @@ export default function CertificationsPage() {
               onChange={(e) =>
                 setVerificationFilter(e.target.value)
               }
-              style={{
-                padding: "8px 12px",
-                background: "#060d17",
-                border: "1px solid #1e3a60",
-                borderRadius: "6px",
-                color: "#cbd5e1",
-                fontSize: "0.75rem",
-                fontWeight: 500,
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="cert-select"
             >
               <option value="ALL">
                 All Verification
@@ -865,35 +801,12 @@ export default function CertificationsPage() {
 
             {/* VIEW TOGGLE */}
 
-            <div
-              style={{
-                display: "inline-flex",
-                background: "#060d17",
-                border: "1px solid #1e3a60",
-                borderRadius: "6px",
-                padding: "2px",
-              }}
-            >
+            <div className="cert-view-toggle">
               <button
                 onClick={() =>
                   setViewMode("table")
                 }
-                style={{
-                  padding: "6px 12px",
-                  border: "none",
-                  borderRadius: "4px",
-                  background:
-                    viewMode === "table"
-                      ? "#1e3a60"
-                      : "transparent",
-                  color:
-                    viewMode === "table"
-                      ? "#ffffff"
-                      : "#64748b",
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className={`cert-view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
               >
                 ☰ Table
               </button>
@@ -902,22 +815,7 @@ export default function CertificationsPage() {
                 onClick={() =>
                   setViewMode("cards")
                 }
-                style={{
-                  padding: "6px 12px",
-                  border: "none",
-                  borderRadius: "4px",
-                  background:
-                    viewMode === "cards"
-                      ? "#1e3a60"
-                      : "transparent",
-                  color:
-                    viewMode === "cards"
-                      ? "#ffffff"
-                      : "#64748b",
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className={`cert-view-toggle-btn ${viewMode === "cards" ? "active" : ""}`}
               >
                 ⊞ Cards
               </button>
@@ -936,9 +834,9 @@ export default function CertificationsPage() {
           style={{
             padding: "60px 24px",
             textAlign: "center",
-            background: "#0a1320",
-            border: "1px solid #1e3a60",
-            borderRadius: "8px",
+            background: "#181818",
+            border: "1px solid #2a2a2a",
+            borderRadius: "12px",
           }}
         >
           <div
@@ -975,9 +873,9 @@ export default function CertificationsPage() {
           style={{
             padding: "60px 24px",
             textAlign: "center",
-            background: "#0a1320",
-            border: "1px dashed #1e3a60",
-            borderRadius: "8px",
+            background: "#181818",
+            border: "1px dashed #2a2a2a",
+            borderRadius: "12px",
           }}
         >
           <div
@@ -1035,30 +933,14 @@ export default function CertificationsPage() {
         ==================================================== */
 
         <div
-          className="panel"
-          style={{
-            overflow: "hidden",
-            background: "#0a1320",
-            border: "1px solid #1e3a60",
-            borderRadius: "8px",
-          }}
+          className="cert-table-container"
         >
           <div style={{ overflowX: "auto" }}>
             <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 1050,
-              }}
+              className="cert-table"
             >
               <thead>
-                <tr
-                  style={{
-                    borderBottom:
-                      "1px solid #1e3a60",
-                    background: "#060d17",
-                  }}
-                >
+                <tr>
                   {[
                     "Certificate ID",
                     "Associated Asset",
@@ -1102,7 +984,7 @@ export default function CertificationsPage() {
                         className="table-row"
                         style={{
                           borderBottom:
-                            "1px solid #132438",
+                            "1px solid #222222",
                         }}
                       >
                         {/* CERTIFICATE ID */}
@@ -1123,7 +1005,7 @@ export default function CertificationsPage() {
                             <span
                               className="meta-id"
                               style={{
-                                color: "#38bdf8",
+                                color: "#f5f5f5",
                                 fontWeight: 700,
                                 letterSpacing:
                                   "0.04em",
@@ -1479,19 +1361,7 @@ export default function CertificationsPage() {
               return (
                 <div
                   key={id}
-                  className="panel"
-                  style={{
-                    padding: 20,
-                    background: "#0a1320",
-                    border:
-                      "1px solid #1e3a60",
-                    borderRadius: 8,
-                    display: "flex",
-                    flexDirection:
-                      "column",
-                    justifyContent:
-                      "space-between",
-                  }}
+                  className="cert-card"
                 >
                   <div>
                     {/* TOP */}
@@ -1511,7 +1381,7 @@ export default function CertificationsPage() {
                         <span
                           className="meta-id"
                           style={{
-                            color: "#38bdf8",
+                            color: "#f5f5f5",
                             fontWeight: 700,
                             fontSize:
                               "0.875rem",
@@ -1558,10 +1428,10 @@ export default function CertificationsPage() {
                         padding:
                           "10px 12px",
                         background:
-                          "#060d17",
+                          "#141414",
                         border:
-                          "1px solid #152b4a",
-                        borderRadius: 6,
+                          "1px solid #262626",
+                        borderRadius: 8,
                         marginBottom: 14,
                       }}
                     >
@@ -1889,7 +1759,9 @@ export default function CertificationsPage() {
               maxHeight: "90vh",
               overflowY: "auto",
               padding: 24,
-              border: "1px solid #1e3a60",
+              background: "var(--card, #181818)",
+              border: "1px solid var(--border, #303030)",
+              borderRadius: "12px",
             }}
           >
             {/* MODAL HEADER */}
@@ -1905,8 +1777,8 @@ export default function CertificationsPage() {
               <div
                 style={{
                   fontSize: "1rem",
-                  fontWeight: 600,
-                  color: "#e2e8f0",
+                  fontWeight: 700,
+                  color: "var(--foreground, #171717)",
                 }}
               >
                 Create Certification
@@ -1922,7 +1794,7 @@ export default function CertificationsPage() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#64748b",
+                  color: "var(--muted, #64748b)",
                   cursor: "pointer",
                   fontSize: "1.2rem",
                 }}
@@ -1957,8 +1829,8 @@ export default function CertificationsPage() {
                         : "1px solid rgba(239,68,68,0.3)",
                     color:
                       createStatus.type === "success"
-                        ? "#22c55e"
-                        : "#ef4444",
+                        ? "#16a34a"
+                        : "#dc2626",
                   }}
                 >
                   {createStatus.message}
@@ -1972,7 +1844,8 @@ export default function CertificationsPage() {
                   style={{
                     display: "block",
                     fontSize: "0.75rem",
-                    color: "#94a3b8",
+                    color: "var(--muted, #4A4A4A)",
+                    fontWeight: 600,
                     marginBottom: 4,
                   }}
                 >
@@ -1981,14 +1854,14 @@ export default function CertificationsPage() {
 
                 <input
                   type="text"
-                  className="input"
+                  className="input-field"
                   style={{
                     width: "100%",
                     padding: "8px 12px",
-                    background: "#0c1828",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 4,
-                    color: "#e2e8f0",
+                    background: "var(--input-bg, #171717)",
+                    border: "1px solid var(--border, #303030)",
+                    borderRadius: 6,
+                    color: "var(--foreground, #171717)",
                   }}
                   value={assetIdInput}
                   onChange={(e) => setAssetIdInput(e.target.value)}
@@ -2004,7 +1877,8 @@ export default function CertificationsPage() {
                   style={{
                     display: "block",
                     fontSize: "0.75rem",
-                    color: "#94a3b8",
+                    color: "var(--muted, #4A4A4A)",
+                    fontWeight: 600,
                     marginBottom: 4,
                   }}
                 >
@@ -2013,14 +1887,14 @@ export default function CertificationsPage() {
 
                 <input
                   type="text"
-                  className="input"
+                  className="input-field"
                   style={{
                     width: "100%",
                     padding: "8px 12px",
-                    background: "#0c1828",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 4,
-                    color: "#e2e8f0",
+                    background: "var(--input-bg, #171717)",
+                    border: "1px solid var(--border, #303030)",
+                    borderRadius: 6,
+                    color: "var(--foreground, #171717)",
                   }}
                   value={batchIdInput}
                   onChange={(e) => setBatchIdInput(e.target.value)}
@@ -2047,7 +1921,8 @@ export default function CertificationsPage() {
                   border: "1px solid rgba(139,92,246,0.2)",
                   borderRadius: 4,
                   fontSize: "0.75rem",
-                  color: "#94a3b8",
+                  color: "var(--foreground, #171717)",
+                  lineHeight: 1.45,
                 }}
               >
                 Creating a certification initiates cryptographic verification, soulbound token generation, and anchors the uploaded seal to BEL-TRUST-CHAIN.
