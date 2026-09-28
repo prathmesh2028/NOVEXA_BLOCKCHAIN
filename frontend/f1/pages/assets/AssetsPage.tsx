@@ -15,44 +15,62 @@ import "./AssetsPage.css";
 export default function AssetsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [assets, setAssets] = useState<AssetResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [verificationFilter, setVerificationFilter] = useState("ALL");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAssets();
-  }, []);
+  const [defenceAssets] = useState<DefenceAsset[]>(() => getDefenceAssets());
 
-  const loadAssets = async () => {
-    try {
-      setLoading(true);
-      const response = await assetService.listAssets({
-        search: search || undefined,
-        lifecycle: statusFilter === "ALL" ? undefined : statusFilter,
-      });
-      setAssets(response.items);
-    } catch (err: any) {
-      setError(err.message || "Failed to load assets");
-    } finally {
-      setLoading(false);
-    }
+  const loadAssets = () => {
+    setError(null);
+    setLoading(false);
   };
 
-  useEffect(() => {
-    loadAssets();
-  }, [search, statusFilter]);
+  const stats = useMemo(() => {
+    return getDefenceAssetStats();
+  }, []);
 
   const filteredAssets = useMemo(() => {
-    return assets;
-  }, [assets]);
+    return defenceAssets.filter((asset) => {
+      const matchesSearch =
+        !search.trim() ||
+        asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        asset.id.toLowerCase().includes(search.toLowerCase()) ||
+        asset.serialNumber.toLowerCase().includes(search.toLowerCase()) ||
+        asset.model.toLowerCase().includes(search.toLowerCase()) ||
+        asset.department.toLowerCase().includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "ALL" || asset.status === statusFilter;
+
+      const matchesCategory =
+        categoryFilter === "ALL" || asset.category === categoryFilter;
+
+      const matchesVerification =
+        verificationFilter === "ALL" ||
+        asset.verificationStatus === verificationFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory &&
+        matchesVerification
+      );
+    });
+  }, [defenceAssets, search, statusFilter, categoryFilter, verificationFilter]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    statusFilter !== "ALL";
+    statusFilter !== "ALL" ||
+    categoryFilter !== "ALL" ||
+    verificationFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("ALL");
+    setCategoryFilter("ALL");
+    setVerificationFilter("ALL");
   };
 
   // Professional defence status badge styling (ChatGPT Minimal Palette)
@@ -599,51 +617,49 @@ export default function AssetsPage() {
                 </div>
 
                 {/* Status and Verification Badges */}
-<<<<<<< HEAD
-  <div className="ast-badges-row">
-    {renderStatusBadge(asset.status)}
-    {renderVerificationBadge(asset.verificationStatus)}
-  </div>
+                <div className="ast-badges-row">
+                  {renderStatusBadge(asset.status)}
+                  {renderVerificationBadge(asset.verificationStatus)}
+                </div>
 
-  {/* Key metadata grid */ }
-  <div className="ast-meta-box">
-    <div className="ast-meta-row">
-      <span className="ast-meta-label">Holder / Command:</span>
-      <span className="ast-meta-value">{asset.department}</span>
-    </div>
-    <div className="ast-meta-row">
-      <span className="ast-meta-label">Base Location:</span>
-      <span style={{ color: "#a3a3a3" }}>{asset.location}</span>
-      <div className="ast-meta-row">
-        <span className="ast-meta-label">Last Maintenance:</span>
-        <span style={{ color: "#a3a3a3" }}>{formatDate(asset.lastMaintenanceDate)}</span>
-      </div>
-      <div className="ast-meta-row">
-        <span className="ast-meta-label">Proof Status:</span>
-        {renderProofBadge(asset.proofStatus, asset.blockchainProof.assetHash)}
-      </div>
-    </div>
+                {/* Key metadata grid */}
+                <div className="ast-meta-box">
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Holder / Command:</span>
+                    <span className="ast-meta-value">{asset.department}</span>
+                  </div>
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Base Location:</span>
+                    <span style={{ color: "var(--muted, #a3a3a3)" }}>{asset.location}</span>
+                  </div>
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Last Maintenance:</span>
+                    <span style={{ color: "var(--muted, #a3a3a3)" }}>{formatDate(asset.lastMaintenanceDate)}</span>
+                  </div>
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Proof Status:</span>
+                    {renderProofBadge(asset.proofStatus, asset.blockchainProof.assetHash)}
+                  </div>
+                </div>
 
-    {/* Action button */}
-    <div style={{ marginTop: "auto", paddingTop: 4 }}>
-      View Details →
-=======
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        fontSize: "0.75rem",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span style={{ color: "#64748b" }}>Supplier:</span>
-        <span style={{ color: "#cbd5e1", textAlign: "right" }}>
-          {asset.supplier || "—"}
-        </span>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span style={{ color: "#64748b" }}>Batch ID:</span>
-        <span className="font-mono-id" style={{ color: "#cbd5e1", textAlign: "right" }}>
-          {asset.batch_id || "—"}
-        </div >
+                {/* Action button */}
+                <div style={{ marginTop: "auto", paddingTop: 4 }}>
+                  <Link to={`/app/assets/${asset.id}`} className="ast-view-btn">
+                    View Details →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="ast-footer-bar">
+            <span>
+              Showing {filteredAssets.length} of {stats.total} defence assets
+            </span>
+            <span>BEL DEFENCE Cryptographic Trust Registry</span>
+          </div>
+        </div>
       )}
-    </div >
+    </div>
   );
 }
