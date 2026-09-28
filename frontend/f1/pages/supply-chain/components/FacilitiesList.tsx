@@ -53,7 +53,7 @@ export default function FacilitiesList() {
       const d = await supplyChainService.listSuppliers();
       const list: SupplierResponse[] = (d as any).items || (d as any) || [];
       setSuppliers(list);
-      if (list.length) setSupplierId(list[0].id);
+      if (list.length) setSupplierId(list[0].id); // Use database ID
     } catch (e) { console.error(e); }
   };
 
@@ -156,7 +156,7 @@ export default function FacilitiesList() {
                   <label style={lbl}>Managing Supplier <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={supplierId} onChange={e => setSupplierId(e.target.value)} required>
                     <option value="">— Select supplier —</option>
-                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.supplier_id || (s as any).supplierId || s.id})</option>)}
+                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.supplier_id || (s as any).supplierId})</option>)}
                   </select>
                   {suppliers.length === 0 && <p style={{ margin: "4px 0 0", fontSize: "0.73rem", color: "#f59e0b" }}>⚠ Add a supplier first.</p>}
                 </div>

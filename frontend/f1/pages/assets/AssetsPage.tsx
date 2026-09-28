@@ -1,72 +1,81 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
-import {
-  DefenceAsset,
-  ASSET_CATEGORIES,
-  ASSET_STATUSES,
-  VERIFICATION_STATUSES,
-  getDefenceAssets,
-  getDefenceAssetStats,
-} from "./assetData";
+import { assetService, AssetResponse } from "../../services/assets";
 
 export default function AssetsPage() {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [verificationFilter, setVerificationFilter] = useState("ALL");
+  const [assets, setAssets] = useState<AssetResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const stats = useMemo(() => getDefenceAssetStats(), []);
+  useEffect(() => {
+    loadAssets();
+  }, []);
+
+  const loadAssets = async () => {
+    try {
+      setLoading(true);
+      const response = await assetService.listAssets({
+        search: search || undefined,
+        lifecycle: statusFilter === "ALL" ? undefined : statusFilter,
+      });
+      setAssets(response.items);
+    } catch (err: any) {
+      setError(err.message || "Failed to load assets");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAssets();
+  }, [search, statusFilter]);
 
   const filteredAssets = useMemo(() => {
-    return getDefenceAssets({
-      search,
-      category: categoryFilter,
-      status: statusFilter,
-      verification: verificationFilter,
-    });
-  }, [search, categoryFilter, statusFilter, verificationFilter]);
+    return assets;
+  }, [assets]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    categoryFilter !== "ALL" ||
-    statusFilter !== "ALL" ||
-    verificationFilter !== "ALL";
+    statusFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
-    setCategoryFilter("ALL");
     setStatusFilter("ALL");
-    setVerificationFilter("ALL");
   };
 
   // Professional defence status badge styling
-  const renderStatusBadge = (status: DefenceAsset["status"]) => {
-    const config: Record<
-      DefenceAsset["status"],
-      { bg: string; text: string; border: string; dot: string }
-    > = {
-      Active: {
+  const renderStatusBadge = (status: string) => {
+    const config: Record<string, { bg: string; text: string; border: string; dot: string }> = {
+      "ACCEPTED_FOR_ASSEMBLY": {
         bg: "rgba(34, 197, 94, 0.12)",
         text: "#22c55e",
         border: "rgba(34, 197, 94, 0.3)",
         dot: "#22c55e",
       },
-      "Under Maintenance": {
+      "INSPECTION_RECORDED": {
+        bg: "rgba(59, 130, 246, 0.12)",
+        text: "#3b82f6",
+        border: "rgba(59, 130, 246, 0.3)",
+        dot: "#3b82f6",
+      },
+      "RECEIVED": {
         bg: "rgba(245, 158, 11, 0.12)",
         text: "#f59e0b",
         border: "rgba(245, 158, 11, 0.3)",
         dot: "#f59e0b",
       },
-      Inactive: {
-        bg: "rgba(148, 163, 184, 0.12)",
-        text: "#94a3b8",
-        border: "rgba(148, 163, 184, 0.25)",
-        dot: "#94a3b8",
+      "SUPPLIER_DECLARED": {
+        bg: "rgba(139, 92, 246, 0.12)",
+        text: "#8b5cf6",
+        border: "rgba(139, 92, 246, 0.3)",
+        dot: "#8b5cf6",
       },
-      Decommissioned: {
+      "REJECTED_QUARANTINED": {
         bg: "rgba(239, 68, 68, 0.12)",
         text: "#ef4444",
         border: "rgba(239, 68, 68, 0.3)",
@@ -74,7 +83,7 @@ export default function AssetsPage() {
       },
     };
 
-    const c = config[status] || config["Active"];
+    const c = config[status] || config["SUPPLIER_DECLARED"];
 
     return (
       <span
@@ -101,30 +110,33 @@ export default function AssetsPage() {
             background: c.dot,
           }}
         />
-        {status}
+        {status.replace(/_/g, " ")}
       </span>
     );
   };
 
   // Verification status badge
-  const renderVerificationBadge = (verification: DefenceAsset["verificationStatus"]) => {
-    const config: Record<
-      DefenceAsset["verificationStatus"],
-      { bg: string; text: string; border: string; icon: string }
-    > = {
-      Verified: {
+  const renderVerificationBadge = (verification: string) => {
+    const config: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+      "VERIFIED": {
         bg: "rgba(34, 197, 94, 0.1)",
         text: "#22c55e",
         border: "rgba(34, 197, 94, 0.25)",
         icon: "✓",
       },
-      "Pending Verification": {
+      "PENDING": {
         bg: "rgba(245, 158, 11, 0.1)",
         text: "#f59e0b",
         border: "rgba(245, 158, 11, 0.25)",
         icon: "◐",
       },
-      "Verification Required": {
+      "FAILED": {
+        bg: "rgba(239, 68, 68, 0.1)",
+        text: "#ef4444",
+        border: "rgba(239, 68, 68, 0.25)",
+        icon: "✕",
+      },
+      "REVIEW_REQUIRED": {
         bg: "rgba(56, 189, 248, 0.1)",
         text: "#38bdf8",
         border: "rgba(56, 189, 248, 0.25)",
@@ -132,7 +144,7 @@ export default function AssetsPage() {
       },
     };
 
-    const c = config[verification] || config["Verified"];
+    const c = config[verification] || config["PENDING"];
 
     return (
       <span
@@ -151,14 +163,14 @@ export default function AssetsPage() {
         }}
       >
         <span style={{ fontSize: "0.7rem" }}>{c.icon}</span>
-        {verification}
+        {verification.replace(/_/g, " ")}
       </span>
     );
   };
 
   // Blockchain proof status badge
-  const renderProofBadge = (proofStatus: DefenceAsset["proofStatus"], hash?: string) => {
-    if (proofStatus === "Anchored") {
+  const renderProofBadge = (certStatus: string, certId?: string | null) => {
+    if (certStatus === "CONFIRMED" && certId) {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span
@@ -177,22 +189,19 @@ export default function AssetsPage() {
             }}
           >
             <span style={{ fontSize: "0.65rem" }}>⬡</span>
-            Anchored
+            Certified
           </span>
-          {hash && (
-            <span
-              className="font-mono-id"
-              style={{ fontSize: "0.6875rem", color: "#64748b" }}
-              title={hash}
-            >
-              {hash.slice(0, 8)}...{hash.slice(-4)}
-            </span>
-          )}
+          <span
+            className="font-mono-id"
+            style={{ fontSize: "0.6875rem", color: "#64748b" }}
+          >
+            {certId}
+          </span>
         </div>
       );
     }
 
-    if (proofStatus === "Pending") {
+    if (certStatus === "PENDING") {
       return (
         <span
           style={{
@@ -210,7 +219,7 @@ export default function AssetsPage() {
           }}
         >
           <span style={{ fontSize: "0.65rem" }}>◷</span>
-          Proof Pending
+          Certification Pending
         </span>
       );
     }
@@ -232,7 +241,7 @@ export default function AssetsPage() {
         }}
       >
         <span style={{ fontSize: "0.65rem" }}>○</span>
-        Anchor Required
+        Not Certified
       </span>
     );
   };
@@ -276,30 +285,30 @@ export default function AssetsPage() {
         }}
       >
         <StatCard
-          label="TOTAL DEFENCE ASSETS"
-          value={stats.total}
-          sub="Catalogued defence systems"
+          label="TOTAL ASSETS"
+          value={assets.length}
+          sub="Registered in system"
           accent="#60a5fa"
           icon="◈"
         />
         <StatCard
-          label="ACTIVE / OPERATIONAL"
-          value={stats.active}
-          sub="Mission ready units"
+          label="ACCEPTED FOR ASSEMBLY"
+          value={assets.filter(a => a.lifecycle_state === "ACCEPTED_FOR_ASSEMBLY").length}
+          sub="Production ready"
           accent="#22c55e"
           icon="●"
         />
         <StatCard
-          label="UNDER MAINTENANCE"
-          value={stats.underMaintenance}
-          sub="Depot & field servicing"
+          label="PENDING INSPECTION"
+          value={assets.filter(a => a.lifecycle_state === "RECEIVED").length}
+          sub="Awaiting quality check"
           accent="#f59e0b"
           icon="⚙"
         />
         <StatCard
-          label="BLOCKCHAIN ANCHORED"
-          value={stats.anchored}
-          sub="Tamper-evident proof state"
+          label="CERTIFIED"
+          value={assets.filter(a => a.cert_status === "CONFIRMED").length}
+          sub="Blockchain anchored"
           accent="#38bdf8"
           icon="⬡"
         />
@@ -345,7 +354,7 @@ export default function AssetsPage() {
               className="input-field"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by Asset ID, Name, Serial Number, Holder, Model..."
+              placeholder="Search by Asset ID, Serial Number, Type..."
               style={{
                 paddingLeft: 34,
                 width: "100%",
@@ -387,37 +396,10 @@ export default function AssetsPage() {
             borderTop: "1px solid #152b4a",
           }}
         >
-          {/* Category Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>
-              Category:
-            </span>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="input-field"
-              style={{
-                padding: "6px 10px",
-                fontSize: "0.75rem",
-                background: "#08131f",
-                borderColor: categoryFilter !== "ALL" ? "#3b82f6" : "#1e3a60",
-                color: categoryFilter !== "ALL" ? "#60a5fa" : "#94a3b8",
-                minWidth: "160px",
-              }}
-            >
-              <option value="ALL">All Categories ({stats.total})</option>
-              {ASSET_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Status Filter */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>
-              Status:
+              Lifecycle:
             </span>
             <select
               value={statusFilter}
@@ -429,42 +411,16 @@ export default function AssetsPage() {
                 background: "#08131f",
                 borderColor: statusFilter !== "ALL" ? "#3b82f6" : "#1e3a60",
                 color: statusFilter !== "ALL" ? "#60a5fa" : "#94a3b8",
-                minWidth: "150px",
+                minWidth: "180px",
               }}
             >
-              <option value="ALL">All Statuses</option>
-              {ASSET_STATUSES.map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Verification Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>
-              Verification:
-            </span>
-            <select
-              value={verificationFilter}
-              onChange={(e) => setVerificationFilter(e.target.value)}
-              className="input-field"
-              style={{
-                padding: "6px 10px",
-                fontSize: "0.75rem",
-                background: "#08131f",
-                borderColor: verificationFilter !== "ALL" ? "#3b82f6" : "#1e3a60",
-                color: verificationFilter !== "ALL" ? "#60a5fa" : "#94a3b8",
-                minWidth: "170px",
-              }}
-            >
-              <option value="ALL">All Verification States</option>
-              {VERIFICATION_STATUSES.map((vs) => (
-                <option key={vs} value={vs}>
-                  {vs}
-                </option>
-              ))}
+              <option value="ALL">All Lifecycle States</option>
+              <option value="UNREGISTERED">Unregistered</option>
+              <option value="SUPPLIER_DECLARED">Supplier Declared</option>
+              <option value="RECEIVED">Received</option>
+              <option value="INSPECTION_RECORDED">Inspection Recorded</option>
+              <option value="ACCEPTED_FOR_ASSEMBLY">Accepted for Assembly</option>
+              <option value="REJECTED_QUARANTINED">Rejected/Quarantined</option>
             </select>
           </div>
 
@@ -488,7 +444,105 @@ export default function AssetsPage() {
       </div>
 
       {/* Asset Listing Content */}
-      {filteredAssets.length === 0 ? (
+      {loading ? (
+        <div
+          className="panel"
+          style={{
+            padding: "60px 24px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "rgba(30, 58, 96, 0.4)",
+              border: "1px solid #1e3a60",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.75rem",
+              color: "#64748b",
+              marginBottom: 16,
+            }}
+          >
+            ◈
+          </div>
+          <h3
+            className="font-display"
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 8,
+              letterSpacing: "0.02em",
+            }}
+          >
+            LOADING ASSETS
+          </h3>
+        </div>
+      ) : error ? (
+        <div
+          className="panel"
+          style={{
+            padding: "60px 24px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.2)",
+              border: "1px solid #ef4444",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.75rem",
+              color: "#ef4444",
+              marginBottom: 16,
+            }}
+          >
+            ✕
+          </div>
+          <h3
+            className="font-display"
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 8,
+              letterSpacing: "0.02em",
+            }}
+          >
+            ERROR LOADING ASSETS
+          </h3>
+          <p
+            style={{
+              fontSize: "0.875rem",
+              color: "#64748b",
+              maxWidth: 420,
+              margin: "0 auto 20px",
+              lineHeight: 1.5,
+            }}
+          >
+            {error}
+          </p>
+          <button onClick={loadAssets} className="btn-primary" style={{ fontSize: "0.8125rem" }}>
+            Retry
+          </button>
+        </div>
+      ) : filteredAssets.length === 0 ? (
         /* Empty State */
         <div
           className="panel"
@@ -528,7 +582,7 @@ export default function AssetsPage() {
               letterSpacing: "0.02em",
             }}
           >
-            NO DEFENCE ASSETS FOUND
+            NO ASSETS FOUND
           </h3>
           <p
             style={{
@@ -539,7 +593,7 @@ export default function AssetsPage() {
               lineHeight: 1.5,
             }}
           >
-            No defence asset records match your current search query or filter selection. Adjust your
+            No asset records match your current search query or filter selection. Adjust your
             parameters or reset filters to view all registered inventory.
           </p>
           <button onClick={clearFilters} className="btn-primary" style={{ fontSize: "0.8125rem" }}>
@@ -571,7 +625,7 @@ export default function AssetsPage() {
                   transition: "border-color 0.15s ease",
                 }}
               >
-                {/* Card Top: ID & Category */}
+                {/* Card Top: ID & Type */}
                 <div
                   style={{
                     display: "flex",
@@ -591,7 +645,7 @@ export default function AssetsPage() {
                       border: "1px solid rgba(37, 99, 235, 0.25)",
                     }}
                   >
-                    {asset.id}
+                    {asset.asset_id}
                   </span>
                   <span
                     style={{
@@ -604,7 +658,7 @@ export default function AssetsPage() {
                       border: "1px solid #1e3a60",
                     }}
                   >
-                    {asset.category}
+                    {asset.type}
                   </span>
                 </div>
 
@@ -618,17 +672,17 @@ export default function AssetsPage() {
                       color: "#e2e8f0",
                     }}
                   >
-                    {asset.name}
+                    {asset.model}
                   </h3>
                   <div style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                    {asset.model} · <span className="font-mono-id">{asset.serialNumber}</span>
+                    <span className="font-mono-id">{asset.serial_number}</span>
                   </div>
                 </div>
 
                 {/* Status and Verification Badges */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  {renderStatusBadge(asset.status)}
-                  {renderVerificationBadge(asset.verificationStatus)}
+                  {renderStatusBadge(asset.lifecycle_state)}
+                  {renderVerificationBadge(asset.verification_status)}
                 </div>
 
                 {/* Key metadata grid */}
@@ -645,76 +699,45 @@ export default function AssetsPage() {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#64748b" }}>Holder / Command:</span>
+                    <span style={{ color: "#64748b" }}>Supplier:</span>
                     <span style={{ color: "#cbd5e1", textAlign: "right" }}>
-                      {asset.department}
+                      {asset.supplier || "—"}
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#64748b" }}>Base Location:</span>
-                    <span style={{ color: "#94a3b8" }}>{asset.location}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#64748b" }}>Last Maintenance:</span>
-                    <span style={{ color: "#94a3b8" }}>
-                      {formatDate(asset.lastMaintenanceDate)}
+                    <span style={{ color: "#64748b" }}>Batch ID:</span>
+                    <span className="font-mono-id" style={{ color: "#cbd5e1", textAlign: "right" }}>
+                      {asset.batch_id || "—"}
                     </span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: "#64748b" }}>Proof Status:</span>
-                    {renderProofBadge(asset.proofStatus, asset.blockchainProof.assetHash)}
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#64748b" }}>Evidence:</span>
+                    <span style={{ color: "#cbd5e1", textAlign: "right" }}>
+                      {asset.evidence_count}
+                    </span>
                   </div>
                 </div>
 
-                {/* Action button */}
-                <div style={{ marginTop: "auto", paddingTop: 8 }}>
+                {/* Blockchain proof status */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  {renderProofBadge(asset.cert_status, asset.cert_id)}
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", gap: "8px", marginTop: "auto" }}>
                   <Link
                     to={`/app/assets/${asset.id}`}
                     className="btn-primary"
-                    style={{
-                      width: "100%",
-                      justifyContent: "center",
-                      padding: "8px 14px",
-                      fontSize: "0.75rem",
-                      textDecoration: "none",
-                    }}
+                    style={{ flex: 1, textAlign: "center", fontSize: "0.8125rem" }}
                   >
-                    View Details →
+                    View Details
                   </Link>
                 </div>
               </div>
             ))}
-          </div>
-
-          <div
-            style={{
-              padding: "12px 18px",
-              background: "#0c1828",
-              border: "1px solid #1e3a60",
-              borderRadius: "5px",
-              fontSize: "0.75rem",
-              color: "#64748b",
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>
-              Showing {filteredAssets.length} of {stats.total} defence assets
-            </span>
-            <span>NOVEXA Cryptographic Trust Registry</span>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-const tableHeaderStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  fontSize: "0.6875rem",
-  fontWeight: 700,
-  color: "#64748b",
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  whiteSpace: "nowrap",
-};

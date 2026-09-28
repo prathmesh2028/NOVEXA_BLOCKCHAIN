@@ -51,7 +51,7 @@ describe('CasbinGuard (Fine-Grained RBAC)', () => {
     const result = await guard.canActivate(context);
     expect(result).toBe(true);
     expect(mockCasbinService.checkPermission).toHaveBeenCalledWith(
-      ['ROLE_ADMIN'],
+      ['ADMIN', 'ROLE_ADMIN'],
       '/api/v1/assets',
       'GET',
     );
@@ -68,7 +68,7 @@ describe('CasbinGuard (Fine-Grained RBAC)', () => {
 
     await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);
     expect(mockCasbinService.checkPermission).toHaveBeenCalledWith(
-      ['ROLE_AUDITOR'],
+      ['AUDITOR', 'ROLE_AUDITOR'],
       '/api/v1/approvals',
       'POST',
     );

@@ -5,8 +5,6 @@ import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
 import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
-import { CERTIFICATION_TYPES, CERTIFICATION_STATUSES, VERIFICATION_STATUSES } from "./certificationData";
-import type { CertificationStatus } from "./certificationData";
 import { useAuth } from "../../context/AuthContext";
 
 
@@ -31,7 +29,6 @@ export default function CertificationsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [typeFilter, setTypeFilter] = useState("ALL");
-  const [verificationFilter, setVerificationFilter] = useState("ALL");
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
 
@@ -171,31 +168,24 @@ export default function CertificationsPage() {
       const matchesType =
         typeFilter === "ALL" || (cert.type && cert.type === typeFilter);
 
-      const matchesVerification =
-        verificationFilter === "ALL" ||
-        (cert.verificationStatus && cert.verificationStatus === verificationFilter);
-
-      return matchesSearch && matchesStatus && matchesType && matchesVerification;
+      return matchesSearch && matchesStatus && matchesType;
     });
   }, [
     certs,
     search,
     statusFilter,
     typeFilter,
-    verificationFilter,
   ]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
     statusFilter !== "ALL" ||
-    typeFilter !== "ALL" ||
-    verificationFilter !== "ALL";
+    typeFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("ALL");
     setTypeFilter("ALL");
-    setVerificationFilter("ALL");
   };
 
   /* ============================================================
@@ -216,7 +206,6 @@ export default function CertificationsPage() {
 
     const verified = certs.filter(
       (c: any) =>
-        c.verificationStatus === "Verified" ||
         c.status === "CONFIRMED"
     ).length;
 
@@ -232,7 +221,7 @@ export default function CertificationsPage() {
      STATUS BADGE
      ============================================================ */
 
-  const renderStatusBadge = (status: CertificationStatus | string) => {
+  const renderStatusBadge = (status: string) => {
     const config: Record<
       string,
       {
@@ -331,7 +320,7 @@ export default function CertificationsPage() {
      ============================================================ */
 
   const renderVerificationBadge = (
-    vStatus: CertVerificationStatus | string
+    vStatus: string
   ) => {
     const config: Record<
       string,
@@ -408,7 +397,7 @@ export default function CertificationsPage() {
      TYPE TAG
      ============================================================ */
 
-  const renderTypeTag = (type: CertificationType | string) => {
+  const renderTypeTag = (type: string) => {
     const colorMap: Record<
       string,
       { text: string; bg: string }
@@ -531,7 +520,6 @@ export default function CertificationsPage() {
     cert.status || "Valid";
 
   const getVerificationStatus = (cert: any) =>
-    cert.verificationStatus ||
     (cert.status === "CONFIRMED"
       ? "Verified"
       : "Pending Verification");
@@ -775,7 +763,7 @@ export default function CertificationsPage() {
                 All Certification Types
               </option>
 
-              {CERTIFICATION_TYPES.map((t) => (
+              {["Safety Certification", "Operational Certification", "Maintenance Certification", "Quality Certification", "Compliance Certification"].map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
@@ -805,39 +793,9 @@ export default function CertificationsPage() {
                 All Statuses
               </option>
 
-              {CERTIFICATION_STATUSES.map((s) => (
+              {["Valid", "Expiring", "Expired"].map((s) => (
                 <option key={s} value={s}>
                   Status: {s}
-                </option>
-              ))}
-            </select>
-
-            {/* VERIFICATION */}
-
-            <select
-              value={verificationFilter}
-              onChange={(e) =>
-                setVerificationFilter(e.target.value)
-              }
-              style={{
-                padding: "8px 12px",
-                background: "#060d17",
-                border: "1px solid #1e3a60",
-                borderRadius: "6px",
-                color: "#cbd5e1",
-                fontSize: "0.75rem",
-                fontWeight: 500,
-                outline: "none",
-                cursor: "pointer",
-              }}
-            >
-              <option value="ALL">
-                All Verification
-              </option>
-
-              {VERIFICATION_STATUSES.map((v) => (
-                <option key={v} value={v}>
-                  Proof: {v}
                 </option>
               ))}
             </select>

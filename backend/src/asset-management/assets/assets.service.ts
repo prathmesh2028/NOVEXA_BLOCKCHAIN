@@ -109,26 +109,18 @@ export class AssetsService {
     let assets: any[] = [];
     let total = 0;
 
-    try {
-      const [dbAssets, dbTotal] = await Promise.all([
-        this.prisma.asset.findMany({
-          where,
-          include: { batch: true },
-          skip,
-          take: pageSize,
-          orderBy: { createdAt: 'desc' },
-        }),
-        this.prisma.asset.count({ where }),
-      ]);
-      assets = dbAssets;
-      total = dbTotal;
-    } catch (e: any) {
-      if (process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo' || process.env.NODE_ENV === 'development') {
-        this.logger.warn(`Prisma listAssets failed: ${e.message}. Returning empty list for demo.`);
-        return { items: [], total: 0, page, page_size: pageSize, has_next: false };
-      }
-      throw e;
-    }
+    const [dbAssets, dbTotal] = await Promise.all([
+      this.prisma.asset.findMany({
+        where,
+        include: { batch: true },
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.asset.count({ where }),
+    ]);
+    assets = dbAssets;
+    total = dbTotal;
 
     return {
       items: assets.map(a => this.mapAsset(a)),
