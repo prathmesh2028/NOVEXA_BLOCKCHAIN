@@ -1,84 +1,106 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
-import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
-import { assetService, AssetResponse } from "../../services/assets";
+import {
+  DefenceAsset,
+  ASSET_CATEGORIES,
+  ASSET_STATUSES,
+  VERIFICATION_STATUSES,
+  getDefenceAssets,
+  getDefenceAssetStats,
+} from "./assetData";
+import "./AssetsPage.css";
 
 export default function AssetsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [assets, setAssets] = useState<AssetResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [verificationFilter, setVerificationFilter] = useState("ALL");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAssets();
-  }, []);
+  const [defenceAssets] = useState<DefenceAsset[]>(() => getDefenceAssets());
 
-  const loadAssets = async () => {
-    try {
-      setLoading(true);
-      const response = await assetService.listAssets({
-        search: search || undefined,
-        lifecycle: statusFilter === "ALL" ? undefined : statusFilter,
-      });
-      setAssets(response.items);
-    } catch (err: any) {
-      setError(err.message || "Failed to load assets");
-    } finally {
-      setLoading(false);
-    }
+  const loadAssets = () => {
+    setError(null);
+    setLoading(false);
   };
 
-  useEffect(() => {
-    loadAssets();
-  }, [search, statusFilter]);
+  const stats = useMemo(() => {
+    return getDefenceAssetStats();
+  }, []);
 
   const filteredAssets = useMemo(() => {
-    return assets;
-  }, [assets]);
+    return defenceAssets.filter((asset) => {
+      const matchesSearch =
+        !search.trim() ||
+        asset.name.toLowerCase().includes(search.toLowerCase()) ||
+        asset.id.toLowerCase().includes(search.toLowerCase()) ||
+        asset.serialNumber.toLowerCase().includes(search.toLowerCase()) ||
+        asset.model.toLowerCase().includes(search.toLowerCase()) ||
+        asset.department.toLowerCase().includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "ALL" || asset.status === statusFilter;
+
+      const matchesCategory =
+        categoryFilter === "ALL" || asset.category === categoryFilter;
+
+      const matchesVerification =
+        verificationFilter === "ALL" ||
+        asset.verificationStatus === verificationFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory &&
+        matchesVerification
+      );
+    });
+  }, [defenceAssets, search, statusFilter, categoryFilter, verificationFilter]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    statusFilter !== "ALL";
+    statusFilter !== "ALL" ||
+    categoryFilter !== "ALL" ||
+    verificationFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter("ALL");
+    setCategoryFilter("ALL");
+    setVerificationFilter("ALL");
   };
 
-  // Professional defence status badge styling
-  const renderStatusBadge = (status: string) => {
-    const config: Record<string, { bg: string; text: string; border: string; dot: string }> = {
-      "ACCEPTED_FOR_ASSEMBLY": {
-        bg: "rgba(34, 197, 94, 0.12)",
-        text: "#22c55e",
-        border: "rgba(34, 197, 94, 0.3)",
-        dot: "#22c55e",
+  // Professional defence status badge styling (ChatGPT Minimal Palette)
+  const renderStatusBadge = (status: DefenceAsset["status"]) => {
+    const config: Record<
+      DefenceAsset["status"],
+      { bg: string; text: string; border: string; dot: string }
+    > = {
+      Active: {
+        bg: "rgba(16, 185, 129, 0.08)",
+        text: "#34d399",
+        border: "rgba(16, 185, 129, 0.25)",
+        dot: "#10b981",
       },
-      "INSPECTION_RECORDED": {
-        bg: "rgba(59, 130, 246, 0.12)",
-        text: "#3b82f6",
-        border: "rgba(59, 130, 246, 0.3)",
-        dot: "#3b82f6",
-      },
-      "RECEIVED": {
-        bg: "rgba(245, 158, 11, 0.12)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.3)",
+      "Under Maintenance": {
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.25)",
         dot: "#f59e0b",
       },
-      "SUPPLIER_DECLARED": {
-        bg: "rgba(139, 92, 246, 0.12)",
-        text: "#8b5cf6",
-        border: "rgba(139, 92, 246, 0.3)",
-        dot: "#8b5cf6",
+      Inactive: {
+        bg: "rgba(255, 255, 255, 0.05)",
+        text: "#a3a3a3",
+        border: "rgba(255, 255, 255, 0.1)",
+        dot: "#737373",
       },
-      "REJECTED_QUARANTINED": {
-        bg: "rgba(239, 68, 68, 0.12)",
-        text: "#ef4444",
-        border: "rgba(239, 68, 68, 0.3)",
+      Decommissioned: {
+        bg: "rgba(239, 68, 68, 0.08)",
+        text: "#f87171",
+        border: "rgba(239, 68, 68, 0.25)",
         dot: "#ef4444",
       },
     };
@@ -92,8 +114,8 @@ export default function AssetsPage() {
           alignItems: "center",
           gap: "6px",
           padding: "3px 9px",
-          borderRadius: "4px",
-          fontSize: "0.75rem",
+          borderRadius: "9999px",
+          fontSize: "0.72rem",
           fontWeight: 600,
           letterSpacing: "0.02em",
           background: c.bg,
@@ -104,8 +126,8 @@ export default function AssetsPage() {
       >
         <span
           style={{
-            width: 6,
-            height: 6,
+            width: 5,
+            height: 5,
             borderRadius: "50%",
             background: c.dot,
           }}
@@ -116,31 +138,28 @@ export default function AssetsPage() {
   };
 
   // Verification status badge
-  const renderVerificationBadge = (verification: string) => {
-    const config: Record<string, { bg: string; text: string; border: string; icon: string }> = {
-      "VERIFIED": {
-        bg: "rgba(34, 197, 94, 0.1)",
-        text: "#22c55e",
-        border: "rgba(34, 197, 94, 0.25)",
+  const renderVerificationBadge = (verification: DefenceAsset["verificationStatus"]) => {
+    const config: Record<
+      DefenceAsset["verificationStatus"],
+      { bg: string; text: string; border: string; icon: string }
+    > = {
+      Verified: {
+        bg: "rgba(16, 185, 129, 0.08)",
+        text: "#34d399",
+        border: "rgba(16, 185, 129, 0.2)",
         icon: "✓",
       },
-      "PENDING": {
-        bg: "rgba(245, 158, 11, 0.1)",
-        text: "#f59e0b",
-        border: "rgba(245, 158, 11, 0.25)",
+      "Pending Verification": {
+        bg: "rgba(245, 158, 11, 0.08)",
+        text: "#fbbf24",
+        border: "rgba(245, 158, 11, 0.2)",
         icon: "◐",
       },
-      "FAILED": {
-        bg: "rgba(239, 68, 68, 0.1)",
-        text: "#ef4444",
-        border: "rgba(239, 68, 68, 0.25)",
-        icon: "✕",
-      },
-      "REVIEW_REQUIRED": {
-        bg: "rgba(56, 189, 248, 0.1)",
-        text: "#38bdf8",
-        border: "rgba(56, 189, 248, 0.25)",
-        icon: "⚠",
+      "Verification Required": {
+        bg: "rgba(255, 255, 255, 0.05)",
+        text: "#a3a3a3",
+        border: "rgba(255, 255, 255, 0.12)",
+        icon: "○",
       },
     };
 
@@ -153,8 +172,8 @@ export default function AssetsPage() {
           alignItems: "center",
           gap: "5px",
           padding: "3px 8px",
-          borderRadius: "4px",
-          fontSize: "0.75rem",
+          borderRadius: "9999px",
+          fontSize: "0.72rem",
           fontWeight: 600,
           background: c.bg,
           color: c.text,
@@ -172,19 +191,19 @@ export default function AssetsPage() {
   const renderProofBadge = (certStatus: string, certId?: string | null) => {
     if (certStatus === "CONFIRMED" && certId) {
       return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-end" }}>
           <span
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "4px",
               padding: "2px 7px",
-              borderRadius: "3px",
+              borderRadius: "4px",
               fontSize: "0.6875rem",
               fontWeight: 600,
-              background: "rgba(59, 130, 246, 0.12)",
-              color: "#60a5fa",
-              border: "1px solid rgba(59, 130, 246, 0.28)",
+              background: "rgba(255, 255, 255, 0.06)",
+              color: "#e5e5e5",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
               width: "fit-content",
             }}
           >
@@ -197,7 +216,18 @@ export default function AssetsPage() {
           >
             {certId}
           </span>
-        </div>
+          {
+            hash && (
+              <span
+                className="font-mono-id"
+                style={{ fontSize: "0.6875rem", color: "#737373" }}
+                title={hash}
+              >
+                {hash.slice(0, 8)}...{hash.slice(-4)}
+              </span>
+            )
+          }
+        </div >
       );
     }
 
@@ -209,12 +239,12 @@ export default function AssetsPage() {
             alignItems: "center",
             gap: "4px",
             padding: "2px 7px",
-            borderRadius: "3px",
+            borderRadius: "4px",
             fontSize: "0.6875rem",
             fontWeight: 600,
-            background: "rgba(245, 158, 11, 0.1)",
-            color: "#f59e0b",
-            border: "1px solid rgba(245, 158, 11, 0.25)",
+            background: "rgba(245, 158, 11, 0.08)",
+            color: "#fbbf24",
+            border: "1px solid rgba(245, 158, 11, 0.2)",
             width: "fit-content",
           }}
         >
@@ -231,12 +261,12 @@ export default function AssetsPage() {
           alignItems: "center",
           gap: "4px",
           padding: "2px 7px",
-          borderRadius: "3px",
+          borderRadius: "4px",
           fontSize: "0.6875rem",
           fontWeight: 600,
-          background: "rgba(148, 163, 184, 0.1)",
-          color: "#94a3b8",
-          border: "1px solid rgba(148, 163, 184, 0.2)",
+          background: "rgba(255, 255, 255, 0.04)",
+          color: "#737373",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
           width: "fit-content",
         }}
       >
@@ -247,7 +277,7 @@ export default function AssetsPage() {
   };
 
   return (
-    <div className="page-fade" style={{ maxWidth: "1440px", margin: "0 auto" }}>
+    <div className="page-fade assets-page-root">
       {/* Header section */}
       <PageHeader
         title="Defence Assets"
@@ -262,10 +292,10 @@ export default function AssetsPage() {
               fontSize: "0.6875rem",
               fontWeight: 700,
               padding: "4px 8px",
-              borderRadius: "3px",
-              background: "rgba(37, 99, 235, 0.18)",
-              color: "#60a5fa",
-              border: "1px solid rgba(37, 99, 235, 0.35)",
+              borderRadius: "4px",
+              background: "rgba(255, 255, 255, 0.06)",
+              color: "#a3a3a3",
+              border: "1px solid #303030",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
             }}
@@ -276,93 +306,56 @@ export default function AssetsPage() {
       />
 
       {/* Metric Summary Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "14px",
-          marginBottom: "24px",
-        }}
-      >
-        <StatCard
-          label="TOTAL ASSETS"
-          value={assets.length}
-          sub="Registered in system"
-          accent="#60a5fa"
-          icon="◈"
-        />
-        <StatCard
-          label="ACCEPTED FOR ASSEMBLY"
-          value={assets.filter(a => a.lifecycle_state === "ACCEPTED_FOR_ASSEMBLY").length}
-          sub="Production ready"
-          accent="#22c55e"
-          icon="●"
-        />
-        <StatCard
-          label="PENDING INSPECTION"
-          value={assets.filter(a => a.lifecycle_state === "RECEIVED").length}
-          sub="Awaiting quality check"
-          accent="#f59e0b"
-          icon="⚙"
-        />
-        <StatCard
-          label="CERTIFIED"
-          value={assets.filter(a => a.cert_status === "CONFIRMED").length}
-          sub="Blockchain anchored"
-          accent="#38bdf8"
-          icon="⬡"
-        />
+      <div className="ast-stats-grid">
+        <div className="ast-stat-card">
+          <div className="ast-stat-top">
+            <span className="ast-stat-label">TOTAL DEFENCE ASSETS</span>
+            <div className="ast-stat-icon">◈</div>
+          </div>
+          <div className="ast-stat-value">{stats.total}</div>
+          <div className="ast-stat-sub">Catalogued defence systems</div>
+        </div>
+
+        <div className="ast-stat-card">
+          <div className="ast-stat-top">
+            <span className="ast-stat-label">ACTIVE / OPERATIONAL</span>
+            <div className="ast-stat-icon" style={{ color: "#10b981" }}>●</div>
+          </div>
+          <div className="ast-stat-value" style={{ color: "#34d399" }}>{stats.active}</div>
+          <div className="ast-stat-sub">Mission ready units</div>
+        </div>
+
+        <div className="ast-stat-card">
+          <div className="ast-stat-top">
+            <span className="ast-stat-label">UNDER MAINTENANCE</span>
+            <div className="ast-stat-icon" style={{ color: "#f59e0b" }}>⚙</div>
+          </div>
+          <div className="ast-stat-value" style={{ color: "#fbbf24" }}>{stats.underMaintenance}</div>
+          <div className="ast-stat-sub">Depot & field servicing</div>
+        </div>
+
+        <div className="ast-stat-card">
+          <div className="ast-stat-top">
+            <span className="ast-stat-label">BLOCKCHAIN ANCHORED</span>
+            <div className="ast-stat-icon">⬡</div>
+          </div>
+          <div className="ast-stat-value">{stats.anchored}</div>
+          <div className="ast-stat-sub">Tamper-evident proof state</div>
+        </div>
       </div>
 
       {/* Filter and Search Controls Toolbar */}
-      <div
-        className="panel"
-        style={{
-          padding: "16px 20px",
-          marginBottom: "20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "14px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}
-        >
+      <div className="ast-toolbar">
+        <div className="ast-search-row">
           {/* Search bar */}
-          <div style={{ position: "relative", flex: "1 1 320px", minWidth: 260 }}>
-            <span
-              style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#64748b",
-                fontSize: "0.875rem",
-                pointerEvents: "none",
-              }}
-            >
-              🔍
-            </span>
+          <div className="ast-search-wrapper">
+            <span className="ast-search-icon">🔍</span>
             <input
               type="text"
-              className="input-field"
+              className="ast-search-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by Asset ID, Serial Number, Type..."
-              style={{
-                paddingLeft: 34,
-                width: "100%",
-                background: "#08131f",
-                borderColor: "#1e3a60",
-                color: "#e2e8f0",
-                fontSize: "0.8125rem",
-              }}
+              placeholder="Search by Asset ID, Name, Serial Number, Holder, Model..."
             />
             {search && (
               <button
@@ -374,7 +367,7 @@ export default function AssetsPage() {
                   transform: "translateY(-50%)",
                   background: "transparent",
                   border: "none",
-                  color: "#64748b",
+                  color: "#737373",
                   cursor: "pointer",
                   fontSize: "0.875rem",
                 }}
@@ -386,57 +379,61 @@ export default function AssetsPage() {
         </div>
 
         {/* Filter selectors row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            flexWrap: "wrap",
-            paddingTop: "4px",
-            borderTop: "1px solid #152b4a",
-          }}
-        >
+        <div className="ast-filters-row">
+          {/* Category Filter */}
+          <div className="ast-filter-group">
+            <span className="ast-filter-label">Category:</span>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="ast-select"
+            >
+              <option value="ALL">All Categories ({stats.total})</option>
+              {ASSET_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Status Filter */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>
-              Lifecycle:
-            </span>
+          <div className="ast-filter-group">
+            <span className="ast-filter-label">Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="input-field"
-              style={{
-                padding: "6px 10px",
-                fontSize: "0.75rem",
-                background: "#08131f",
-                borderColor: statusFilter !== "ALL" ? "#3b82f6" : "#1e3a60",
-                color: statusFilter !== "ALL" ? "#60a5fa" : "#94a3b8",
-                minWidth: "180px",
-              }}
+              className="ast-select"
             >
-              <option value="ALL">All Lifecycle States</option>
-              <option value="UNREGISTERED">Unregistered</option>
-              <option value="SUPPLIER_DECLARED">Supplier Declared</option>
-              <option value="RECEIVED">Received</option>
-              <option value="INSPECTION_RECORDED">Inspection Recorded</option>
-              <option value="ACCEPTED_FOR_ASSEMBLY">Accepted for Assembly</option>
-              <option value="REJECTED_QUARANTINED">Rejected/Quarantined</option>
+              <option value="ALL">All Statuses</option>
+              {ASSET_STATUSES.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Verification Filter */}
+          <div className="ast-filter-group">
+            <span className="ast-filter-label">Verification:</span>
+            <select
+              value={verificationFilter}
+              onChange={(e) => setVerificationFilter(e.target.value)}
+              className="ast-select"
+            >
+              <option value="ALL">All Verification States</option>
+              {VERIFICATION_STATUSES.map((vs) => (
+                <option key={vs} value={vs}>
+                  {vs}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* Clear Filters Button */}
           {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="btn-secondary"
-              style={{
-                padding: "5px 12px",
-                fontSize: "0.75rem",
-                marginLeft: "auto",
-                borderColor: "#ef444455",
-                color: "#f87171",
-              }}
-            >
+            <button onClick={clearFilters} className="ast-clear-btn">
               ✕ Clear Filters
             </button>
           )}
@@ -545,7 +542,7 @@ export default function AssetsPage() {
       ) : filteredAssets.length === 0 ? (
         /* Empty State */
         <div
-          className="panel"
+          className="ast-toolbar"
           style={{
             padding: "60px 24px",
             textAlign: "center",
@@ -557,27 +554,26 @@ export default function AssetsPage() {
         >
           <div
             style={{
-              width: 56,
-              height: 56,
+              width: 52,
+              height: 52,
               borderRadius: "50%",
-              background: "rgba(30, 58, 96, 0.4)",
-              border: "1px solid #1e3a60",
+              background: "#242424",
+              border: "1px solid #333333",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1.75rem",
-              color: "#64748b",
+              fontSize: "1.5rem",
+              color: "#737373",
               marginBottom: 16,
             }}
           >
             ◈
           </div>
           <h3
-            className="font-display"
             style={{
-              fontSize: "1.25rem",
+              fontSize: "1.1rem",
               fontWeight: 700,
-              color: "#e2e8f0",
+              color: "#f5f5f5",
               marginBottom: 8,
               letterSpacing: "0.02em",
             }}
@@ -586,8 +582,8 @@ export default function AssetsPage() {
           </h3>
           <p
             style={{
-              fontSize: "0.875rem",
-              color: "#64748b",
+              fontSize: "0.8125rem",
+              color: "#737373",
               maxWidth: 420,
               margin: "0 auto 20px",
               lineHeight: 1.5,
@@ -596,145 +592,71 @@ export default function AssetsPage() {
             No asset records match your current search query or filter selection. Adjust your
             parameters or reset filters to view all registered inventory.
           </p>
-          <button onClick={clearFilters} className="btn-primary" style={{ fontSize: "0.8125rem" }}>
+          <button onClick={clearFilters} className="ast-view-btn" style={{ maxWidth: 160 }}>
             Reset All Filters
           </button>
         </div>
       ) : (
-
         /* SCREEN 1 — ASSET LISTING: RESPONSIVE CARDS VIEW */
         <div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              gap: "16px",
-              marginBottom: "20px",
-            }}
-          >
+          <div className="ast-cards-grid">
             {filteredAssets.map((asset) => (
-              <div
-                key={asset.id}
-                className="panel"
-                style={{
-                  padding: "18px 20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "14px",
-                  position: "relative",
-                  transition: "border-color 0.15s ease",
-                }}
-              >
-                {/* Card Top: ID & Type */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 8,
-                  }}
-                >
-                  <span
-                    className="font-mono-id"
-                    style={{
-                      color: "#60a5fa",
-                      fontWeight: 600,
-                      padding: "2px 6px",
-                      background: "rgba(37, 99, 235, 0.12)",
-                      borderRadius: "3px",
-                      border: "1px solid rgba(37, 99, 235, 0.25)",
-                    }}
-                  >
-                    {asset.asset_id}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "0.6875rem",
-                      fontWeight: 600,
-                      color: "#94a3b8",
-                      background: "#132040",
-                      padding: "2px 8px",
-                      borderRadius: "3px",
-                      border: "1px solid #1e3a60",
-                    }}
-                  >
-                    {asset.type}
-                  </span>
+              <div key={asset.id} className="ast-card">
+                {/* Card Top: ID & Category */}
+                <div className="ast-card-top">
+                  <span className="ast-id-badge">{asset.id}</span>
+                  <span className="ast-cat-badge">{asset.category}</span>
                 </div>
 
                 {/* Card Title & Model */}
                 <div>
-                  <h3
-                    style={{
-                      margin: "0 0 4px 0",
-                      fontSize: "1rem",
-                      fontWeight: 700,
-                      color: "#e2e8f0",
-                    }}
-                  >
-                    {asset.model}
-                  </h3>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                    <span className="font-mono-id">{asset.serial_number}</span>
+                  <h3 className="ast-card-title">{asset.name}</h3>
+                  <div className="ast-card-model">
+                    {asset.model} · <span className="font-mono-id">{asset.serialNumber}</span>
                   </div>
                 </div>
 
                 {/* Status and Verification Badges */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  {renderStatusBadge(asset.lifecycle_state)}
-                  {renderVerificationBadge(asset.verification_status)}
+                <div className="ast-badges-row">
+                  {renderStatusBadge(asset.status)}
+                  {renderVerificationBadge(asset.verificationStatus)}
                 </div>
 
                 {/* Key metadata grid */}
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    background: "#08131f",
-                    borderRadius: "4px",
-                    border: "1px solid #152b4a",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 6,
-                    fontSize: "0.75rem",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#64748b" }}>Supplier:</span>
-                    <span style={{ color: "#cbd5e1", textAlign: "right" }}>
-                      {asset.supplier || "—"}
-                    </span>
+                <div className="ast-meta-box">
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Holder / Command:</span>
+                    <span className="ast-meta-value">{asset.department}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#64748b" }}>Batch ID:</span>
-                    <span className="font-mono-id" style={{ color: "#cbd5e1", textAlign: "right" }}>
-                      {asset.batch_id || "—"}
-                    </span>
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Base Location:</span>
+                    <span style={{ color: "var(--muted, #a3a3a3)" }}>{asset.location}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#64748b" }}>Evidence:</span>
-                    <span style={{ color: "#cbd5e1", textAlign: "right" }}>
-                      {asset.evidence_count}
-                    </span>
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Last Maintenance:</span>
+                    <span style={{ color: "var(--muted, #a3a3a3)" }}>{formatDate(asset.lastMaintenanceDate)}</span>
+                  </div>
+                  <div className="ast-meta-row">
+                    <span className="ast-meta-label">Proof Status:</span>
+                    {renderProofBadge(asset.proofStatus, asset.blockchainProof.assetHash)}
                   </div>
                 </div>
 
-                {/* Blockchain proof status */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  {renderProofBadge(asset.cert_status, asset.cert_id)}
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: "flex", gap: "8px", marginTop: "auto" }}>
-                  <Link
-                    to={`/app/assets/${asset.id}`}
-                    className="btn-primary"
-                    style={{ flex: 1, textAlign: "center", fontSize: "0.8125rem" }}
-                  >
-                    View Details
+                {/* Action button */}
+                <div style={{ marginTop: "auto", paddingTop: 4 }}>
+                  <Link to={`/app/assets/${asset.id}`} className="ast-view-btn">
+                    View Details →
                   </Link>
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="ast-footer-bar">
+            <span>
+              Showing {filteredAssets.length} of {stats.total} defence assets
+            </span>
+            <span>BEL DEFENCE Cryptographic Trust Registry</span>
           </div>
         </div>
       )}

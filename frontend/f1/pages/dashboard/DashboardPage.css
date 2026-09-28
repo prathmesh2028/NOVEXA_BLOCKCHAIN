@@ -1,58 +1,56 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NOVEXA DEFENCE TRUST — DASHBOARD FINAL VISUAL UPGRADE
-   Reference-Accurate Indian Defence Command Center (Light & Dark Mode)
+   BEL DEFENCE TRUST — DASHBOARD
+   ChatGPT-Inspired Black / Charcoal / Dark Gray Enterprise Visual Architecture
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Container Layout & Theme Surfaces ────────────────────────────────────── */
 .db-v4-container {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
   width: 100%;
   max-width: 1720px;
   margin: 0 auto;
   padding-bottom: 36px;
   position: relative;
+  background-color: transparent;
+  color: #f5f5f5;
+  transition: color 0.25s ease;
 }
 
-/* Light Mode: 80% Clean Enterprise, 20% Deep Navy Atmosphere (Slightly Darker) */
 [data-theme="light"] .db-v4-container {
-  color: #0f172a;
-}
-
-[data-theme="dark"] .db-v4-container {
-  color: #f8fafc;
+  color: #171717;
 }
 
 /* ── Base Card Architecture ───────────────────────────────────────────────── */
 .db-v4-card {
-  background: var(--panel, #0c1828);
-  border: 1px solid var(--border-subtle, #172d4c);
+  background: #181818;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
   padding: 22px 24px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.22s ease,
-              box-shadow 0.22s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
 }
 
 .db-v4-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 0 10px 28px -4px rgba(37, 99, 235, 0.2);
+  border-color: #383838;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 [data-theme="light"] .db-v4-card {
   background: #ffffff;
-  border: 1px solid #dbeafe;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(37, 99, 235, 0.04);
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="light"] .db-v4-card:hover {
-  border-color: #93c5fd;
-  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.12);
+  border-color: #d4d4d8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* ── Card Headers ─────────────────────────────────────────────────────────── */
@@ -66,1137 +64,148 @@
 }
 
 .db-card-title {
-  font-family: 'Barlow Condensed', 'Inter', sans-serif;
+  font-family: 'Barlow Condensed', 'Inter', -apple-system, sans-serif;
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--foreground, #e2e8f0);
+  color: #f5f5f5;
 }
 
 .db-card-subtitle {
   font-size: 0.775rem;
-  color: #64748b;
+  color: #737373;
   margin-top: 2px;
 }
 
 [data-theme="light"] .db-card-title {
-  color: #0f172a;
+  color: #171717;
 }
 
 [data-theme="light"] .db-card-subtitle {
-  color: #64748b;
+  color: #737373;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   1. PANORAMIC INDIAN DEFENCE COMMAND HERO BANNER (MATCHES REFERENCE IMAGE)
-   ═══════════════════════════════════════════════════════════════════════════ */
-.db-hero-panoramic-card {
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  background: linear-gradient(135deg, #050d1a 0%, #091629 55%, #0d1f3b 100%);
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: 20px;
-  padding: 26px 30px;
-  min-height: 480px;
-}
-
-[data-theme="light"] .db-hero-panoramic-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 50%, #e2effe 100%);
-  border: 1px solid #bfdbfe;
-  box-shadow: 0 10px 32px -6px rgba(37, 99, 235, 0.12), inset 0 1px 0 #ffffff;
-}
-
-/* Ambient Electromagnetic Glow in Dark Mode */
-.db-hero-ambient-glow {
-  position: absolute;
-  top: 10%;
-  left: 25%;
-  width: 50%;
-  height: 80%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.12) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 75%);
-  filter: blur(40px);
-  pointer-events: none;
-  animation: heroGlowPulse 8s ease-in-out infinite alternate;
-}
-
-@keyframes heroGlowPulse {
-  0% { opacity: 0.6; transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1.05); }
-}
-
-/* ── Hero Left Column (Identity, Title, CTAs, 4 Indicators) ─────────────── */
-.db-hero-left-col {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 2;
-  max-width: 620px;
-}
-
-.db-hero-eyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #0284c7;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-[data-theme="dark"] .db-hero-eyebrow {
-  color: #38bdf8;
-}
-
-.db-hero-badge-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.db-hero-ps-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 12px;
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.28);
-  border-radius: 20px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #1d4ed8;
-  letter-spacing: 0.05em;
-}
-
-[data-theme="dark"] .db-hero-ps-pill {
-  background: rgba(37, 99, 235, 0.18);
-  border-color: rgba(56, 189, 248, 0.4);
-  color: #60a5fa;
-}
-
-/* 3-Line High Impact Headline */
-.db-hero-headline {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: clamp(2.2rem, 3.8vw, 3.1rem);
-  font-weight: 800;
-  line-height: 1.03;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  margin: 0 0 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.db-title-navy {
-  color: #0f172a;
-}
-
-[data-theme="dark"] .db-title-navy {
-  color: #f8fafc;
-}
-
-.db-title-electric {
-  color: #2563eb;
-  text-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
-}
-
-[data-theme="dark"] .db-title-electric {
-  color: #00e5ff;
-  text-shadow: 0 0 24px rgba(0, 229, 255, 0.35);
-}
-
-.db-hero-description {
-  font-size: 0.88rem;
-  color: #475569;
-  line-height: 1.55;
-  margin: 0 0 22px;
-  max-width: 540px;
-}
-
-[data-theme="dark"] .db-hero-description {
-  color: #94a3b8;
-}
-
-/* CTA Action Buttons */
-.db-hero-cta-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-}
-
-.db-cta-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 22px;
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-  color: #ffffff;
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  border-radius: 6px;
-  text-decoration: none;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-  transition: all 0.16s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.db-cta-primary:hover {
-  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
-}
-
-.db-cta-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #2563eb;
-  color: #2563eb;
-  font-size: 0.86rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.16s ease;
-}
-
-[data-theme="dark"] .db-cta-secondary {
-  background: rgba(15, 23, 42, 0.65);
-  border-color: #38bdf8;
-  color: #38bdf8;
-}
-
-.db-cta-secondary:hover {
-  background: rgba(37, 99, 235, 0.1);
-  transform: translateY(-2px);
-}
-
-/* User Identity Line */
-.db-hero-user-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.76rem;
-  color: #64748b;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-/* 4 Trust Feature Blocks along Hero Base */
-.db-trust-feature-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  width: 100%;
-  margin-top: auto;
-}
-
-.db-trust-feature-item {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 9px 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.18s ease;
-}
-
-[data-theme="dark"] .db-trust-feature-item {
-  background: rgba(10, 22, 42, 0.7);
-  border-color: rgba(56, 189, 248, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.db-trust-feature-item:hover {
-  transform: translateY(-2px);
-  border-color: #38bdf8;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
-}
-
-.db-trust-feat-icon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.db-trust-feat-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #0f172a;
-  text-transform: uppercase;
-}
-
-[data-theme="dark"] .db-trust-feat-title {
-  color: #f8fafc;
-}
-
-.db-trust-feat-sub {
-  font-size: 0.65rem;
-  color: #64748b;
-  white-space: nowrap;
-}
-
-/* Subtle Indian Flag / Tricolour Accent with Ashoka Chakra */
-.db-tricolour-pill {
-  width: 18px;
-  height: 12px;
-  border-radius: 2px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  position: relative;
-  flex-shrink: 0;
-}
-
-.db-tricolour-stripe {
-  flex: 1;
-  width: 100%;
-}
-
-.stripe-saffron { background: #ff9933; }
-.stripe-white   { background: #ffffff; position: relative; }
-.stripe-green   { background: #138808; }
-
-.db-ashoka-chakra {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  border: 0.6px solid #000080;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ── Hero Center Visual: India Map & Defence Assets Layer ────────────────── */
-.db-hero-center-visual {
-  position: absolute;
-  top: 0;
-  left: 28%;
-  right: 32%;
-  bottom: 0;
-  pointer-events: none;
-  overflow: visible;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.db-panoramic-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-/* India Map Silhouette Styling */
-.db-map-india-land {
-  fill: rgba(37, 99, 235, 0.05);
-  stroke: rgba(56, 189, 248, 0.35);
-  stroke-width: 1.2;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.15));
-  transition: all 0.3s ease;
-}
-
-[data-theme="dark"] .db-map-india-land {
-  fill: rgba(14, 165, 233, 0.08);
-  stroke: rgba(0, 229, 255, 0.45);
-  filter: drop-shadow(0 0 14px rgba(0, 229, 255, 0.2));
-}
-
-/* India Map Breathing Halo */
-.db-map-halo {
-  animation: indiaMapHaloBreathe 6s ease-in-out infinite alternate;
-}
-
-@keyframes indiaMapHaloBreathe {
-  0% { opacity: 0.35; transform: scale(0.98); }
-  100% { opacity: 0.85; transform: scale(1.02); }
-}
-
-/* Strategic Military Nodes on India Map */
-.db-hero-node-dot {
-  fill: #00e5ff;
-  filter: drop-shadow(0 0 5px #00e5ff);
-}
-
-.db-hero-node-ring {
-  stroke: #00e5ff;
-  stroke-width: 1;
-  animation: heroNodeRingPulse 3.5s ease-out infinite;
-  transform-origin: center;
-}
-
-@keyframes heroNodeRingPulse {
-  0% { transform: scale(0.3); opacity: 1; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-
-.db-hero-node-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 7.5px;
-  font-weight: 700;
-  fill: #0284c7;
-  letter-spacing: 0.04em;
-  text-anchor: start;
-}
-
-[data-theme="dark"] .db-hero-node-label {
-  fill: #7dd3fc;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
-}
-
-/* Subtle Indian Landmark (India Gate Line Art) */
-.db-landmark-india-gate {
-  stroke: rgba(37, 99, 235, 0.28);
-  stroke-width: 1;
-  fill: rgba(37, 99, 235, 0.03);
-}
-
-[data-theme="dark"] .db-landmark-india-gate {
-  stroke: rgba(56, 189, 248, 0.3);
-  fill: rgba(56, 189, 248, 0.04);
-}
-
-/* Satellite Orbital Drift Animation */
-.db-hero-anim-satellite {
-  animation: heroSatelliteDrift 28s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes heroSatelliteDrift {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(12px, -8px) rotate(3deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
-}
-
-/* Satellite Laser Beam to India */
-.db-hero-satellite-beam {
-  stroke: url(#satBeamGrad);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 4;
-  animation: satBeamPulse 3.5s ease-in-out infinite;
-}
-
-@keyframes satBeamPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.95; }
-}
-
-/* Stealth Fighter Aircraft Flight Path */
-.db-hero-anim-fighter {
-  animation: heroFighterBanking 22s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes heroFighterBanking {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(18px, -10px) rotate(4deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
-}
-
-/* Naval Destroyer Warship Patrol & Water Wake */
-.db-hero-anim-naval {
-  animation: heroNavalPatrol 32s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes heroNavalPatrol {
-  0% { transform: translate(0, 0); }
-  50% { transform: translate(14px, -3px); }
-  100% { transform: translate(0, 0); }
-}
-
-.db-hero-naval-wake {
-  animation: navalWakeShimmer 3.5s ease-in-out infinite;
-  transform-origin: center;
-}
-
-@keyframes navalWakeShimmer {
-  0%, 100% { opacity: 0.3; transform: scaleX(0.85); }
-  50% { opacity: 0.85; transform: scaleX(1.15); }
-}
-
-/* ── Hero Right Column: Command Center Chassis Modules ──────────────────── */
-.db-hero-right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
-  z-index: 2;
-  width: 100%;
-}
-
-/* 1. Tactical Radar Command Panel (Always Defence Navy Chassis) */
-.db-tactical-radar-panel {
-  background: linear-gradient(180deg, #091526 0%, #060e1a 100%);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  border-radius: 10px;
-  padding: 12px 14px;
-  box-shadow: inset 0 1px 0 rgba(147, 197, 253, 0.25), 0 8px 24px -4px rgba(0, 0, 0, 0.35);
-  position: relative;
-  overflow: hidden;
-  color: #f1f5f9;
-}
-
-.db-radar-bezel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #38bdf8 35%, #2563eb 70%, transparent 100%);
-}
-
-.db-radar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.db-radar-node-tag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  letter-spacing: 0.04em;
-}
-
-.db-radar-sih-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 1px 7px;
-  border-radius: 4px;
-}
-
-/* Radar Scope and Side Counters Layout */
-.db-radar-body-grid {
-  display: grid;
-  grid-template-columns: 85px 1fr 65px;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-/* Readiness Asset Counter Columns */
-.db-readiness-counters {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.db-readiness-item {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.db-readiness-val {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #38bdf8;
-}
-
-.db-readiness-lbl {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.52rem;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-}
-
-/* Circular Radar Scope Display */
-.db-radar-scope-wrapper {
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
-.db-radar-scope {
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  position: relative;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(6, 14, 26, 0.98) 75%);
-  border: 1px solid rgba(56, 189, 248, 0.5);
-  box-shadow: inset 0 0 18px rgba(14, 165, 233, 0.25), 0 0 14px rgba(56, 189, 248, 0.2);
-  overflow: hidden;
-}
-
-.db-radar-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.db-radar-ring-1 { width: 32px; height: 32px; }
-.db-radar-ring-2 { width: 64px; height: 64px; }
-.db-radar-ring-3 { width: 96px; height: 96px; }
-.db-radar-ring-4 { width: 126px; height: 126px; border-color: rgba(56, 189, 248, 0.35); }
-
-.db-radar-axis-h {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(56, 189, 248, 0.2);
-}
-
-.db-radar-axis-v {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(56, 189, 248, 0.2);
-}
-
-/* 360° Continuous Radar Sweep Arm */
-.db-radar-sweep-beam {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(56, 189, 248, 0.1) 320deg, rgba(56, 189, 248, 0.65) 360deg);
-  animation: radarSweepLoop 4s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes radarSweepLoop {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.db-radar-blip {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 6px #22c55e;
-  animation: radarBlipPulse 2.8s ease-in-out infinite;
-}
-
-.blip-1 { top: 32%; left: 62%; animation-delay: 0.3s; }
-.blip-2 { top: 68%; left: 38%; animation-delay: 1.1s; }
-.blip-3 { top: 48%; left: 75%; animation-delay: 1.9s; }
-
-@keyframes radarBlipPulse {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.3); }
-}
-
-.db-radar-pin {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #38bdf8;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 8px #38bdf8;
-}
-
-/* Mini India Silhouette in Radar Side */
-.db-radar-india-mini {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.85;
-}
-
-/* Radar Telemetry Information Row */
-.db-radar-telemetry-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  padding: 6px 0;
-  border-top: 1px solid rgba(56, 189, 248, 0.15);
-  border-bottom: 1px solid rgba(56, 189, 248, 0.15);
-  margin-bottom: 6px;
-}
-
-.db-telemetry-box {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.db-tel-lbl {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.52rem;
-  color: #64748b;
-  font-weight: 700;
-}
-
-.db-tel-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  color: #38bdf8;
-  font-weight: 700;
-}
-
-/* Checklist Row */
-.db-radar-checklist {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem;
-  color: #22c55e;
-  font-weight: 600;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-/* Radar Footer Status Bar */
-.db-radar-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  font-weight: 700;
-  padding-top: 4px;
-}
-
-.db-radar-active-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #22c55e;
-}
-
-.db-radar-az-status {
-  color: #94a3b8;
-}
-
-/* 2. Trust Verification Chain Panel (Matches Reference) */
-.db-trust-chain-card {
-  background: var(--panel, #0c1828);
-  border: 1px solid var(--border-subtle, #1e3a60);
-  border-radius: 8px;
-  padding: 10px 14px;
-  position: relative;
-}
-
-[data-theme="light"] .db-trust-chain-card {
-  background: #ffffff;
-  border-color: #dbeafe;
-}
-
-.db-chain-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.db-chain-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--foreground, #e2e8f0);
-  text-transform: uppercase;
-}
-
-[data-theme="light"] .db-chain-title {
-  color: #0f172a;
-}
-
-.db-chain-tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  font-weight: 700;
-  color: #2563eb;
-  background: rgba(37, 99, 235, 0.1);
-  padding: 1px 6px;
-  border-radius: 3px;
-}
-
-[data-theme="dark"] .db-chain-tag {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
-}
-
-.db-chain-steps-track {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 6px;
-}
-
-.db-chain-rail-line {
-  position: absolute;
-  top: 13px;
-  left: 20px;
-  right: 20px;
-  height: 2px;
-  background: rgba(37, 99, 235, 0.2);
-  z-index: 1;
-}
-
-[data-theme="dark"] .db-chain-rail-line {
-  background: rgba(56, 189, 248, 0.25);
-}
-
-.db-chain-energy-beam {
-  position: absolute;
-  top: -1px;
-  left: 0;
-  width: 45px;
-  height: 4px;
-  background: linear-gradient(90deg, transparent 0%, #38bdf8 50%, transparent 100%);
-  animation: chainEnergyTravel 3.5s ease-in-out infinite;
-  border-radius: 2px;
-}
-
-@keyframes chainEnergyTravel {
-  0% { left: 0%; opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { left: 88%; opacity: 0; }
-}
-
-.db-chain-node-box {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.db-chain-node-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--panel, #0c1828);
-  border: 1.5px solid #2563eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2px;
-  box-shadow: 0 0 6px rgba(37, 99, 235, 0.35);
-}
-
-[data-theme="light"] .db-chain-node-dot {
-  background: #ffffff;
-}
-
-.db-chain-node-inner {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #38bdf8;
-}
-
-.db-chain-node-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  font-weight: 700;
-  color: var(--foreground, #e2e8f0);
-}
-
-[data-theme="light"] .db-chain-node-name {
-  color: #0f172a;
-}
-
-.db-chain-node-sub {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.5rem;
-  color: #64748b;
-}
-
-/* 3. Live System Monitor Panel (Matches Reference) */
-.db-system-monitor-card {
-  background: var(--panel, #0c1828);
-  border: 1px solid var(--border-subtle, #1e3a60);
-  border-radius: 8px;
-  padding: 10px 14px;
-}
-
-[data-theme="light"] .db-system-monitor-card {
-  background: #ffffff;
-  border-color: #dbeafe;
-}
-
-.db-monitor-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.db-monitor-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--foreground, #e2e8f0);
-  text-transform: uppercase;
-}
-
-[data-theme="light"] .db-monitor-title {
-  color: #0f172a;
-}
-
-.db-monitor-badge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  font-weight: 700;
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
-  padding: 1px 7px;
-  border-radius: 3px;
-}
-
-.db-monitor-rows-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.db-monitor-row-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 8px;
-  background: rgba(37, 99, 235, 0.04);
-  border: 1px solid var(--border-subtle, #172d4c);
-  border-radius: 5px;
-}
-
-[data-theme="light"] .db-monitor-row-item {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-}
-
-.db-monitor-row-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.db-monitor-row-icon {
-  font-size: 0.8rem;
-  color: #2563eb;
-}
-
-[data-theme="dark"] .db-monitor-row-icon {
-  color: #38bdf8;
-}
-
-.db-monitor-row-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.db-monitor-row-name {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--foreground, #e2e8f0);
-}
-
-[data-theme="light"] .db-monitor-row-name {
-  color: #0f172a;
-}
-
-.db-monitor-row-latency {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.56rem;
-  color: #64748b;
-}
-
-.db-monitor-sparkline {
-  width: 50px;
-  height: 16px;
-}
-
-.db-monitor-row-status {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: #22c55e;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   2. KPI METRIC CARDS (ROW 2)
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── 5 KPI Metric Cards Grid ──────────────────────────────────────────────── */
 .db-kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1280px) {
   .db-kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .db-kpi-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 .db-kpi-card {
-  background: var(--panel, #0c1828);
-  border: 1px solid var(--border-subtle, #172d4c);
+  background: #181818;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.22s ease,
-              box-shadow 0.22s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-  animation: dbCardEntrance 0.5s ease-out backwards;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+  cursor: default;
 }
 
-.db-kpi-card:nth-child(1) { animation-delay: 0.05s; }
-.db-kpi-card:nth-child(2) { animation-delay: 0.10s; }
-.db-kpi-card:nth-child(3) { animation-delay: 0.15s; }
-.db-kpi-card:nth-child(4) { animation-delay: 0.20s; }
-.db-kpi-card:nth-child(5) { animation-delay: 0.25s; }
-
 .db-kpi-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(59, 130, 246, 0.45);
-  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.22);
+  transform: translateY(-2px);
+  border-color: #383838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 [data-theme="light"] .db-kpi-card {
   background: #ffffff;
-  border: 1px solid #dbeafe;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="light"] .db-kpi-card:hover {
-  border-color: #60a5fa;
-  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.15);
+  border-color: #d4d4d8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .db-kpi-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .db-kpi-label {
-  font-size: 0.72rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #737373;
 }
 
 [data-theme="light"] .db-kpi-label {
-  color: #475569;
+  color: #737373;
 }
 
 .db-kpi-icon-badge {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid #2a2a2a !important;
+  color: #a3a3a3 !important;
 }
 
-.db-kpi-card:hover .db-kpi-icon-badge {
-  transform: scale(1.12) rotate(4deg);
-}
-
-.db-kpi-main {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
+[data-theme="light"] .db-kpi-icon-badge {
+  background: #f4f4f5 !important;
+  border-color: #e5e5e5 !important;
+  color: #525252 !important;
 }
 
 .db-kpi-value {
-  font-size: 2.25rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--foreground, #e2e8f0);
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  font-family: 'Barlow Condensed', 'Inter', sans-serif;
+  color: #f5f5f5;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
 }
 
 [data-theme="light"] .db-kpi-value {
-  color: #0f172a;
+  color: #171717;
 }
 
 .db-kpi-sub {
   font-size: 0.72rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: #737373;
+  margin-bottom: 8px;
 }
 
-/* Sparkline Draw */
 .db-kpi-sparkline {
-  width: 72px;
-  height: 28px;
-  flex-shrink: 0;
-  overflow: visible;
+  width: 100%;
+  height: 26px;
+  margin-top: 4px;
 }
 
 .db-sparkline-path {
-  stroke-dasharray: 120;
-  stroke-dashoffset: 120;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
   animation: dbSparklineDraw 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -1204,9 +213,7 @@
   to { stroke-dashoffset: 0; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   3. TWO-COLUMN SECTIONS (ROWS 3, 4, 5)
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Two-Column Layout Grids ──────────────────────────────────────────────── */
 .db-two-col-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1231,38 +238,38 @@
   }
 }
 
-/* ── Circular Trust Visualization ─────────────────────────────────────────── */
+/* ── Trust Integrity Visualization (Minimal Grayscale & Clean Green) ─────── */
 .db-trust-card {
   display: flex;
   flex-direction: column;
 }
 
 .db-trust-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: 9999px;
 }
 
 .db-orbital-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16px 0 24px;
+  padding: 16px 0 20px;
   position: relative;
 }
 
 .db-orbital-svg-box {
   position: relative;
-  width: 280px;
-  height: 280px;
+  width: 270px;
+  height: 270px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1288,18 +295,16 @@
 }
 
 .db-trust-score {
-  font-family: 'Barlow Condensed', 'Inter', sans-serif;
+  font-family: 'Barlow Condensed', 'Inter', -apple-system, sans-serif;
   font-size: 3.25rem;
   font-weight: 800;
   line-height: 1;
-  color: var(--foreground, #e2e8f0);
+  color: #f5f5f5;
   letter-spacing: -0.02em;
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.45);
 }
 
 [data-theme="light"] .db-trust-score {
-  color: #0f172a;
-  text-shadow: 0 0 14px rgba(37, 99, 235, 0.25);
+  color: #171717;
 }
 
 .db-trust-score-label {
@@ -1307,33 +312,24 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #38bdf8;
+  color: #737373;
   margin-top: 4px;
 }
 
-[data-theme="light"] .db-trust-score-label {
-  color: #0284c7;
-}
-
-/* Circular Trust Rings Motion */
+/* Restrained Grayscale Orbital Rotations */
 .db-orbit-outer {
   transform-origin: 145px 145px;
-  animation: dbOrbitClockwise 30s linear infinite;
+  animation: dbOrbitClockwise 45s linear infinite;
 }
 
 .db-orbit-inner {
   transform-origin: 145px 145px;
-  animation: dbOrbitCounterClockwise 22s linear infinite;
+  animation: dbOrbitCounterClockwise 36s linear infinite;
 }
 
 .db-orbit-traveler {
   transform-origin: 145px 145px;
-  animation: dbOrbitClockwise 12s linear infinite;
-}
-
-.db-orbit-pulse-ring {
-  transform-origin: 145px 145px;
-  animation: dbTrustOuterPulse 3.5s ease-out infinite;
+  animation: dbOrbitClockwise 18s linear infinite;
 }
 
 @keyframes dbOrbitClockwise {
@@ -1346,12 +342,6 @@
   to { transform: rotate(0deg); }
 }
 
-@keyframes dbTrustOuterPulse {
-  0% { transform: scale(0.92); opacity: 0.7; }
-  50% { transform: scale(1.08); opacity: 0.15; }
-  100% { transform: scale(1.15); opacity: 0; }
-}
-
 /* 4-Item Telemetry Matrix */
 .db-telemetry-grid {
   display: grid;
@@ -1359,7 +349,11 @@
   gap: 12px;
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid var(--border-subtle, #172d4c);
+  border-top: 1px solid #262626;
+}
+
+[data-theme="light"] .db-telemetry-grid {
+  border-top-color: #e5e5e5;
 }
 
 .db-telemetry-item {
@@ -1369,39 +363,46 @@
 }
 
 .db-telemetry-icon {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
+  opacity: 0.9;
 }
 
 .db-telemetry-title {
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #64748b;
+  color: #737373;
   text-transform: uppercase;
 }
 
 .db-telemetry-status {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--foreground, #e2e8f0);
+  color: #f5f5f5;
 }
 
 [data-theme="light"] .db-telemetry-status {
-  color: #0f172a;
+  color: #171717;
 }
 
-/* ── Lifecycle Card ───────────────────────────────────────────────────────── */
+/* ── Asset Activity & Lifecycle Bars ──────────────────────────────────────── */
+.db-activity-card {
+  display: flex;
+  flex-direction: column;
+}
+
 .db-lifecycle-bars {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  margin-top: 6px;
 }
 
 .db-lifecycle-row {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .db-lifecycle-meta {
@@ -1413,98 +414,81 @@
 
 .db-lifecycle-label {
   font-weight: 600;
-  color: var(--foreground, #e2e8f0);
+  color: #e5e5e5;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 [data-theme="light"] .db-lifecycle-label {
-  color: #0f172a;
+  color: #171717;
 }
 
 .db-lifecycle-track {
   width: 100%;
-  height: 8px;
-  background: rgba(30, 58, 96, 0.25);
-  border-radius: 4px;
+  height: 6px;
+  background: #242424;
+  border-radius: 9999px;
   overflow: hidden;
   position: relative;
 }
 
 [data-theme="light"] .db-lifecycle-track {
-  background: #e2e8f0;
+  background: #e5e5e5;
 }
 
 .db-lifecycle-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 9999px;
   transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Live Activity Feed ───────────────────────────────────────────────────── */
+.db-feed-card {
+  display: flex;
+  flex-direction: column;
+}
+
 .db-activity-feed {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   position: relative;
-  padding-left: 14px;
-}
-
-.db-activity-timeline-line {
-  position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: 3px;
-  width: 2px;
-  background: var(--border-subtle, #152b4a);
-}
-
-.db-activity-timeline-pulse {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 35px;
-  background: linear-gradient(180deg, transparent 0%, #38bdf8 50%, transparent 100%);
-  animation: timelinePulseFlow 3s ease-in-out infinite;
-}
-
-@keyframes timelinePulseFlow {
-  0% { top: 0%; opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { top: 85%; opacity: 0; }
 }
 
 .db-activity-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: rgba(30, 58, 96, 0.12);
-  border: 1px solid var(--border-subtle, #172d4c);
-  transition: all 0.18s ease;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1c1c1c;
+  border: 1px solid #262626;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 [data-theme="light"] .db-activity-item {
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: #fafafa;
+  border-color: #e5e5e5;
 }
 
 .db-activity-item:hover {
-  transform: translateX(3px);
-  border-color: #3b82f6;
+  transform: translateX(2px);
+  border-color: #383838;
+  background: #202020;
+}
+
+[data-theme="light"] .db-activity-item:hover {
+  border-color: #d4d4d8;
+  background: #f4f4f5;
 }
 
 .db-activity-node {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--panel, #0c1828);
-  border: 2px solid #38bdf8;
-  margin-top: 4px;
+  background: #737373;
+  margin-top: 5px;
   flex-shrink: 0;
 }
 
@@ -1514,25 +498,25 @@
 }
 
 .db-activity-title {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--foreground, #e2e8f0);
+  color: #f5f5f5;
 }
 
 [data-theme="light"] .db-activity-title {
-  color: #0f172a;
+  color: #171717;
 }
 
 .db-activity-meta {
-  font-size: 0.7rem;
-  color: #64748b;
+  font-size: 0.72rem;
+  color: #737373;
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 2px;
 }
 
-/* ── Global Defence Network Card ─────────────────────────────────────────── */
+/* ── BEL Defence Network Minimal Display ─────────────────────────────────── */
 .db-network-card {
   display: flex;
   flex-direction: column;
@@ -1551,6 +535,7 @@
 .db-network-svg {
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
 .db-network-stats {
@@ -1559,7 +544,11 @@
   gap: 10px;
   margin-top: auto;
   padding-top: 14px;
-  border-top: 1px solid var(--border-subtle, #172d4c);
+  border-top: 1px solid #262626;
+}
+
+[data-theme="light"] .db-network-stats {
+  border-top-color: #e5e5e5;
 }
 
 .db-network-stat-box {
@@ -1567,22 +556,289 @@
   flex-direction: column;
 }
 
-/* ── Promotional Trust Banner ─────────────────────────────────────────────── */
-.db-promo-banner {
-  background: linear-gradient(135deg, #0a1b38 0%, #061124 100%);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  border-radius: 12px;
-  padding: 24px 28px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
+.db-network-stat-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+[data-theme="light"] .db-network-stat-val {
+  color: #171717;
+}
+
+.db-network-stat-lbl {
+  font-size: 0.6875rem;
+  color: #737373;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.db-network-mesh-badge {
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ── Recent Certifications Table ─────────────────────────────────────────── */
+.db-recent-certs-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-recent-certs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.db-recent-certs-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #737373;
+  border-bottom: 1px solid #262626;
+}
+
+[data-theme="light"] .db-recent-certs-table th {
+  border-bottom-color: #e5e5e5;
+}
+
+.db-recent-cert-row {
+  border-bottom: 1px solid #222222;
+  transition: background 0.15s ease;
+}
+
+[data-theme="light"] .db-recent-cert-row {
+  border-bottom-color: #f1f5f9;
+}
+
+.db-recent-cert-row:hover {
+  background: #1f1f1f;
+}
+
+[data-theme="light"] .db-recent-cert-row:hover {
+  background: #f4f4f5;
+}
+
+.db-recent-cert-row td {
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  color: #f5f5f5;
+}
+
+[data-theme="light"] .db-recent-cert-row td {
+  color: #171717;
+}
+
+/* ── Defence Trust Banner ─────────────────────────────────────────────────── */
+.db-trust-banner {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
 }
 
+[data-theme="light"] .db-trust-banner {
+  background: #ffffff;
+  border-color: #e5e5e5;
+}
+
+.db-banner-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f5f5f5;
+  margin-bottom: 6px;
+}
+
+[data-theme="light"] .db-banner-title {
+  color: #171717;
+}
+
+.db-banner-desc {
+  font-size: 0.8rem;
+  color: #737373;
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+
+/* ── ChatGPT Button System ────────────────────────────────────────────────── */
+.db-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  color: #111111;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.db-btn-primary:hover {
+  background: #e5e5e5;
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .db-btn-primary {
+  background: #171717;
+  color: #ffffff;
+}
+
+[data-theme="light"] .db-btn-primary:hover {
+  background: #262626;
+}
+
+.db-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #f5f5f5;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #303030;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.db-btn-secondary:hover {
+  background: #242424;
+  border-color: #383838;
+}
+
+[data-theme="light"] .db-btn-secondary {
+  color: #171717;
+  border-color: #d4d4d8;
+}
+
+[data-theme="light"] .db-btn-secondary:hover {
+  background: #f4f4f5;
+  border-color: #a1a1aa;
+}
+
+/* ── Footer Subtle BEL Branding ───────────────────────────────────────────── */
+.db-footer-branding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 0;
+  margin-top: 10px;
+  color: #737373;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.db-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a3a3a3;
+  font-weight: 600;
+}
+
+[data-theme="light"] .db-footer-left {
+  color: #525252;
+}
+
+.db-footer-divider {
+  color: #404040;
+}
+
+.db-footer-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: #737373;
+}
+
+/* ── Modal Overlay & Box ──────────────────────────────────────────────────── */
+.db-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: dbFadeIn 0.2s ease-out;
+}
+
+.db-modal-box {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 88vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  animation: dbModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .db-modal-box {
+  background: #ffffff;
+  border-color: #e5e5e5;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes dbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dbModalPop {
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Defence Promotional / Trust Banner ───────────────────────────────────── */
+.db-promo-banner {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
 [data-theme="light"] .db-promo-banner {
-  background: linear-gradient(135deg, #f0f7ff 0%, #e0effe 100%);
-  border-color: #bfdbfe;
+  background: #ffffff;
+  border-color: #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .db-promo-graphic {
@@ -1592,140 +848,123 @@
   transform: translateY(-50%);
   width: 240px;
   height: 140px;
+  opacity: 0.15;
   pointer-events: none;
-  opacity: 0.85;
 }
 
-/* ── Overview Video Modal ─────────────────────────────────────────────────── */
+[data-theme="light"] .db-promo-graphic {
+  opacity: 0.08;
+}
+
+/* ── Scoped ChatGPT Button System for Dashboard ───────────────────────────── */
+.db-v4-container .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f5f5f5 !important;
+  color: #111111 !important;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.db-v4-container .btn-primary:hover {
+  background: #e5e5e5 !important;
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .db-v4-container .btn-primary {
+  background: #171717 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .db-v4-container .btn-primary:hover {
+  background: #262626 !important;
+}
+
+.db-v4-container .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent !important;
+  color: #f5f5f5 !important;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #303030 !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.db-v4-container .btn-secondary:hover {
+  background: #242424 !important;
+  border-color: #404040 !important;
+}
+
+[data-theme="light"] .db-v4-container .btn-secondary {
+  color: #171717 !important;
+  border-color: #d4d4d8 !important;
+}
+
+[data-theme="light"] .db-v4-container .btn-secondary:hover {
+  background: #f4f4f5 !important;
+  border-color: #a1a1aa !important;
+}
+
+/* ── Interactive Overview Video / Architecture Modal Backdrop ─────────────── */
 .db-overview-modal-backdrop {
   position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 18, 0.8);
-  backdrop-filter: blur(10px);
-  z-index: 100;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  animation: modalFade 0.25s ease-out;
-}
-
-@keyframes modalFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  padding: 16px;
+  animation: dbFadeIn 0.2s ease-out;
 }
 
 .db-overview-modal-card {
-  background: var(--panel, #0c1828);
-  border: 1px solid var(--border, #1e3a60);
-  border-radius: 14px;
-  max-width: 640px;
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
   width: 100%;
-  padding: 28px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-  position: relative;
+  max-width: 620px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  animation: dbModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="light"] .db-overview-modal-card {
   background: #ffffff;
-  border-color: #bfdbfe;
+  border-color: #e5e5e5;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
 }
 
-/* ── Responsive Rules ─────────────────────────────────────────────────────── */
-@media (max-width: 1280px) {
-  .db-hero-panoramic-card {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-  .db-hero-center-visual {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .db-v4-container {
-    gap: 16px;
-  }
-  .db-hero-panoramic-card {
-    padding: 16px 14px;
-    min-height: auto;
-    gap: 18px;
-  }
-  .db-hero-headline {
-    font-size: clamp(1.4rem, 5.5vw, 2.1rem);
-    margin-bottom: 10px;
-  }
-  .db-hero-description {
-    font-size: 0.8rem;
-    margin-bottom: 16px;
-  }
-  .db-hero-cta-group {
-    margin-bottom: 16px;
-  }
-  .db-hero-user-meta {
-    margin-bottom: 14px;
-    font-size: 0.7rem;
-  }
-  .db-trust-feature-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .db-trust-feature-item {
-    padding: 7px 8px;
-  }
-  .db-trust-feat-sub {
-    font-size: 0.58rem;
-  }
-  .db-tactical-radar-panel {
-    padding: 10px;
-  }
-  .db-radar-body-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .db-readiness-counters {
-    flex-direction: row;
-    justify-content: space-around;
-  }
-  .db-radar-india-mini {
-    display: none;
-  }
-  .db-radar-telemetry-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .db-kpi-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .db-trust-feature-grid {
-    grid-template-columns: 1fr;
-  }
-  .db-chain-steps-track {
-    gap: 6px;
-  }
-  .db-chain-node-name {
-    font-size: 0.5rem;
-  }
-  .db-chain-node-sub {
-    display: none;
-  }
-  .db-monitor-sparkline {
-    display: none;
-  }
-}
-
-/* ── Accessibility: Reduced Motion ────────────────────────────────────────── */
+/* ── Reduced Motion Support ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  .db-v4-card,
+  .db-kpi-card,
+  .db-activity-item,
+  .db-orbit-outer,
+  .db-orbit-inner,
+  .db-orbit-traveler,
   .db-sparkline-path {
-    stroke-dashoffset: 0 !important;
+    animation: none !important;
+    transition: none !important;
   }
 }

@@ -61,13 +61,13 @@ export default function SearchPage() {
       <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1, position: "relative" }}>
-            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#475569", pointerEvents: "none" }}>◎</span>
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--muted, #475569)", pointerEvents: "none", fontSize: "1rem" }}>◎</span>
             <input
               className="input-field"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search Asset ID, Batch ID, Certification ID, Token ID, DID, or Transaction Hash…"
-              style={{ paddingLeft: 34, fontSize: "0.9375rem", padding: "11px 14px 11px 34px" }}
+              style={{ paddingLeft: 42, fontSize: "0.9375rem", paddingRight: 14, paddingTop: 11, paddingBottom: 11 }}
               autoFocus
             />
           </div>
@@ -76,13 +76,13 @@ export default function SearchPage() {
       </form>
 
       {submitted && loading && (
-        <div style={{ marginBottom: 16, fontSize: "0.8125rem", color: "#64748b" }}>
+        <div style={{ marginBottom: 16, fontSize: "0.8125rem", color: "var(--muted, #64748b)", fontWeight: 500 }}>
           Searching...
         </div>
       )}
 
       {submitted && !loading && (
-        <div style={{ marginBottom: 16, fontSize: "0.8125rem", color: "#64748b" }}>
+        <div style={{ marginBottom: 16, fontSize: "0.8125rem", color: "var(--foreground, #171717)", fontWeight: 600 }}>
           {total === 0
             ? `No results for "${searchParams.get("q")}"`
             : `${total} result${total !== 1 ? "s" : ""} for "${searchParams.get("q")}"`}
@@ -96,11 +96,11 @@ export default function SearchPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {assetResults.map((a) => (
               <Link key={a.id} to={a.url} style={{ textDecoration: "none" }}>
-                <div className="panel" style={{ padding: "14px 18px", transition: "border-color 0.15s", cursor: "pointer" }}>
+                <div className="panel search-result-card" style={{ padding: "14px 18px", cursor: "pointer" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{a.title}</span>
-                      <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{a.subtitle}</span>
+                      <span className="meta-id" style={{ color: "var(--primary, #2563eb)", fontWeight: 600, marginRight: 10 }}>{a.title}</span>
+                      <span style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)", fontWeight: 500 }}>{a.subtitle}</span>
                     </div>
                     <div style={{ display: "flex", gap: 6 }}>
                       {a.status && <StatusBadge status={a.status} size="sm" />}
@@ -120,11 +120,11 @@ export default function SearchPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {certResults.map((c) => (
               <Link key={c.id} to={c.url} style={{ textDecoration: "none" }}>
-                <div className="panel" style={{ padding: "14px 18px" }}>
+                <div className="panel search-result-card" style={{ padding: "14px 18px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{c.title}</span>
-                      <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{c.subtitle}</span>
+                      <span className="meta-id" style={{ color: "var(--primary, #2563eb)", fontWeight: 600, marginRight: 10 }}>{c.title}</span>
+                      <span style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)", fontWeight: 500 }}>{c.subtitle}</span>
                     </div>
                     {c.status && <StatusBadge status={c.status} size="sm" />}
                   </div>
@@ -140,11 +140,11 @@ export default function SearchPage() {
           <div className="section-label" style={{ marginBottom: 10 }}>BLOCKCHAIN TRANSACTIONS ({txResults.length})</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {txResults.map((t) => (
-              <div key={t.id} className="panel" style={{ padding: "14px 18px" }}>
+              <div key={t.id} className="panel search-result-card" style={{ padding: "14px 18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{t.title}</span>
-                    <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{t.subtitle}</span>
+                    <span className="meta-id" style={{ color: "var(--primary, #2563eb)", fontWeight: 600, marginRight: 10 }}>{t.title}</span>
+                    <span style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)", fontWeight: 500 }}>{t.subtitle}</span>
                   </div>
                   {t.status && <StatusBadge status={t.status} size="sm" />}
                 </div>
@@ -159,11 +159,11 @@ export default function SearchPage() {
           <div className="section-label" style={{ marginBottom: 10 }}>USERS ({userResults.length})</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {userResults.map((u) => (
-              <div key={u.id} className="panel" style={{ padding: "14px 18px" }}>
+              <div key={u.id} className="panel search-result-card" style={{ padding: "14px 18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <span className="meta-id" style={{ color: "#60a5fa", marginRight: 10 }}>{u.title}</span>
-                    <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{u.subtitle}</span>
+                    <span className="meta-id" style={{ color: "var(--primary, #2563eb)", fontWeight: 600, marginRight: 10 }}>{u.title}</span>
+                    <span style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)", fontWeight: 500 }}>{u.subtitle}</span>
                   </div>
                   {u.status && <StatusBadge status={u.status} size="sm" />}
                 </div>
@@ -174,12 +174,12 @@ export default function SearchPage() {
       )}
 
       {!loading && submitted && total === 0 && (
-        <div className="panel" style={{ padding: 48, textAlign: "center" }}>
+        <div className="panel search-result-card" style={{ padding: 48, textAlign: "center" }}>
           <div style={{ fontSize: "2rem", marginBottom: 12, opacity: 0.3 }}>◎</div>
-          <div className="font-display" style={{ fontSize: "1.1rem", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.04em" }}>
+          <div className="font-display" style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--foreground, #171717)", letterSpacing: "0.04em" }}>
             NO RESULTS FOUND
           </div>
-          <p style={{ fontSize: "0.8125rem", color: "#475569", maxWidth: 360, margin: "8px auto 0" }}>
+          <p style={{ fontSize: "0.8125rem", color: "var(--muted, #475569)", maxWidth: 360, margin: "8px auto 0" }}>
             Try searching by Asset ID (e.g. EF-2026-00421), Batch ID, Certification ID, or Transaction Hash.
           </p>
         </div>
@@ -194,11 +194,11 @@ export default function SearchPage() {
             { icon: "⬡", label: "Transaction Hash", example: "0x8A42b3…19F2" },
             { icon: "◉", label: "User DID / Name", example: "did:bel:actor:001 · Priya Sharma" },
           ].map((item) => (
-            <div key={item.label} style={{ display: "flex", gap: 12, padding: "10px 14px", background: "#0c1828", border: "1px solid #152b4a", borderRadius: "5px", alignItems: "center" }}>
-              <span style={{ color: "#64748b", fontSize: "0.875rem" }}>{item.icon}</span>
+            <div key={item.label} style={{ display: "flex", gap: 12, padding: "10px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: "8px", alignItems: "center" }}>
+              <span style={{ color: "var(--muted)", fontSize: "0.875rem" }}>{item.icon}</span>
               <div>
-                <div style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{item.label}</div>
-                <div className="meta-id" style={{ color: "#475569" }}>{item.example}</div>
+                <div style={{ fontSize: "0.8125rem", color: "var(--foreground)", fontWeight: 500 }}>{item.label}</div>
+                <div className="meta-id" style={{ color: "var(--subtle-text)" }}>{item.example}</div>
               </div>
             </div>
           ))}
