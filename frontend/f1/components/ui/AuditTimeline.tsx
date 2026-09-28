@@ -14,25 +14,14 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div style={{ position: "relative" }}>
-      <div
-        style={{
-          position: "absolute",
-          left: 20,
-          top: 0,
-          bottom: 0,
-          width: "1px",
-          background: "#152b4a",
-        }}
-      />
+    <div className="sysact-timeline-container">
+      <div className="sysact-timeline-rail" />
       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
         {events.map((e) => {
           const isOpen = expanded === e.id;
-          // Backend shape uses 'result', mock shape also uses 'result'
           const result: string = e.result || "SUCCESS";
-          const resultColor = result === "SUCCESS" ? "#22c55e" : result === "FAILED" ? "#ef4444" : "#f59e0b";
+          const dotClass = result === "SUCCESS" ? "success" : result === "FAILED" ? "failed" : "warning";
 
-          // Normalise field names between backend and legacy shapes
           const actorDisplay = e.actor_did || e.actorDid || e.actor || "—";
           const actorRole = e.actor_role || e.actorRole || e.role || "";
           const action = e.action || "—";
@@ -43,75 +32,37 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
           const evidenceId = e.evidenceId || null;
 
           return (
-            <div key={e.id} style={{ paddingLeft: 48, position: "relative" }}>
-              <div
-                style={{
-                  position: "absolute",
-                  left: 12,
-                  top: 16,
-                  width: 17,
-                  height: 17,
-                  borderRadius: "50%",
-                  background: resultColor + "22",
-                  border: `2px solid ${resultColor}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.5rem",
-                  color: resultColor,
-                  fontWeight: 700,
-                  zIndex: 1,
-                }}
-              >
+            <div key={e.id} className="sysact-event-item">
+              <div className={`sysact-event-dot ${dotClass}`}>
                 {result === "SUCCESS" ? "✓" : result === "FAILED" ? "✕" : "⚠"}
               </div>
 
               <div
                 onClick={() => setExpanded(isOpen ? null : e.id)}
-                style={{
-                  padding: "12px 16px",
-                  background: isOpen ? "#0f2040" : "transparent",
-                  border: "1px solid",
-                  borderColor: isOpen ? "#1e3a60" : "transparent",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  marginBottom: "4px",
-                }}
+                className={`sysact-event-card ${isOpen ? "expanded" : ""}`}
               >
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
                       {e.category === "SUPPLY_CHAIN" && (
-                        <span
-                          style={{
-                            fontSize: "0.625rem",
-                            fontWeight: 700,
-                            letterSpacing: "0.06em",
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            background: "rgba(14, 165, 233, 0.15)",
-                            border: "1px solid rgba(14, 165, 233, 0.35)",
-                            color: "#38bdf8",
-                          }}
-                        >
+                        <span className="sysact-badge-supply-chain">
                           SUPPLY CHAIN
                         </span>
                       )}
                       {actorRole && <RoleBadge role={actorRole} size="sm" />}
-                      <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#e2e8f0" }}>
+                      <span className="sysact-event-title">
                         {actorDisplay}
                       </span>
                     </div>
-                    <div style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{action}</div>
+                    <div className="sysact-event-sub">{action}</div>
                     {assetId && (
-                      <div className="meta-id" style={{ marginTop: 4 }}>
+                      <div className="meta-id" style={{ marginTop: 4, color: "#d4d4d4" }}>
                         {assetId}
                       </div>
                     )}
                   </div>
                   <div style={{ flexShrink: 0, textAlign: "right" }}>
-                    <div style={{ fontSize: "0.6875rem", color: "#64748b", marginBottom: 4 }}>
+                    <div style={{ fontSize: "0.6875rem", color: "#737373", marginBottom: 4 }}>
                       {formatDateTime(timestamp)}
                     </div>
                     <StatusBadge status={result} size="sm" />
@@ -119,31 +70,25 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
                 </div>
 
                 {isOpen && (
-                  <div
-                    style={{
-                      marginTop: "12px",
-                      paddingTop: "12px",
-                      borderTop: "1px solid #152b4a",
-                    }}
-                  >
-                    <div style={{ fontSize: "0.8125rem", color: "#94a3b8", marginBottom: 8 }}>
+                  <div className="sysact-event-detail-box">
+                    <div style={{ fontSize: "0.8125rem", color: "#a3a3a3", marginBottom: 8 }}>
                       {details}
                     </div>
                     <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
                       <div>
                         <div className="section-label" style={{ marginBottom: 2 }}>Actor DID</div>
-                        <div className="meta-id">{actorDisplay}</div>
+                        <div className="meta-id" style={{ color: "#f5f5f5" }}>{actorDisplay}</div>
                       </div>
                       {blockchainTx && (
                         <div>
                           <div className="section-label" style={{ marginBottom: 2 }}>Blockchain Ref</div>
-                          <div className="meta-id">{blockchainTx}</div>
+                          <div className="meta-id" style={{ color: "#f5f5f5" }}>{blockchainTx}</div>
                         </div>
                       )}
                       {evidenceId && (
                         <div>
                           <div className="section-label" style={{ marginBottom: 2 }}>Evidence</div>
-                          <div className="meta-id">{evidenceId}</div>
+                          <div className="meta-id" style={{ color: "#f5f5f5" }}>{evidenceId}</div>
                         </div>
                       )}
                     </div>

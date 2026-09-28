@@ -226,13 +226,13 @@ export default function EligibleAssetsPage() {
               maxHeight: "90vh",
               overflowY: "auto",
               padding: 24,
-              border: "1px solid #1e3a60",
+              border: "1px solid var(--border)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <div>
-                <div style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0" }}>Mint NFT Certification</div>
-                <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Issue soulbound certificate on BEL-TRUST-CHAIN</div>
+                <div style={{ fontSize: "1rem", fontWeight: 600, color: "var(--foreground)" }}>Mint NFT Certification</div>
+                <div style={{ fontSize: "0.75rem", color: "var(--subtle-text)" }}>Issue soulbound certificate on BEL-TRUST-CHAIN</div>
               </div>
               <button
                 onClick={() => {
@@ -241,7 +241,7 @@ export default function EligibleAssetsPage() {
                   setCertificateImage(null);
                   setCertificateImageName(null);
                 }}
-                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1.2rem" }}
+                style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.2rem" }}
               >
                 ✕
               </button>
@@ -265,13 +265,12 @@ export default function EligibleAssetsPage() {
 
             <form onSubmit={handleMintSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
+                <label style={{ display: "block", fontSize: "0.75rem", color: "var(--muted)", marginBottom: 4 }}>
                   Target Asset ID *
                 </label>
                 <input
                   type="text"
-                  className="input"
-                  style={{ width: "100%", padding: "8px 12px", background: "#0c1828", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+                  className="input-field"
                   value={selectedAssetId}
                   onChange={(e) => setSelectedAssetId(e.target.value)}
                   placeholder="e.g. EF-2026-00421"
@@ -280,13 +279,12 @@ export default function EligibleAssetsPage() {
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#94a3b8", marginBottom: 4 }}>
+                <label style={{ display: "block", fontSize: "0.75rem", color: "var(--muted)", marginBottom: 4 }}>
                   Batch / Assembly ID (Optional)
                 </label>
                 <input
                   type="text"
-                  className="input"
-                  style={{ width: "100%", padding: "8px 12px", background: "#0c1828", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+                  className="input-field"
                   value={batchIdInput}
                   onChange={(e) => setBatchIdInput(e.target.value)}
                   placeholder="e.g. BATCH-2026-Q1"
@@ -303,8 +301,8 @@ export default function EligibleAssetsPage() {
                 }}
               />
 
-              <div style={{ padding: "10px 12px", background: "rgba(37,99,235,0.08)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: 4, fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.5 }}>
-                <span style={{ color: "#60a5fa", fontWeight: 600 }}>ERC-5192 Soulbound Token: </span>
+              <div style={{ padding: "10px 12px", background: "var(--hover-bg, rgba(255,255,255,0.04))", border: "1px solid var(--border)", borderRadius: 4, fontSize: "0.75rem", color: "var(--muted)", lineHeight: 1.5 }}>
+                <span style={{ color: "var(--foreground)", fontWeight: 600 }}>ERC-5192 Soulbound Token: </span>
                 Cryptographically bound certificate seal will be anchored to the BEL-TRUST-CHAIN ledger.
               </div>
 

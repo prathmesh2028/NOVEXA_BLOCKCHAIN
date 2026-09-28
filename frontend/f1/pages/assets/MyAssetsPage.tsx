@@ -57,8 +57,8 @@ export default function MyAssetsPage() {
             <thead>
               <tr
                 style={{
-                  borderBottom: "1px solid #1e3a60",
-                  background: "#08131f",
+                  borderBottom: "1px solid var(--border)",
+                  background: "var(--table-header-bg)",
                 }}
               >
                 {[
@@ -79,7 +79,7 @@ export default function MyAssetsPage() {
                       padding: "10px 14px",
                       textAlign: "left",
                       fontSize: "0.6875rem",
-                      color: "#475569",
+                      color: "var(--subtle-text)",
                       fontWeight: 600,
                       letterSpacing: "0.06em",
                       textTransform: "uppercase",
@@ -99,7 +99,7 @@ export default function MyAssetsPage() {
                     style={{
                       padding: "40px",
                       textAlign: "center",
-                      color: "#475569",
+                      color: "var(--muted)",
                     }}
                   >
                     Loading your assets...
@@ -112,7 +112,7 @@ export default function MyAssetsPage() {
                     style={{
                       padding: "40px",
                       textAlign: "center",
-                      color: "#475569",
+                      color: "var(--muted)",
                     }}
                   >
                     No assets found. Register your first asset to get started.
@@ -122,7 +122,7 @@ export default function MyAssetsPage() {
                 assets.map((asset) => (
                   <tr
                     key={asset.id}
-                    style={{ borderBottom: "1px solid #152b4a" }}
+                    style={{ borderBottom: "1px solid var(--border)" }}
                     className="table-row"
                   >
                     <td style={{ padding: "12px 14px" }}>
@@ -130,7 +130,8 @@ export default function MyAssetsPage() {
                         to={`/app/assets/${asset.id}`}
                         className="meta-id"
                         style={{
-                          color: "#60a5fa",
+                          color: "var(--foreground)",
+                          fontWeight: 600,
                           textDecoration: "none",
                           cursor: "pointer",
                         }}
@@ -142,7 +143,7 @@ export default function MyAssetsPage() {
                       style={{
                         padding: "12px 14px",
                         fontSize: "0.8125rem",
-                        color: "#94a3b8",
+                        color: "var(--muted)",
                       }}
                     >
                       {asset.type}
@@ -151,7 +152,7 @@ export default function MyAssetsPage() {
                       style={{
                         padding: "12px 14px",
                         fontSize: "0.8125rem",
-                        color: "#e2e8f0",
+                        color: "var(--foreground)",
                       }}
                     >
                       {asset.model}
@@ -179,7 +180,7 @@ export default function MyAssetsPage() {
                           style={{
                             fontSize: "0.8125rem",
                             fontWeight: 600,
-                            color: "#60a5fa",
+                            color: "var(--foreground)",
                           }}
                         >
                           {asset.evidence_count}
@@ -197,7 +198,7 @@ export default function MyAssetsPage() {
                       style={{
                         padding: "12px 14px",
                         fontSize: "0.75rem",
-                        color: "#64748b",
+                        color: "var(--subtle-text)",
                       }}
                     >
                       {formatDateTime(asset.created_at)}
@@ -221,9 +222,9 @@ export default function MyAssetsPage() {
         <div
           style={{
             padding: "12px 14px",
-            borderTop: "1px solid #152b4a",
+            borderTop: "1px solid var(--border)",
             fontSize: "0.75rem",
-            color: "#475569",
+            color: "var(--subtle-text)",
           }}
         >
           Showing {assets.length} of {total} assets (Powered by Backend API)

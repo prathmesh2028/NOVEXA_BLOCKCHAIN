@@ -404,8 +404,8 @@ export default function AssetDetailPage() {
           className="panel"
           style={{
             padding: "24px 28px",
-            background: "linear-gradient(180deg, #0c1828 0%, #08131f 100%)",
-            borderColor: "#1e3a60",
+            background: "var(--card)",
+            borderColor: "var(--border)",
           }}
         >
           <div
@@ -417,7 +417,7 @@ export default function AssetDetailPage() {
               gap: 20,
               marginBottom: 20,
               paddingBottom: 20,
-              borderBottom: "1px solid #152b4a",
+              borderBottom: "1px solid var(--border)",
             }}
           >
             <div>
@@ -438,7 +438,7 @@ export default function AssetDetailPage() {
                 style={{
                   fontSize: "1.875rem",
                   fontWeight: 700,
-                  color: "#e2e8f0",
+                  color: "var(--foreground, #171717)",
                   margin: "0 0 8px 0",
                   letterSpacing: "0.02em",
                 }}
@@ -446,51 +446,51 @@ export default function AssetDetailPage() {
                 {asset.name}
               </h2>
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
+                <span style={{ fontSize: "0.8125rem", color: "var(--muted, #4A4A4A)" }}>
                   Asset ID:{" "}
-                  <strong className="font-mono-id" style={{ color: "#60a5fa" }}>
+                  <strong className="font-mono-id" style={{ color: "var(--primary, #2563eb)" }}>
                     {asset.id}
                   </strong>
                 </span>
                 <button
                   onClick={() => copyToClipboard(asset.id, "assetId")}
                   style={{
-                    background: "#132040",
-                    border: "1px solid #1e3a60",
-                    borderRadius: "3px",
-                    padding: "2px 8px",
+                    background: "var(--panel-muted, #132040)",
+                    border: "1px solid var(--border, #1e3a60)",
+                    borderRadius: "4px",
+                    padding: "3px 8px",
                     fontSize: "0.6875rem",
-                    color: copiedField === "assetId" ? "#22c55e" : "#94a3b8",
+                    color: copiedField === "assetId" ? "#22c55e" : "var(--muted, #4A4A4A)",
                     cursor: "pointer",
                   }}
                 >
                   {copiedField === "assetId" ? "✓ Copied" : "Copy ID"}
                 </button>
-                <span style={{ color: "#334155" }}>|</span>
-                <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
+                <span style={{ color: "var(--border, #334155)" }}>|</span>
+                <span style={{ fontSize: "0.8125rem", color: "var(--muted, #4A4A4A)" }}>
                   Serial No:{" "}
-                  <span className="font-mono-id" style={{ color: "#cbd5e1" }}>
+                  <span className="font-mono-id" style={{ color: "var(--foreground, #171717)", fontWeight: 600 }}>
                     {asset.serialNumber}
                   </span>
                 </span>
                 <button
                   onClick={() => copyToClipboard(asset.serialNumber, "serial")}
                   style={{
-                    background: "#132040",
-                    border: "1px solid #1e3a60",
-                    borderRadius: "3px",
-                    padding: "2px 8px",
+                    background: "var(--panel-muted, #132040)",
+                    border: "1px solid var(--border, #1e3a60)",
+                    borderRadius: "4px",
+                    padding: "3px 8px",
                     fontSize: "0.6875rem",
-                    color: copiedField === "serial" ? "#22c55e" : "#94a3b8",
+                    color: copiedField === "serial" ? "#22c55e" : "var(--muted, #4A4A4A)",
                     cursor: "pointer",
                   }}
                 >
                   {copiedField === "serial" ? "✓ Copied" : "Copy Serial"}
                 </button>
-                <span style={{ color: "#334155" }}>|</span>
-                <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
+                <span style={{ color: "var(--border, #334155)" }}>|</span>
+                <span style={{ fontSize: "0.8125rem", color: "var(--muted, #4A4A4A)" }}>
                   Category:{" "}
-                  <span style={{ color: "#cbd5e1", fontWeight: 600 }}>{asset.category}</span>
+                  <span style={{ color: "var(--foreground, #171717)", fontWeight: 600 }}>{asset.category}</span>
                 </span>
               </div>
             </div>
@@ -498,13 +498,13 @@ export default function AssetDetailPage() {
             {/* Badges in Overview */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600 }}>
+                <span style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700 }}>
                   CURRENT STATUS
                 </span>
                 {renderStatusBadge(asset.status)}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600 }}>
+                <span style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700 }}>
                   VERIFICATION STATUS
                 </span>
                 {renderVerificationBadge(asset.verificationStatus)}
@@ -522,65 +522,65 @@ export default function AssetDetailPage() {
           >
             <div
               style={{
-                padding: "12px 14px",
-                background: "#08131f",
-                borderRadius: "5px",
-                border: "1px solid #152b4a",
+                padding: "14px 16px",
+                background: "var(--panel-muted, #181818)",
+                borderRadius: "8px",
+                border: "1px solid var(--border, #2a2a2a)",
               }}
             >
-              <div style={{ fontSize: "0.6875rem", color: "#64748b", marginBottom: 4 }}>
+              <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700, marginBottom: 4 }}>
                 ASSIGNED CUSTODIAN
               </div>
-              <div style={{ fontSize: "0.8125rem", color: "#cbd5e1", fontWeight: 600 }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--foreground, #171717)", fontWeight: 600 }}>
                 {asset.custodian}
               </div>
             </div>
             <div
               style={{
-                padding: "12px 14px",
-                background: "#08131f",
-                borderRadius: "5px",
-                border: "1px solid #152b4a",
+                padding: "14px 16px",
+                background: "var(--panel-muted, #181818)",
+                borderRadius: "8px",
+                border: "1px solid var(--border, #2a2a2a)",
               }}
             >
-              <div style={{ fontSize: "0.6875rem", color: "#64748b", marginBottom: 4 }}>
+              <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700, marginBottom: 4 }}>
                 DEPLOYMENT BASE / DEPOT
               </div>
-              <div style={{ fontSize: "0.8125rem", color: "#cbd5e1", fontWeight: 600 }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--foreground, #171717)", fontWeight: 600 }}>
                 {asset.location}
               </div>
             </div>
             <div
               style={{
-                padding: "12px 14px",
-                background: "#08131f",
-                borderRadius: "5px",
-                border: "1px solid #152b4a",
+                padding: "14px 16px",
+                background: "var(--panel-muted, #181818)",
+                borderRadius: "8px",
+                border: "1px solid var(--border, #2a2a2a)",
               }}
             >
-              <div style={{ fontSize: "0.6875rem", color: "#64748b", marginBottom: 4 }}>
+              <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700, marginBottom: 4 }}>
                 LAST SERVICING DATE
               </div>
-              <div style={{ fontSize: "0.8125rem", color: "#cbd5e1", fontWeight: 600 }}>
+              <div style={{ fontSize: "0.875rem", color: "var(--foreground, #171717)", fontWeight: 600 }}>
                 {formatDate(asset.lastMaintenanceDate)}
               </div>
             </div>
             <div
               style={{
-                padding: "12px 14px",
-                background: "#08131f",
-                borderRadius: "5px",
-                border: "1px solid #152b4a",
+                padding: "14px 16px",
+                background: "var(--panel-muted, #181818)",
+                borderRadius: "8px",
+                border: "1px solid var(--border, #2a2a2a)",
               }}
             >
-              <div style={{ fontSize: "0.6875rem", color: "#64748b", marginBottom: 4 }}>
+              <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700, marginBottom: 4 }}>
                 LEDGER CONSENSUS PROOF
               </div>
               <div
                 style={{
-                  fontSize: "0.8125rem",
-                  color: asset.proofStatus === "Anchored" ? "#22c55e" : "#f59e0b",
-                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  color: asset.proofStatus === "Anchored" ? "#16a34a" : "#d97706",
+                  fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
@@ -634,15 +634,15 @@ export default function AssetDetailPage() {
               <div
                 style={{
                   padding: "16px 18px",
-                  background: "#08131f",
-                  borderRadius: "6px",
-                  border: "1px solid #152b4a",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #2a2a2a)",
                 }}
               >
                 <div
                   style={{
                     fontSize: "0.6875rem",
-                    color: "#64748b",
+                    color: "var(--subtle-text, #707070)",
                     fontWeight: 700,
                     letterSpacing: "0.06em",
                     marginBottom: 12,
@@ -654,23 +654,23 @@ export default function AssetDetailPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Asset ID</span>
-                    <span className="font-mono-id" style={{ color: "#60a5fa" }}>
+                    <span className="font-mono-id" style={{ color: "var(--primary, #2563eb)" }}>
                       {asset.id}
                     </span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Serial Number</span>
-                    <span className="font-mono-id" style={{ color: "#cbd5e1" }}>
+                    <span className="font-mono-id" style={{ color: "var(--foreground, #171717)" }}>
                       {asset.serialNumber}
                     </span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Category / Class</span>
-                    <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{asset.category}</span>
+                    <span style={{ color: "var(--foreground, #171717)", fontWeight: 600 }}>{asset.category}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Model Ref</span>
-                    <span style={{ color: "#94a3b8" }}>{asset.model}</span>
+                    <span style={{ color: "var(--muted, #4A4A4A)" }}>{asset.model}</span>
                   </div>
                 </div>
               </div>
@@ -679,15 +679,15 @@ export default function AssetDetailPage() {
               <div
                 style={{
                   padding: "16px 18px",
-                  background: "#08131f",
-                  borderRadius: "6px",
-                  border: "1px solid #152b4a",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #2a2a2a)",
                 }}
               >
                 <div
                   style={{
                     fontSize: "0.6875rem",
-                    color: "#64748b",
+                    color: "var(--subtle-text, #707070)",
                     fontWeight: 700,
                     letterSpacing: "0.06em",
                     marginBottom: 12,
@@ -699,19 +699,19 @@ export default function AssetDetailPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Manufacturer</span>
-                    <span style={{ color: "#e2e8f0" }}>{asset.manufacturer}</span>
+                    <span style={{ color: "var(--foreground, #171717)" }}>{asset.manufacturer}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Current Owner / Dept</span>
-                    <span style={{ color: "#cbd5e1", fontWeight: 600 }}>{asset.department}</span>
+                    <span style={{ color: "var(--foreground, #171717)", fontWeight: 600 }}>{asset.department}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Station Location</span>
-                    <span style={{ color: "#94a3b8" }}>{asset.location}</span>
+                    <span style={{ color: "var(--muted, #4A4A4A)" }}>{asset.location}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Command Custodian</span>
-                    <span style={{ color: "#94a3b8" }}>{asset.custodian}</span>
+                    <span style={{ color: "var(--muted, #4A4A4A)" }}>{asset.custodian}</span>
                   </div>
                 </div>
               </div>
@@ -720,15 +720,15 @@ export default function AssetDetailPage() {
               <div
                 style={{
                   padding: "16px 18px",
-                  background: "#08131f",
-                  borderRadius: "6px",
-                  border: "1px solid #152b4a",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #2a2a2a)",
                 }}
               >
                 <div
                   style={{
                     fontSize: "0.6875rem",
-                    color: "#64748b",
+                    color: "var(--subtle-text, #707070)",
                     fontWeight: 700,
                     letterSpacing: "0.06em",
                     marginBottom: 12,
@@ -740,19 +740,19 @@ export default function AssetDetailPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Acquisition Date</span>
-                    <span style={{ color: "#e2e8f0" }}>{formatDate(asset.acquisitionDate)}</span>
+                    <span style={{ color: "var(--foreground, #171717)" }}>{formatDate(asset.acquisitionDate)}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Acquisition Method</span>
-                    <span style={{ color: "#cbd5e1" }}>{asset.acquisitionMethod}</span>
+                    <span style={{ color: "var(--muted, #4A4A4A)" }}>{asset.acquisitionMethod}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Supplier / Entity</span>
-                    <span style={{ color: "#94a3b8" }}>{asset.supplier}</span>
+                    <span style={{ color: "var(--muted, #4A4A4A)" }}>{asset.supplier}</span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Batch Codification</span>
-                    <span className="font-mono-id" style={{ color: "#94a3b8" }}>
+                    <span className="font-mono-id" style={{ color: "var(--muted, #4A4A4A)" }}>
                       {asset.batchId}
                     </span>
                   </div>
@@ -764,9 +764,9 @@ export default function AssetDetailPage() {
             <div
               style={{
                 padding: "16px 20px",
-                background: "#08131f",
-                borderRadius: "6px",
-                border: "1px solid #152b4a",
+                background: "var(--panel-muted, #181818)",
+                borderRadius: "8px",
+                border: "1px solid var(--border, #2a2a2a)",
                 display: "flex",
                 flexDirection: "column",
                 gap: 10,
@@ -776,7 +776,7 @@ export default function AssetDetailPage() {
                 <span
                   style={{
                     fontSize: "0.6875rem",
-                    color: "#64748b",
+                    color: "var(--subtle-text, #707070)",
                     fontWeight: 700,
                     letterSpacing: "0.06em",
                     textTransform: "uppercase",
@@ -784,15 +784,15 @@ export default function AssetDetailPage() {
                 >
                   TACTICAL MISSION CAPABILITIES & TECHNICAL SPECIFICATIONS
                 </span>
-                <p style={{ margin: "6px 0 0 0", fontSize: "0.8125rem", color: "#cbd5e1", lineHeight: 1.5 }}>
+                <p style={{ margin: "6px 0 0 0", fontSize: "0.8125rem", color: "var(--foreground, #171717)", lineHeight: 1.5 }}>
                   {asset.specsSummary}
                 </p>
               </div>
-              <div style={{ paddingTop: 8, borderTop: "1px solid #152b4a" }}>
+              <div style={{ paddingTop: 8, borderTop: "1px solid var(--border-subtle, #242424)" }}>
                 <span
                   style={{
                     fontSize: "0.6875rem",
-                    color: "#64748b",
+                    color: "var(--subtle-text, #707070)",
                     fontWeight: 700,
                     letterSpacing: "0.06em",
                     textTransform: "uppercase",
@@ -800,7 +800,7 @@ export default function AssetDetailPage() {
                 >
                   SYSTEM PROFILE & HISTORICAL BACKGROUND
                 </span>
-                <p style={{ margin: "6px 0 0 0", fontSize: "0.8125rem", color: "#94a3b8", lineHeight: 1.6 }}>
+                <p style={{ margin: "6px 0 0 0", fontSize: "0.8125rem", color: "var(--muted, #4A4A4A)", lineHeight: 1.6 }}>
                   {asset.description}
                 </p>
               </div>
@@ -857,16 +857,16 @@ export default function AssetDetailPage() {
                 style={{
                   padding: "36px 20px",
                   textAlign: "center",
-                  background: "#08131f",
-                  borderRadius: "6px",
-                  border: "1px dashed #1e3a60",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px dashed var(--border, #2a2a2a)",
                 }}
               >
-                <div style={{ fontSize: "1.5rem", color: "#475569", marginBottom: 6 }}>⚙</div>
-                <div style={{ fontSize: "0.875rem", color: "#cbd5e1", fontWeight: 600 }}>
+                <div style={{ fontSize: "1.5rem", color: "var(--subtle-text, #707070)", marginBottom: 6 }}>⚙</div>
+                <div style={{ fontSize: "0.875rem", color: "var(--foreground, #171717)", fontWeight: 700 }}>
                   No Maintenance History Recorded
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 4 }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--muted, #4A4A4A)", marginTop: 4 }}>
                   This asset has no reported maintenance incidents or servicing cycles on file.
                 </div>
               </div>
@@ -881,7 +881,7 @@ export default function AssetDetailPage() {
                   }}
                 >
                   <thead>
-                    <tr style={{ borderBottom: "1px solid #1e3a60", background: "#08131f" }}>
+                    <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
                       <th style={tableHeaderStyle}>Maintenance Date</th>
                       <th style={tableHeaderStyle}>Maintenance Type</th>
                       <th style={tableHeaderStyle}>Performed By</th>
@@ -897,21 +897,21 @@ export default function AssetDetailPage() {
                           borderBottom:
                             idx === asset.maintenanceHistory.length - 1
                               ? "none"
-                              : "1px solid #152b4a",
+                              : "1px solid var(--border-subtle, #242424)",
                         }}
                       >
                         <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
-                          <span className="font-mono-id" style={{ color: "#94a3b8" }}>
+                          <span className="font-mono-id" style={{ color: "var(--muted, #4A4A4A)" }}>
                             {formatDate(rec.date)}
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
-                          <span style={{ fontSize: "0.8125rem", color: "#e2e8f0", fontWeight: 600 }}>
+                          <span style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)", fontWeight: 600 }}>
                             {rec.type}
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
-                          <span style={{ fontSize: "0.8125rem", color: "#cbd5e1" }}>
+                          <span style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)" }}>
                             {rec.performedBy}
                           </span>
                         </td>
@@ -929,7 +929,7 @@ export default function AssetDetailPage() {
                                 rec.status === "Completed"
                                   ? "rgba(34, 197, 94, 0.12)"
                                   : "rgba(245, 158, 11, 0.12)",
-                              color: rec.status === "Completed" ? "#22c55e" : "#f59e0b",
+                              color: rec.status === "Completed" ? "#16a34a" : "#d97706",
                               border:
                                 rec.status === "Completed"
                                   ? "1px solid rgba(34, 197, 94, 0.3)"
@@ -941,7 +941,7 @@ export default function AssetDetailPage() {
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
-                          <span style={{ fontSize: "0.75rem", color: "#94a3b8", lineHeight: 1.4 }}>
+                          <span style={{ fontSize: "0.75rem", color: "var(--muted, #4A4A4A)", lineHeight: 1.4 }}>
                             {rec.notes}
                           </span>
                         </td>
@@ -962,8 +962,8 @@ export default function AssetDetailPage() {
             className="panel"
             style={{
               padding: "24px 28px",
-              background: "linear-gradient(180deg, #0c1828 0%, #08152b 100%)",
-              borderColor: "rgba(59, 130, 246, 0.3)",
+              background: "var(--card)",
+              borderColor: "var(--border)",
             }}
           >
             <div
@@ -1041,10 +1041,10 @@ export default function AssetDetailPage() {
               {/* Proof field 2: Block & Confirmations */}
               <div style={proofBoxStyle}>
                 <div style={proofBoxLabelStyle}>BLOCK & CONFIRMATIONS</div>
-                <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#e2e8f0" }}>
+                <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--foreground, #171717)" }}>
                   Block #{asset.blockchainProof.blockNumber.toLocaleString()}
                 </div>
-                <div style={{ fontSize: "0.6875rem", color: "#22c55e", marginTop: 4 }}>
+                <div style={{ fontSize: "0.6875rem", color: "#16a34a", marginTop: 4, fontWeight: 600 }}>
                   ✓ {asset.blockchainProof.confirmations.toLocaleString()} Multi-party Confirmations
                 </div>
               </div>
@@ -1052,10 +1052,10 @@ export default function AssetDetailPage() {
               {/* Proof field 3: Timestamp */}
               <div style={proofBoxStyle}>
                 <div style={proofBoxLabelStyle}>VERIFICATION TIMESTAMP</div>
-                <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#e2e8f0" }}>
+                <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--foreground, #171717)" }}>
                   {formatDateTime(asset.blockchainProof.timestamp)}
                 </div>
-                <div style={{ fontSize: "0.6875rem", color: "#64748b", marginTop: 4 }}>
+                <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", marginTop: 4 }}>
                   Consensus Standard: {asset.blockchainProof.proofStandard}
                 </div>
               </div>
@@ -1067,9 +1067,9 @@ export default function AssetDetailPage() {
               <div
                 style={{
                   padding: "12px 16px",
-                  background: "#08131f",
-                  borderRadius: "5px",
-                  border: "1px solid #1e3a60",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #2a2a2a)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -1078,13 +1078,13 @@ export default function AssetDetailPage() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 260 }}>
-                  <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600 }}>
+                  <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700 }}>
                     ASSET HASH / PROOF REFERENCE (SHA-256)
                   </div>
                   <div
                     className="font-mono-id"
                     style={{
-                      color: "#60a5fa",
+                      color: "var(--primary, #2563eb)",
                       wordBreak: "break-all",
                       fontSize: "0.8125rem",
                       marginTop: 2,
@@ -1108,9 +1108,9 @@ export default function AssetDetailPage() {
               <div
                 style={{
                   padding: "12px 16px",
-                  background: "#08131f",
-                  borderRadius: "5px",
-                  border: "1px solid #1e3a60",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #2a2a2a)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -1119,16 +1119,17 @@ export default function AssetDetailPage() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 260 }}>
-                  <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600 }}>
+                  <div style={{ fontSize: "0.6875rem", color: "var(--subtle-text, #707070)", fontWeight: 700 }}>
                     TRANSACTION / REFERENCE ID
                   </div>
                   <div
                     className="font-mono-id"
                     style={{
-                      color: "#cbd5e1",
+                      color: "var(--foreground, #171717)",
                       wordBreak: "break-all",
                       fontSize: "0.8125rem",
                       marginTop: 2,
+                      fontWeight: 600,
                     }}
                   >
                     {asset.blockchainProof.transactionId}
@@ -1150,18 +1151,19 @@ export default function AssetDetailPage() {
             <div
               style={{
                 marginTop: 14,
-                padding: "10px 14px",
-                background: "rgba(30, 58, 96, 0.25)",
-                borderRadius: "4px",
-                border: "1px solid #1e3a60",
+                padding: "12px 16px",
+                background: "var(--primary-muted, rgba(37, 99, 235, 0.08))",
+                borderRadius: "8px",
+                border: "1px solid var(--border-subtle, rgba(37, 99, 235, 0.2))",
                 fontSize: "0.75rem",
-                color: "#64748b",
+                color: "var(--muted, #4A4A4A)",
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
+                lineHeight: 1.5,
               }}
             >
-              <span>ℹ</span>
+              <span style={{ color: "var(--primary, #2563eb)", fontWeight: 700 }}>ℹ</span>
               <span>
                 Ledger reference is permanently anchored to the private permissioned defence ledger
                 subnet. Cryptographic hashes are verifiable against Ministry of Defence Trust Roots.
@@ -1222,16 +1224,16 @@ export default function AssetDetailPage() {
                 style={{
                   padding: "36px 20px",
                   textAlign: "center",
-                  background: "#08131f",
-                  borderRadius: "6px",
-                  border: "1px dashed #1e3a60",
+                  background: "var(--panel-muted, #181818)",
+                  borderRadius: "8px",
+                  border: "1px dashed var(--border, #2a2a2a)",
                 }}
               >
-                <div style={{ fontSize: "1.5rem", color: "#475569", marginBottom: 6 }}>◆</div>
-                <div style={{ fontSize: "0.875rem", color: "#cbd5e1", fontWeight: 600 }}>
+                <div style={{ fontSize: "1.5rem", color: "var(--subtle-text, #707070)", marginBottom: 6 }}>◆</div>
+                <div style={{ fontSize: "0.875rem", color: "var(--foreground, #171717)", fontWeight: 700 }}>
                   No Active Certification Associated
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 4 }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--muted, #4A4A4A)", marginTop: 4 }}>
                   This defence asset does not currently have an active quality or airworthiness
                   certificate on file.
                 </div>
@@ -1243,28 +1245,28 @@ export default function AssetDetailPage() {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
                   gap: 16,
-                  background: "#08131f",
+                  background: "var(--panel-muted, #181818)",
                   padding: "20px",
-                  borderRadius: "6px",
-                  border: "1px solid #152b4a",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #2a2a2a)",
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Certificate ID</span>
-                    <span className="font-mono-id" style={{ color: "#22c55e", fontWeight: 600 }}>
+                    <span className="font-mono-id" style={{ color: "#16a34a", fontWeight: 700 }}>
                       {asset.certification.certificateId}
                     </span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Certification Type</span>
-                    <span style={{ color: "#e2e8f0", fontWeight: 600 }}>
+                    <span style={{ color: "var(--foreground, #171717)", fontWeight: 600 }}>
                       {asset.certification.type}
                     </span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Issuing Authority</span>
-                    <span style={{ color: "#cbd5e1" }}>
+                    <span style={{ color: "var(--foreground, #171717)" }}>
                       {asset.certification.issuingAuthority}
                     </span>
                   </div>
@@ -1273,13 +1275,13 @@ export default function AssetDetailPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Issue Date</span>
-                    <span style={{ color: "#e2e8f0" }}>
+                    <span style={{ color: "var(--foreground, #171717)" }}>
                       {formatDate(asset.certification.issueDate)}
                     </span>
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Expiry Date / Validity</span>
-                    <span style={{ color: "#94a3b8" }}>
+                    <span style={{ color: "var(--muted, #4A4A4A)" }}>
                       {formatDate(asset.certification.expiryDate)}
                     </span>
                   </div>
@@ -1297,8 +1299,8 @@ export default function AssetDetailPage() {
                             : "rgba(239, 68, 68, 0.12)",
                         color:
                           asset.certification.status === "Valid" || asset.certification.status === "Active"
-                            ? "#22c55e"
-                            : "#ef4444",
+                            ? "#16a34a"
+                            : "#dc2626",
                         border:
                           asset.certification.status === "Valid" || asset.certification.status === "Active"
                             ? "1px solid rgba(34, 197, 94, 0.3)"
@@ -1310,7 +1312,7 @@ export default function AssetDetailPage() {
                   </div>
                   <div style={infoRowStyle}>
                     <span style={infoLabelStyle}>Verification Status</span>
-                    <span style={{ color: "#22c55e", fontSize: "0.75rem", fontWeight: 600 }}>
+                    <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 700 }}>
                       ✓ Cryptographically Sealed
                     </span>
                   </div>
@@ -1380,7 +1382,7 @@ export default function AssetDetailPage() {
                         width: 14,
                         height: 14,
                         borderRadius: "50%",
-                        background: "#08131f",
+                        background: "var(--card, #08131f)",
                         border: "2px solid #3b82f6",
                         boxShadow: "0 0 8px rgba(59, 130, 246, 0.5)",
                       }}
@@ -1390,9 +1392,9 @@ export default function AssetDetailPage() {
                     <div
                       style={{
                         padding: "14px 18px",
-                        background: "#08131f",
-                        borderRadius: "5px",
-                        border: "1px solid #152b4a",
+                        background: "var(--panel-muted, #181818)",
+                        borderRadius: "8px",
+                        border: "1px solid var(--border, #2a2a2a)",
                       }}
                     >
                       <div
@@ -1409,7 +1411,7 @@ export default function AssetDetailPage() {
                           style={{
                             fontSize: "0.875rem",
                             fontWeight: 700,
-                            color: "#e2e8f0",
+                            color: "var(--foreground, #171717)",
                           }}
                         >
                           {event.title}
@@ -1420,7 +1422,7 @@ export default function AssetDetailPage() {
                               className="font-mono-id"
                               style={{
                                 fontSize: "0.6875rem",
-                                color: "#60a5fa",
+                                color: "#2563eb",
                                 background: "rgba(37, 99, 235, 0.1)",
                                 padding: "2px 6px",
                                 borderRadius: "3px",
@@ -1430,12 +1432,12 @@ export default function AssetDetailPage() {
                               {event.referenceBadge}
                             </span>
                           )}
-                          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                          <span style={{ fontSize: "0.75rem", color: "var(--muted, #4A4A4A)" }}>
                             {formatDateTime(event.timestamp)}
                           </span>
                         </div>
                       </div>
-                      <p style={{ margin: 0, fontSize: "0.8125rem", color: "#94a3b8", lineHeight: 1.5 }}>
+                      <p style={{ margin: 0, fontSize: "0.8125rem", color: "var(--muted, #4A4A4A)", lineHeight: 1.5 }}>
                         {event.description}
                       </p>
                     </div>
@@ -1470,10 +1472,10 @@ export default function AssetDetailPage() {
             style={{
               width: "100%",
               maxWidth: 620,
-              background: "#0c1828",
-              borderColor: "#1e3a60",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.7)",
-              borderRadius: "8px",
+              background: "var(--card)",
+              borderColor: "var(--border)",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+              borderRadius: "12px",
               overflow: "hidden",
             }}
             onClick={(e) => e.stopPropagation()}
@@ -1482,8 +1484,8 @@ export default function AssetDetailPage() {
             <div
               style={{
                 padding: "16px 20px",
-                background: "#08131f",
-                borderBottom: "1px solid #1e3a60",
+                background: "var(--table-header-bg)",
+                borderBottom: "1px solid var(--border)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -1497,12 +1499,12 @@ export default function AssetDetailPage() {
                       margin: 0,
                       fontSize: "1rem",
                       fontWeight: 700,
-                      color: "#e2e8f0",
+                      color: "var(--foreground, #171717)",
                     }}
                   >
                     OFFICIAL DEFENCE MATERIEL CERTIFICATE
                   </h3>
-                  <span style={{ fontSize: "0.6875rem", color: "#64748b" }}>
+                  <span style={{ fontSize: "0.6875rem", color: "var(--muted, #4A4A4A)" }}>
                     Cryptographically Validated by Ministry of Defence Authority
                   </span>
                 </div>
@@ -1512,7 +1514,7 @@ export default function AssetDetailPage() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#94a3b8",
+                  color: "var(--muted, #4A4A4A)",
                   fontSize: "1.25rem",
                   cursor: "pointer",
                   padding: "4px 8px",
@@ -1529,9 +1531,9 @@ export default function AssetDetailPage() {
                 style={{
                   textAlign: "center",
                   padding: "16px",
-                  background: "rgba(30, 58, 96, 0.2)",
-                  borderRadius: "6px",
-                  border: "1px solid #1e3a60",
+                  background: "var(--panel-muted, rgba(30, 58, 96, 0.2))",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #1e3a60)",
                 }}
               >
                 <div style={{ fontSize: "1.75rem", marginBottom: 6 }}>⚖</div>
@@ -1540,18 +1542,18 @@ export default function AssetDetailPage() {
                   style={{
                     fontSize: "1.25rem",
                     fontWeight: 700,
-                    color: "#60a5fa",
+                    color: "var(--primary, #2563eb)",
                     letterSpacing: "0.04em",
                   }}
                 >
                   {asset.certification.issuingAuthority}
                 </div>
-                <div style={{ fontSize: "0.8125rem", color: "#cbd5e1", marginTop: 4 }}>
+                <div style={{ fontSize: "0.8125rem", color: "var(--foreground, #171717)", marginTop: 4 }}>
                   {asset.certification.type}
                 </div>
                 <div
                   className="font-mono-id"
-                  style={{ fontSize: "0.75rem", color: "#22c55e", marginTop: 6 }}
+                  style={{ fontSize: "0.75rem", color: "#16a34a", marginTop: 6, fontWeight: 600 }}
                 >
                   CERTIFICATE NO: {asset.certification.certificateId}
                 </div>
@@ -1565,36 +1567,36 @@ export default function AssetDetailPage() {
                   gap: 8,
                   fontSize: "0.8125rem",
                   padding: "12px 14px",
-                  background: "#08131f",
-                  borderRadius: "5px",
-                  border: "1px solid #152b4a",
+                  background: "var(--panel-muted, #08131f)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #152b4a)",
                 }}
               >
                 <div style={infoRowStyle}>
-                  <span style={{ color: "#64748b" }}>Certified Asset:</span>
-                  <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{asset.name}</span>
+                  <span style={{ color: "var(--muted, #4A4A4A)" }}>Certified Asset:</span>
+                  <span style={{ color: "var(--foreground, #171717)", fontWeight: 600 }}>{asset.name}</span>
                 </div>
                 <div style={infoRowStyle}>
-                  <span style={{ color: "#64748b" }}>Unique Serial Number:</span>
-                  <span className="font-mono-id" style={{ color: "#94a3b8" }}>
+                  <span style={{ color: "var(--muted, #4A4A4A)" }}>Unique Serial Number:</span>
+                  <span className="font-mono-id" style={{ color: "var(--foreground, #171717)" }}>
                     {asset.serialNumber}
                   </span>
                 </div>
                 <div style={infoRowStyle}>
-                  <span style={{ color: "#64748b" }}>Date of Issuance:</span>
-                  <span style={{ color: "#e2e8f0" }}>
+                  <span style={{ color: "var(--muted, #4A4A4A)" }}>Date of Issuance:</span>
+                  <span style={{ color: "var(--foreground, #171717)" }}>
                     {formatDate(asset.certification.issueDate)}
                   </span>
                 </div>
                 <div style={infoRowStyle}>
-                  <span style={{ color: "#64748b" }}>Valid Until:</span>
-                  <span style={{ color: "#e2e8f0" }}>
+                  <span style={{ color: "var(--muted, #4A4A4A)" }}>Valid Until:</span>
+                  <span style={{ color: "var(--foreground, #171717)" }}>
                     {formatDate(asset.certification.expiryDate)}
                   </span>
                 </div>
                 <div style={infoRowStyle}>
-                  <span style={{ color: "#64748b" }}>Compliance Standard:</span>
-                  <span style={{ color: "#22c55e" }}>MIL-STD-810G / STANAG Validated</span>
+                  <span style={{ color: "var(--muted, #4A4A4A)" }}>Compliance Standard:</span>
+                  <span style={{ color: "#16a34a", fontWeight: 600 }}>MIL-STD-810G / STANAG Validated</span>
                 </div>
               </div>
 
@@ -1602,17 +1604,17 @@ export default function AssetDetailPage() {
               <div
                 style={{
                   padding: "10px 14px",
-                  background: "#08131f",
-                  borderRadius: "5px",
-                  border: "1px solid #152b4a",
+                  background: "var(--panel-muted, #08131f)",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border, #152b4a)",
                 }}
               >
-                <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600 }}>
+                <div style={{ fontSize: "0.6875rem", color: "var(--muted, #4A4A4A)", fontWeight: 600 }}>
                   AUTHORITY DIGITAL SIGNATURE (ECDSA SHA-256)
                 </div>
                 <div
                   className="font-mono-id"
-                  style={{ fontSize: "0.75rem", color: "#60a5fa", wordBreak: "break-all" }}
+                  style={{ fontSize: "0.75rem", color: "var(--primary, #2563eb)", wordBreak: "break-all" }}
                 >
                   {asset.certification.digitalSignature}
                 </div>
@@ -1623,8 +1625,8 @@ export default function AssetDetailPage() {
             <div
               style={{
                 padding: "14px 20px",
-                background: "#08131f",
-                borderTop: "1px solid #1e3a60",
+                background: "var(--panel-muted, #08131f)",
+                borderTop: "1px solid var(--border, #1e3a60)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -1656,31 +1658,33 @@ const tableHeaderStyle: React.CSSProperties = {
   padding: "10px 14px",
   fontSize: "0.6875rem",
   fontWeight: 700,
-  color: "#64748b",
+  color: "var(--muted, #4A4A4A)",
   letterSpacing: "0.06em",
   textTransform: "uppercase",
   whiteSpace: "nowrap",
+  background: "var(--table-header-bg, #f1f1f2)",
 };
 
 const infoRowStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  paddingBottom: 4,
-  borderBottom: "1px solid rgba(21, 43, 74, 0.4)",
+  paddingBottom: 6,
+  borderBottom: "1px solid var(--border-subtle, #242424)",
   fontSize: "0.8125rem",
 };
 
 const infoLabelStyle: React.CSSProperties = {
-  color: "#64748b",
+  color: "var(--muted, #4A4A4A)",
   fontSize: "0.75rem",
+  fontWeight: 600,
 };
 
 const proofBoxStyle: React.CSSProperties = {
   padding: "14px 16px",
-  background: "#08131f",
-  borderRadius: "5px",
-  border: "1px solid #1e3a60",
+  background: "var(--panel-muted, #181818)",
+  borderRadius: "8px",
+  border: "1px solid var(--border, #2a2a2a)",
   display: "flex",
   flexDirection: "column",
   gap: 4,
@@ -1688,7 +1692,7 @@ const proofBoxStyle: React.CSSProperties = {
 
 const proofBoxLabelStyle: React.CSSProperties = {
   fontSize: "0.6875rem",
-  color: "#64748b",
+  color: "var(--muted, #4A4A4A)",
   fontWeight: 700,
   letterSpacing: "0.06em",
   textTransform: "uppercase",

@@ -1,14 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import SuppliersList from "./components/SuppliersList";
 import FacilitiesList from "./components/FacilitiesList";
 import LotsList from "./components/LotsList";
 import ShipmentsList from "./components/ShipmentsList";
 import { supplyChainService } from "../../services/supply-chain";
+import "./SupplyChainPage.css";
+
+/* ── Smooth KPI Count-up Hook (500–900ms) ─────────────────────────────────── */
+function useCountUp(target: number, duration = 800, delay = 0): number {
+  const [value, setValue] = useState(0);
+  const raf = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (target === 0) {
+      setValue(0);
+      return;
+    }
+    let startTime: number | null = null;
+
+    const timer = setTimeout(() => {
+      function step(ts: number) {
+        if (!startTime) startTime = ts;
+        const progress = Math.min((ts - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setValue(Math.round(eased * target));
+        if (progress < 1) {
+          raf.current = requestAnimationFrame(step);
+        }
+      }
+      raf.current = requestAnimationFrame(step);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+      if (raf.current !== null) cancelAnimationFrame(raf.current);
+    };
+  }, [target, duration, delay]);
+
+  return value;
+}
 
 export default function SupplyChainDashboardPage() {
   const [activeTab, setActiveTab] = useState("suppliers");
   const [counts, setCounts] = useState({ suppliers: 0, facilities: 0, lots: 0, shipments: 0 });
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     Promise.allSettled([
@@ -26,6 +62,20 @@ export default function SupplyChainDashboardPage() {
     });
   }, []);
 
+  /* Subtle mouse parallax for decorative background elements only (2px) */
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 4;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 4;
+    setMouseOffset({ x, y });
+  };
+
+  /* Animated count-up values for each KPI card */
+  const animSuppliers = useCountUp(counts.suppliers, 750, 60);
+  const animFacilities = useCountUp(counts.facilities, 800, 120);
+  const animLots = useCountUp(counts.lots, 850, 180);
+  const animShipments = useCountUp(counts.shipments, 900, 240);
+
   const tabs = [
     { id: "suppliers", label: "Suppliers", count: counts.suppliers, icon: "◈" },
     { id: "facilities", label: "Facilities", count: counts.facilities, icon: "⬡" },
@@ -33,114 +83,175 @@ export default function SupplyChainDashboardPage() {
     { id: "shipments", label: "Shipments", count: counts.shipments, icon: "◎" },
   ];
 
+  const pipelineStages = [
+    { label: "SUPPLIER", sub: "Vetted Origin", icon: "◈", color: "#3b82f6", pulseClass: "sc-node-pulse-0" },
+    { label: "FACILITY", sub: "Mfg / Storage", icon: "⬡", color: "#06b6d4", pulseClass: "sc-node-pulse-1" },
+    { label: "LOT BATCH", sub: "QA Certified", icon: "◫", color: "#8b5cf6", pulseClass: "sc-node-pulse-2" },
+    { label: "SHIPMENT", sub: "Custody Transit", icon: "◎", color: "#f59e0b", pulseClass: "sc-node-pulse-3" },
+    { label: "RECEIVED", sub: "Assembly Ready", icon: "✓", color: "#22c55e", pulseClass: "sc-node-pulse-4" },
+  ];
+
   return (
-    <div className="internal-page page-fade">
-      <PageHeader
-        title="Supply Chain Command"
-        subtitle="End-to-end defence supply chain visibility, manufacturing batch provenance, and multi-facility custody tracking"
-        breadcrumbs={[
-          { label: "Dashboard", to: "/app/dashboard" },
-          { label: "Supply Chain" },
-        ]}
+    <div className="internal-page page-fade sc-page-root" onMouseMove={handleMouseMove}>
+      {/* Subtle decorative technical network grid with 2px parallax */}
+      <div
+        className="sc-technical-grid-bg"
+        style={{
+          transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0)`,
+        }}
       />
 
+      {/* Header with entrance animation and live telemetry indicator */}
+      <div className="sc-header-animated">
+        <div className="sc-telemetry-badge">
+          <span className="sc-beacon-dot" />
+          <span>BEL DEFENCE SUPPLY CHAIN TELEMETRY • LIVE LEDGER ANCHORED</span>
+        </div>
+        <PageHeader
+          title="Supply Chain Command"
+          subtitle="End-to-end defence supply chain visibility, manufacturing batch provenance, and multi-facility custody tracking"
+          breadcrumbs={[
+            { label: "Dashboard", to: "/app/dashboard" },
+            { label: "Supply Chain" },
+          ]}
+        />
+      </div>
+
       {/* KPI Summary Cards */}
-      <div className="internal-kpi-grid stagger-in-2">
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">CERTIFIED SUPPLIERS</div>
-          <div className="internal-kpi-value">{counts.suppliers}</div>
-          <div className="internal-kpi-sub">
+      <div className="sc-kpi-grid">
+        {/* Suppliers Card */}
+        <div className="sc-kpi-card">
+          <div className="sc-kpi-accent" style={{ background: "#2563eb" }} />
+          <div className="sc-kpi-header">
+            <div className="sc-kpi-label">CERTIFIED SUPPLIERS</div>
+            <div
+              className="sc-kpi-icon-box sc-icon-pulse-suppliers"
+              style={{ background: "rgba(37,99,235,0.12)", color: "#3b82f6" }}
+            >
+              ◈
+            </div>
+          </div>
+          <div className="sc-kpi-value">{animSuppliers}</div>
+          <div className="sc-kpi-sub">
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563eb" }} />
-            Vetted defence partners
+            <span>Vetted defence partners</span>
           </div>
         </div>
 
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">OPERATIONAL FACILITIES</div>
-          <div className="internal-kpi-value" style={{ color: "#3b82f6" }}>
-            {counts.facilities}
+        {/* Facilities Card */}
+        <div className="sc-kpi-card">
+          <div className="sc-kpi-accent" style={{ background: "#06b6d4" }} />
+          <div className="sc-kpi-header">
+            <div className="sc-kpi-label">OPERATIONAL FACILITIES</div>
+            <div
+              className="sc-kpi-icon-box sc-icon-pulse-facilities"
+              style={{ background: "rgba(6,182,212,0.12)", color: "#06b6d4" }}
+            >
+              ⬡
+            </div>
           </div>
-          <div className="internal-kpi-sub">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#3b82f6" }} />
-            Depots & manufacturing plants
+          <div className="sc-kpi-value" style={{ color: "#06b6d4" }}>
+            {animFacilities}
+          </div>
+          <div className="sc-kpi-sub">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#06b6d4" }} />
+            <span>Depots & manufacturing plants</span>
           </div>
         </div>
 
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">PRODUCTION LOTS</div>
-          <div className="internal-kpi-value" style={{ color: "#22c55e" }}>
-            {counts.lots}
+        {/* Production Lots Card */}
+        <div className="sc-kpi-card">
+          <div className="sc-kpi-accent" style={{ background: "#8b5cf6" }} />
+          <div className="sc-kpi-header">
+            <div className="sc-kpi-label">PRODUCTION LOTS</div>
+            <div
+              className="sc-kpi-icon-box sc-icon-pulse-lots"
+              style={{ background: "rgba(139,92,246,0.12)", color: "#a855f7" }}
+            >
+              ◫
+            </div>
           </div>
-          <div className="internal-kpi-sub">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
-            Material provenance batches
+          <div className="sc-kpi-value" style={{ color: "#a855f7" }}>
+            {animLots}
+          </div>
+          <div className="sc-kpi-sub">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8b5cf6" }} />
+            <span>Material provenance batches</span>
           </div>
         </div>
 
-        <div className="internal-kpi-card">
-          <div className="internal-kpi-label">ACTIVE SHIPMENTS</div>
-          <div className="internal-kpi-value" style={{ color: "#f59e0b" }}>
-            {counts.shipments}
+        {/* Active Shipments Card */}
+        <div className="sc-kpi-card">
+          <div className="sc-kpi-accent" style={{ background: "#f59e0b" }} />
+          <div className="sc-kpi-header">
+            <div className="sc-kpi-label">ACTIVE SHIPMENTS</div>
+            <div
+              className="sc-kpi-icon-box sc-icon-pulse-shipments"
+              style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}
+            >
+              ◎
+            </div>
           </div>
-          <div className="internal-kpi-sub">
+          <div className="sc-kpi-value" style={{ color: "#f59e0b" }}>
+            {animShipments}
+          </div>
+          <div className="sc-kpi-sub">
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />
-            In-transit custody transfers
+            <span>In-transit custody transfers</span>
           </div>
         </div>
       </div>
 
-      {/* Custody Flow Visualization */}
-      <div
-        className="internal-card stagger-in-3"
-        style={{
-          padding: "20px 24px",
-          background: "linear-gradient(135deg, rgba(15,32,64,0.4) 0%, rgba(12,24,40,0.9) 100%)",
-        }}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>
-            DEFENCE CUSTODY PIPELINE
+      {/* Custody Flow Visualization — Defence Custody Pipeline */}
+      <div className="sc-pipeline-card">
+        <div className="sc-pipeline-header">
+          <div className="sc-pipeline-title-group">
+            <div className="sc-pipeline-title">
+              <span>DEFENCE CUSTODY PIPELINE</span>
+              <span style={{ fontSize: "0.65rem", opacity: 0.8 }}>• REAL-TIME PHYSICAL & DIGITAL TRACEABILITY</span>
+            </div>
+            <div className="sc-pipeline-desc">
+              Immutable physical-to-digital chain of custody from tier-1 supplier intake to operational deployment
+            </div>
           </div>
-          <div style={{ fontSize: "0.8125rem", color: "var(--muted)", marginTop: 4 }}>
-            Immutable physical-to-digital chain of custody from tier-1 supplier intake to operational deployment
+          <div className="sc-pipeline-telemetry-status">
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
+            <span>100% CUSTODY ANCHORED</span>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", overflowX: "auto", padding: "10px 0" }}>
-          {[
-            { label: "SUPPLIER", sub: "Vetted Origin", icon: "◈", color: "#3b82f6" },
-            { label: "FACILITY", sub: "Mfg / Storage", icon: "⬡", color: "#06b6d4" },
-            { label: "LOT BATCH", sub: "QA Certified", icon: "◫", color: "#8b5cf6" },
-            { label: "SHIPMENT", sub: "Custody Transit", icon: "◎", color: "#f59e0b" },
-            { label: "RECEIVED", sub: "Assembly Ready", icon: "✓", color: "#22c55e" },
-          ].map((stage, idx, arr) => (
-            <div key={stage.label} style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 140 }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center", minWidth: 90 }}>
+        {/* Pipeline Track with Visible Traveling Custody Packet */}
+        <div className="sc-pipeline-track-wrapper">
+          {/* Continuous Traveling Glowing Custody Packet */}
+          <div className="sc-packet-overlay-bar">
+            <div className="sc-traveling-packet" title="Physical Custody & Digital Provenance Packet" />
+          </div>
+
+          {pipelineStages.map((stage, idx, arr) => (
+            <div key={stage.label} style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 120 }}>
+              {/* Stage Node */}
+              <div className="sc-stage-node" title={`${stage.label}: ${stage.sub}`}>
                 <div
+                  className={`sc-stage-icon-box ${stage.pulseClass}`}
                   style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: "8px",
-                    background: `${stage.color}18`,
-                    border: `1px solid ${stage.color}40`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "1.1rem",
+                    background: `${stage.color}15`,
+                    border: `1.5px solid ${stage.color}50`,
                     color: stage.color,
                   }}
                 >
                   {stage.icon}
                 </div>
-                <div style={{ fontSize: "0.6875rem", fontWeight: 700, letterSpacing: "0.06em", color: "var(--foreground)" }}>
-                  {stage.label}
-                </div>
-                <div style={{ fontSize: "0.6875rem", color: "var(--muted)" }}>{stage.sub}</div>
+                <div className="sc-stage-title">{stage.label}</div>
+                <div className="sc-stage-sub">{stage.sub}</div>
               </div>
 
+              {/* Connecting Track with moving light beam */}
               {idx < arr.length - 1 && (
-                <div className="custody-flow-line" style={{ minWidth: 32, margin: "0 8px" }}>
-                  <div className="custody-flow-pulse" style={{ animationDelay: `${idx * 0.8}s` }} />
+                <div className="sc-connector-track">
+                  <div
+                    className="sc-connector-laser"
+                    style={{ animationDelay: `${idx * 0.4}s` }}
+                  />
                 </div>
               )}
             </div>
@@ -149,48 +260,27 @@ export default function SupplyChainDashboardPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div style={{ display: "flex", gap: 8, borderBottom: "1px solid var(--border)", paddingBottom: 2 }} className="stagger-in-4">
+      <div className="sc-tabs-bar">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="tab-btn"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                fontSize: "0.875rem",
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? "var(--primary)" : "var(--muted)",
-                borderBottom: isActive ? "2px solid var(--primary)" : "2px solid transparent",
-                background: "transparent",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
+              className={`sc-tab-btn ${isActive ? "active" : ""}`}
+              id={`supply-chain-tab-${tab.id}`}
+              type="button"
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
-              <span
-                style={{
-                  padding: "1px 6px",
-                  borderRadius: "10px",
-                  fontSize: "0.6875rem",
-                  background: isActive ? "rgba(37,99,235,0.15)" : "var(--hover-bg)",
-                  color: isActive ? "var(--primary)" : "var(--muted)",
-                }}
-              >
-                {tab.count}
-              </span>
+              <span className="sc-tab-badge">{tab.count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Tab Panels */}
-      <div className="internal-card stagger-in-4" style={{ padding: 24 }}>
+      {/* Tab Panels with switch animation */}
+      <div className="internal-card sc-tab-panel-container" key={activeTab} style={{ padding: 24 }}>
         {activeTab === "suppliers" && <SuppliersList />}
         {activeTab === "facilities" && <FacilitiesList />}
         {activeTab === "lots" && <LotsList />}
@@ -199,3 +289,4 @@ export default function SupplyChainDashboardPage() {
     </div>
   );
 }
+
