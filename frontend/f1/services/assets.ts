@@ -41,6 +41,9 @@ export const assetService = {
   },
 
   getAsset: async (id: string) => {
+    if (typeof id !== 'string') {
+      throw new Error(`getAsset requires a string ID, received ${typeof id}: ${JSON.stringify(id)}`);
+    }
     return api.get<AssetResponse>(`/assets/${id}`);
   },
 

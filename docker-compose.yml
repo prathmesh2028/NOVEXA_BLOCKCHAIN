@@ -22,14 +22,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kavach} -d ${POSTGRES_DB:-kavachtrust}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kavach} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   # ── MinIO (S3-compatible object storage) ────────────────────
   minio:
-    image: quay.io/minio/minio:latest
+    image: coollabsio/minio:latest
     container_name: kavachtrust-minio
     restart: unless-stopped
     environment:
@@ -47,8 +47,24 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── Besu (Ethereum client for private blockchain) ─────────────
+  besu:
+    image: hyperledger/besu:24.10.0
+    container_name: kavachtrust-besu
+    restart: unless-stopped
+    ports:
+      - "8545:8545"
+    command: >
+      --data-path=/besu/data
+      --rpc-http-enabled
+      --rpc-http-host=0.0.0.0
+      --rpc-http-cors-origins=*
+      --genesis-file=/besu/genesis.json
+    volumes:
+      - besudata:/besu/data
+      - ./besu/genesis.json:/besu/genesis.json
+
 volumes:
   pgdata:
-    driver: local
   miniodata:
-    driver: local
+  besudata:
