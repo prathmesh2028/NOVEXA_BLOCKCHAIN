@@ -5,67 +5,56 @@
 
 /* ─── CSS THEME TOKENS ─── */
 .lc-engine-page {
-  /* Dark Mode Default */
-  --lc-bg-primary: #030712;
-  --lc-bg-card: rgba(10, 20, 42, 0.75);
-  --lc-bg-card-hover: rgba(15, 28, 58, 0.85);
-  --lc-border: rgba(30, 58, 96, 0.65);
-  --lc-border-bright: rgba(56, 189, 248, 0.4);
-  --lc-border-glow: rgba(0, 229, 255, 0.25);
-  --lc-text-title: #f8fafc;
-  --lc-text-body: #94a3b8;
-  --lc-text-muted: #64748b;
-  --lc-text-highlight: #38bdf8;
+  /* Dark Mode Default (ChatGPT-Inspired Black / Charcoal / Gray) */
+  --lc-bg-primary: transparent;
+  --lc-bg-card: #171717;
+  --lc-bg-card-hover: #1C1C1C;
+  --lc-border: #2A2A2A;
+  --lc-border-bright: #333333;
+  --lc-border-glow: rgba(56, 189, 248, 0.15);
+  --lc-text-title: #F5F5F5;
+  --lc-text-body: #A3A3A3;
+  --lc-text-muted: #737373;
+  --lc-text-highlight: #F5F5F5;
   --lc-cyan: #00e5ff;
-  --lc-blue: #3b82f6;
+  --lc-blue: #38bdf8;
   --lc-blue-deep: #1d4ed8;
   --lc-green: #22c55e;
-  --lc-green-glow: rgba(34, 197, 94, 0.25);
+  --lc-green-glow: rgba(34, 197, 94, 0.15);
   --lc-amber: #f59e0b;
-  --lc-amber-glow: rgba(245, 158, 11, 0.25);
+  --lc-amber-glow: rgba(245, 158, 11, 0.15);
   --lc-red: #ef4444;
-  --lc-red-glow: rgba(239, 68, 68, 0.25);
-  --lc-purple: #a855f7;
-  --lc-surface-subtle: rgba(15, 23, 42, 0.6);
-  --lc-grid-color: rgba(56, 189, 248, 0.04);
-  --lc-table-header-bg: rgba(6, 14, 30, 0.85);
-  --lc-table-row-hover: rgba(37, 99, 235, 0.08);
+  --lc-red-glow: rgba(239, 68, 68, 0.15);
+  --lc-purple: #8b5cf6;
+  --lc-surface-subtle: #1C1C1C;
+  --lc-grid-color: rgba(255, 255, 255, 0.02);
+  --lc-table-header-bg: #111111;
+  --lc-table-row-hover: #1C1C1C;
 
   position: relative;
   min-height: 100%;
   padding-bottom: 48px;
   background-color: var(--lc-bg-primary);
-  background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 235, 0.15), transparent 70%),
-    radial-gradient(circle at 100% 30%, rgba(0, 229, 255, 0.05), transparent 50%),
-    linear-gradient(to right, var(--lc-grid-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--lc-grid-color) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
   transition: background-color 300ms ease, color 300ms ease;
 }
 
 /* Light Mode Overrides */
 [data-theme="light"] .lc-engine-page,
 .lc-engine-page.light-mode {
-  --lc-bg-primary: #f8fafc;
-  --lc-bg-card: rgba(255, 255, 255, 0.95);
-  --lc-bg-card-hover: rgba(241, 245, 249, 0.95);
-  --lc-border: rgba(203, 213, 225, 0.9);
-  --lc-border-bright: rgba(59, 130, 246, 0.5);
-  --lc-border-glow: rgba(59, 130, 246, 0.2);
-  --lc-text-title: #0f172a;
-  --lc-text-body: #334155;
-  --lc-text-muted: #64748b;
-  --lc-text-highlight: #0284c7;
-  --lc-surface-subtle: rgba(241, 245, 249, 0.7);
-  --lc-grid-color: rgba(37, 99, 235, 0.04);
-  --lc-table-header-bg: #f1f5f9;
-  --lc-table-row-hover: rgba(59, 130, 246, 0.05);
-
-  background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 235, 0.08), transparent 70%),
-    linear-gradient(to right, var(--lc-grid-color) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--lc-grid-color) 1px, transparent 1px);
+  --lc-bg-primary: transparent;
+  --lc-bg-card: #FFFFFF;
+  --lc-bg-card-hover: #F8F8F8;
+  --lc-border: #E5E5E5;
+  --lc-border-bright: #D4D4D4;
+  --lc-border-glow: rgba(37, 99, 235, 0.1);
+  --lc-text-title: #171717;
+  --lc-text-body: #666666;
+  --lc-text-muted: #8A8A8A;
+  --lc-text-highlight: #171717;
+  --lc-surface-subtle: #F1F1F1;
+  --lc-grid-color: rgba(0, 0, 0, 0.02);
+  --lc-table-header-bg: #F1F1F1;
+  --lc-table-row-hover: #F8F8F8;
 }
 
 /* ─── PAGE HEADER & CONTROLS ─── */

@@ -5,6 +5,7 @@ import { formatDateTime } from "../../data/utils";
 import { dashboardService, DashboardSummary } from "../../services/dashboard";
 import { certificationService, CertificationResponse } from "../../services/certifications";
 import { auditService, AuditEventResponse } from "../../services/audit";
+import BelIconMark from "../../components/ui/BelIconMark";
 import "./DashboardPage.css";
 
 /* ── Count-up Hook ─────────────────────────────────────────────────── */
@@ -400,14 +401,16 @@ function IndianTricolourPill() {
   );
 }
 
-/* ── Global Defence Network Card with Subtle Indian Tricolour Accent ── */
+/* ── BEL Defence Network Card with Subtle Indian Tricolour Accent ── */
 function GlobalDefenceNetworkCard() {
+  const [hoveredNode, setHoveredNode] = useState<{ city: string; label: string; x: number; y: number; color: string } | null>(null);
+
   const nodes = [
-    { city: "New Delhi", label: "Strategic HQ", x: 420, y: 85, color: "#38bdf8", pulseClass: "db-node-pulse-1" },
-    { city: "Bengaluru", label: "BEL Defence Complex", x: 415, y: 145, color: "#22c55e", pulseClass: "db-node-pulse-2" },
-    { city: "Mumbai", label: "Naval Command Deck", x: 385, y: 118, color: "#3b82f6", pulseClass: "db-node-pulse-3" },
-    { city: "Hyderabad", label: "Avionics Research Node", x: 425, y: 124, color: "#8b5cf6", pulseClass: "db-node-pulse-4" },
-    { city: "Kolkata", label: "Eastern Fleet Depot", x: 470, y: 105, color: "#f59e0b", pulseClass: "db-node-pulse-5" },
+    { city: "New Delhi", label: "Strategic HQ", x: 420, y: 85, color: "#38bdf8", delay: "0s" },
+    { city: "Bengaluru", label: "BEL Defence Complex", x: 415, y: 145, color: "#22c55e", delay: "1.4s" },
+    { city: "Mumbai", label: "Naval Command Deck", x: 385, y: 118, color: "#3b82f6", delay: "0.7s" },
+    { city: "Hyderabad", label: "Avionics Research Node", x: 425, y: 124, color: "#8b5cf6", delay: "2.1s" },
+    { city: "Kolkata", label: "Eastern Fleet Depot", x: 470, y: 105, color: "#f59e0b", delay: "2.8s" },
   ];
 
   return (
@@ -415,7 +418,7 @@ function GlobalDefenceNetworkCard() {
       <div className="db-card-header" style={{ marginBottom: 10 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div className="db-card-title" style={{ color: "#38bdf8" }}>GLOBAL DEFENCE NETWORK</div>
+            <div className="db-card-title" style={{ color: "#38bdf8" }}>BEL DEFENCE NETWORK</div>
             <IndianTricolourPill />
           </div>
           <div className="db-card-subtitle">
@@ -423,8 +426,8 @@ function GlobalDefenceNetworkCard() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="db-status-dot-pulse" />
-          <span style={{ fontSize: "0.7rem", color: "#38bdf8", fontWeight: 700, letterSpacing: "0.08em" }}>
+          <span className="db-mesh-active-dot" />
+          <span className="db-mesh-active-text">
             MESH ACTIVE
           </span>
         </div>
@@ -432,9 +435,29 @@ function GlobalDefenceNetworkCard() {
 
       <div className="db-network-map-wrapper">
         <svg className="db-network-svg" viewBox="0 0 600 220" fill="none">
-          <ellipse cx="300" cy="110" rx="270" ry="95" stroke="rgba(30, 58, 96, 0.45)" strokeWidth="1" strokeDasharray="3 6" fill="rgba(6, 16, 32, 0.4)" />
-          <ellipse cx="300" cy="110" rx="190" ry="70" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" strokeDasharray="4 4" />
+          <defs>
+            <filter id="packetGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <radialGradient id="centralPulseGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.3" />
+              <stop offset="70%" stopColor="#0284c7" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          {/* Radar background circles */}
+          <ellipse cx="300" cy="110" rx="270" ry="95" stroke="rgba(30, 58, 96, 0.45)" strokeWidth="1" strokeDasharray="3 6" fill="rgba(6, 16, 32, 0.4)" className="db-radar-outer-ring" />
+          <ellipse cx="300" cy="110" rx="190" ry="70" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" strokeDasharray="4 4" className="db-radar-inner-ring" />
           <line x1="30" y1="110" x2="570" y2="110" stroke="rgba(30, 58, 96, 0.35)" strokeWidth="1" />
+
+          {/* Central expanding signal waves */}
+          <circle cx="420" cy="115" className="db-network-central-pulse db-pulse-wave-1" />
+          <circle cx="420" cy="115" className="db-network-central-pulse db-pulse-wave-2" />
 
           {/* India Regional Highlight Boundary */}
           <path
@@ -443,28 +466,125 @@ function GlobalDefenceNetworkCard() {
             stroke="rgba(56, 189, 248, 0.4)"
             strokeWidth="1.5"
             strokeDasharray="4 4"
+            className="db-india-boundary"
           />
 
-          <path d="M 420,85 L 385,118 L 415,145 L 425,124 L 470,105 L 420,85 Z" stroke="rgba(59, 130, 246, 0.35)" strokeWidth="1.2" strokeDasharray="3 3" />
+          {/* Base Connection Mesh */}
+          <path d="M 420,85 L 385,118 L 415,145 L 425,124 L 470,105 L 420,85 Z" stroke="rgba(59, 130, 246, 0.35)" strokeWidth="1.2" strokeDasharray="3 3" className="db-network-mesh-base" />
+          <path d="M 385,118 L 425,124 M 420,85 L 425,124" stroke="rgba(59, 130, 246, 0.25)" strokeWidth="1" strokeDasharray="2 3" />
+
+          {/* Active Telemetry Connection Streams */}
           <path d="M 420,85 L 385,118 L 415,145" stroke="#38bdf8" strokeWidth="2" fill="none" className="db-data-stream-1" />
           <path d="M 415,145 L 425,124 L 470,105" stroke="#22c55e" strokeWidth="2" fill="none" className="db-data-stream-2" />
+          <path d="M 470,105 L 420,85" stroke="#3b82f6" strokeWidth="1.8" fill="none" className="db-data-stream-3" />
 
-          {nodes.map((n) => (
-            <g key={n.city} transform={`translate(${n.x}, ${n.y})`}>
-              <circle cx="0" cy="0" r="10" fill="none" stroke={n.color} strokeWidth="1" />
-              <circle cx="0" cy="0" r="4.5" fill={n.color} />
-              <text x="8" y="3" fill="#cbd5e1" fontSize="9" fontWeight="600" letterSpacing="0.04em">
-                {n.city}
+          {/* Travelling Data Packets (Smooth native animateMotion) */}
+          <g className="db-packet-stream">
+            {/* Packet 1: Delhi -> Mumbai -> Bengaluru -> Delhi */}
+            <circle r="3" fill="#00e5ff" filter="url(#packetGlow)">
+              <animateMotion dur="4.5s" repeatCount="indefinite" path="M 420,85 L 385,118 L 415,145 L 385,118 L 420,85" />
+            </circle>
+            <circle r="1.5" fill="#ffffff">
+              <animateMotion dur="4.5s" repeatCount="indefinite" path="M 420,85 L 385,118 L 415,145 L 385,118 L 420,85" />
+            </circle>
+
+            {/* Packet 2: Bengaluru -> Hyderabad -> Kolkata -> Delhi */}
+            <circle r="3" fill="#22c55e" filter="url(#packetGlow)">
+              <animateMotion dur="5.5s" begin="1.8s" repeatCount="indefinite" path="M 415,145 L 425,124 L 470,105 L 420,85 L 415,145" />
+            </circle>
+            <circle r="1.5" fill="#ffffff">
+              <animateMotion dur="5.5s" begin="1.8s" repeatCount="indefinite" path="M 415,145 L 425,124 L 470,105 L 420,85 L 415,145" />
+            </circle>
+
+            {/* Packet 3: Cross-Telemetry Mumbai -> Hyderabad -> Delhi */}
+            <circle r="2.5" fill="#38bdf8" filter="url(#packetGlow)">
+              <animateMotion dur="3.8s" begin="3s" repeatCount="indefinite" path="M 385,118 L 425,124 L 420,85" />
+            </circle>
+          </g>
+
+          {/* Network Nodes */}
+          {nodes.map((n) => {
+            const isHovered = hoveredNode?.city === n.city;
+            return (
+              <g
+                key={n.city}
+                transform={`translate(${n.x}, ${n.y})`}
+                onMouseEnter={() => setHoveredNode(n)}
+                onMouseLeave={() => setHoveredNode(null)}
+                style={{ cursor: "pointer" }}
+                className="db-node-group"
+              >
+                {/* Gentle Pulsing Halo */}
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="10"
+                  fill="none"
+                  stroke={n.color}
+                  strokeWidth="1.2"
+                  className="db-node-pulse-ring"
+                  style={{ animationDelay: n.delay }}
+                />
+                {/* Secondary Ripple on Hover or Pulse */}
+                <circle
+                  cx="0"
+                  cy="0"
+                  r={isHovered ? 13 : 7}
+                  fill="none"
+                  stroke={n.color}
+                  strokeWidth={isHovered ? 1.5 : 0.8}
+                  opacity={isHovered ? 0.8 : 0.4}
+                  style={{ transition: "all 0.25s ease" }}
+                />
+                {/* Solid Core Dot */}
+                <circle
+                  cx="0"
+                  cy="0"
+                  r={isHovered ? 5.5 : 4.5}
+                  fill={n.color}
+                  className="db-node-core"
+                  style={{
+                    animationDelay: n.delay,
+                    filter: isHovered ? `drop-shadow(0 0 6px ${n.color})` : "none",
+                    transition: "all 0.2s ease",
+                  }}
+                />
+                <text
+                  x="11"
+                  y="3.5"
+                  className="db-network-node-text"
+                  fontSize="9.5"
+                  letterSpacing="0.04em"
+                  style={{
+                    fontWeight: isHovered ? 700 : 600,
+                    filter: isHovered ? `drop-shadow(0 0 4px ${n.color})` : "none",
+                  }}
+                >
+                  {n.city}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Interactive Tactical Tooltip on Node Hover */}
+          {hoveredNode && (
+            <g transform={`translate(${hoveredNode.x}, ${hoveredNode.y - 18})`} className="db-node-tooltip-bubble">
+              <rect x="-65" y="-15" width="130" height="17" rx="4" className="db-node-tooltip-bg" />
+              <text x="0" y="-3.5" textAnchor="middle" fill="#ffffff" fontSize="7.5" fontWeight="700" letterSpacing="0.05em">
+                {hoveredNode.city.toUpperCase()} • {hoveredNode.label.toUpperCase()}
               </text>
             </g>
-          ))}
+          )}
         </svg>
       </div>
 
       <div className="db-network-stats">
         <div className="db-network-stat-box">
           <div style={{ fontSize: "0.625rem", color: "#64748b", fontWeight: 700 }}>ACTIVE NODES</div>
-          <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#22c55e", marginTop: 2 }}>5/5 Operational</div>
+          <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#22c55e", marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+            <span className="db-micro-green-dot" />
+            5/5 Operational
+          </div>
         </div>
         <div className="db-network-stat-box">
           <div style={{ fontSize: "0.625rem", color: "#64748b", fontWeight: 700 }}>ENCRYPTION</div>
@@ -472,7 +592,7 @@ function GlobalDefenceNetworkCard() {
         </div>
         <div className="db-network-stat-box">
           <div style={{ fontSize: "0.625rem", color: "#64748b", fontWeight: 700 }}>LEDGER UPTIME</div>
-          <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#f8fafc", marginTop: 2 }}>99.99%</div>
+          <div className="db-network-stat-val-uptime" style={{ fontSize: "0.875rem", fontWeight: 700, color: "#f8fafc", marginTop: 2 }}>99.99%</div>
         </div>
         <div className="db-network-stat-box">
           <div style={{ fontSize: "0.625rem", color: "#64748b", fontWeight: 700 }}>CONSENSUS</div>
@@ -747,6 +867,22 @@ export default function DashboardPage() {
         <RecentCertificationsSection certifications={certifications} />
         <DefenceTrustBanner />
       </div>
+
+      {/* ── Footer Subtle BEL Branding ────────────────────────── */}
+      <footer className="db-footer-branding">
+        <div className="db-footer-left">
+          <BelIconMark size={16} />
+          <span className="db-footer-title">BEL DEFENCE TRUST</span>
+        </div>
+        <div className="db-footer-divider">•</div>
+        <div className="db-footer-tags">
+          <span>BLOCKCHAIN</span>
+          <span className="db-tag-dot">•</span>
+          <span>SECURITY</span>
+          <span className="db-tag-dot">•</span>
+          <span>SOVEREIGNTY</span>
+        </div>
+      </footer>
 
       {/* Overview Modal */}
       {showOverview && <OverviewModal onClose={() => setShowOverview(false)} />}

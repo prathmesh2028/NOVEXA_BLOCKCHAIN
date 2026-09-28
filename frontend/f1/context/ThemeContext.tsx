@@ -27,14 +27,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     root.setAttribute("data-theme", theme);
     root.style.colorScheme = theme;
+    if (body) {
+      body.setAttribute("data-theme", theme);
+    }
     if (theme === "light") {
-      root.classList.add("light");
-      root.classList.remove("dark");
+      root.classList.add("light", "theme-light");
+      root.classList.remove("dark", "theme-dark");
+      if (body) {
+        body.classList.add("light", "theme-light");
+        body.classList.remove("dark", "theme-dark");
+      }
     } else {
-      root.classList.add("dark");
-      root.classList.remove("light");
+      root.classList.add("dark", "theme-dark");
+      root.classList.remove("light", "theme-light");
+      if (body) {
+        body.classList.add("dark", "theme-dark");
+        body.classList.remove("light", "theme-light");
+      }
     }
     try {
       localStorage.setItem(THEME_STORAGE_KEY, theme);

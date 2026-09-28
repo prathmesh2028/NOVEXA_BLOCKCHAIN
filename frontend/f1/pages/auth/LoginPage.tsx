@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
+import BelIconMark from "../../components/ui/BelIconMark";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 import "./LoginPage.css";
 
 // Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
@@ -49,55 +51,6 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     password: "password",
   },
 ];
-
-function BelIconMark({ size = 20 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ display: "block" }}
-    >
-      <defs>
-        <linearGradient id="belMarkGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="60%" stopColor="#67e8f9" />
-          <stop offset="100%" stopColor="#00e5ff" />
-        </linearGradient>
-      </defs>
-      {/* BEL Defence Emblem: Geometric 'B' with concentric radar frequency waves */}
-      <path
-        d="M4.5 4.5H11.5C13.2 4.5 14.5 5.7 14.5 7.2C14.5 8.4 13.7 9.3 12.5 9.7C14 10.1 15.2 11.2 15.2 12.8C15.2 14.6 13.5 16 11.5 16H4.5V4.5Z"
-        stroke="url(#belMarkGrad)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M4.5 10.2H11.5"
-        stroke="url(#belMarkGrad)"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      {/* Outer Radar Telemetry Wave Arc */}
-      <path
-        d="M18 5C20.5 6.8 22 9.5 22 12.5C22 15.5 20.5 18.2 18 20"
-        stroke="#00e5ff"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      {/* Inner Radar Telemetry Wave Arc */}
-      <path
-        d="M17 8C18.5 9.2 19.5 10.8 19.5 12.5C19.5 14.2 18.5 15.8 17 17"
-        stroke="#ffffff"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -169,9 +122,10 @@ export default function LoginPage() {
           </div>
         </Link>
 
-        <div className="cmd-top-telemetry">
+        <div className="cmd-top-telemetry" style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div className="cmd-telemetry-line" />
           <span>KAVACH TRUST PLATFORM • SECURE ACCESS</span>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -234,6 +188,20 @@ export default function LoginPage() {
               <div className="cmd-feature-info">
                 <span className="cmd-feature-title">Mission Critical</span>
                 <span className="cmd-feature-sub">Built for defence ecosystem</span>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="cmd-feature-item">
+              <div className="cmd-feature-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div className="cmd-feature-info">
+                <span className="cmd-feature-title">Secure Communication</span>
+                <span className="cmd-feature-sub">Encrypted network</span>
               </div>
             </div>
           </div>
@@ -341,19 +309,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Secure Network Node Badge (Preserved) */}
-          <div className="cmd-node-badge node-comm">
-            <div className="cmd-node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-            </div>
-            <div className="cmd-node-text-group">
-              <span className="cmd-node-title">SECURE COMMUNICATION</span>
-              <span className="cmd-node-sub">ENCRYPTED NETWORK</span>
-            </div>
-          </div>
         </div>
 
         {/* ─── RIGHT: STABLE LOGIN CONSOLE ─── */}
