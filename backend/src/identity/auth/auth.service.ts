@@ -112,47 +112,48 @@ export class AuthService {
     let targetEmail = email ? email.trim() : '';
     const lower = targetEmail.toLowerCase();
 
-    // Fast-path: Check memory demo store first so demo access never waits for Prisma socket timeouts
-    const fallback = FALLBACK_USERS.find(
-      (u) =>
-        u.email.toLowerCase() === lower ||
-        u.id === targetEmail ||
-        u.roles.some((r) => r.toLowerCase() === lower) ||
-        (lower === 'demo' && u.id === 'usr-001') ||
-        (lower === 'admin' && u.id === 'usr-001') ||
-        (lower === 'creator' && u.id === 'usr-002') ||
-        (lower === 'tech' && u.id === 'usr-003') ||
-        (lower === 'auditor' && u.id === 'usr-004'),
-    );
-
+    // DEMO MODE: Use fallback users only when explicitly in demo mode
     let user: any = null;
-    if (fallback) {
-      user = {
-        ...fallback,
-        passwordHash: fallback.passwordHash,
-        roles: fallback.roles.map((r) => ({ role: r })),
-        actor: fallback.actor
-          ? {
-              id: fallback.actor.id,
-              did: fallback.actor.did,
-              credentialStatus: fallback.actor.credential_status,
-              identityStatus: fallback.actor.identity_status,
-              walletAddress: fallback.actor.wallet_address,
-            }
-          : null,
-      };
-    } else {
-      try {
-        user = await this.prisma.user.findUnique({
-          where: { email: targetEmail },
-          include: {
-            roles: true,
-            actor: true,
-          },
-        });
-      } catch (err: any) {
-        this.logger.warn(`Prisma user lookup failed: ${err.message}.`);
+    if (this.config.isDemoMode) {
+      const fallback = FALLBACK_USERS.find(
+        (u) =>
+          u.email.toLowerCase() === lower ||
+          u.id === targetEmail ||
+          u.roles.some((r) => r.toLowerCase() === lower) ||
+          (lower === 'demo' && u.id === 'usr-001') ||
+          (lower === 'admin' && u.id === 'usr-001') ||
+          (lower === 'creator' && u.id === 'usr-002') ||
+          (lower === 'tech' && u.id === 'usr-003') ||
+          (lower === 'auditor' && u.id === 'usr-004'),
+      );
+
+      if (fallback) {
+        user = {
+          ...fallback,
+          passwordHash: fallback.passwordHash,
+          roles: fallback.roles.map((r) => ({ role: r })),
+          actor: fallback.actor
+            ? {
+                id: fallback.actor.id,
+                did: fallback.actor.did,
+                credentialStatus: fallback.actor.credential_status,
+                identityStatus: fallback.actor.identity_status,
+                walletAddress: fallback.actor.wallet_address,
+              }
+            : null,
+        };
       }
+    }
+
+    // REAL MODE: Always use database, no fallback
+    if (!user) {
+      user = await this.prisma.user.findUnique({
+        where: { email: targetEmail },
+        include: {
+          roles: true,
+          actor: true,
+        },
+      });
     }
 
     if (!user) {
@@ -168,16 +169,17 @@ export class AuthService {
       }
     }
 
-    // In demo/offline mode, permit standard passwords
-    if (
-      !isPasswordValid &&
-      (password === 'password' ||
+    // DEMO MODE: Permit standard passwords
+    if (this.config.isDemoMode && !isPasswordValid) {
+      if (
+        password === 'password' ||
         password === 'admin' ||
         password === 'demo' ||
         password === '123456' ||
-        !password)
-    ) {
-      isPasswordValid = true;
+        !password
+      ) {
+        isPasswordValid = true;
+      }
     }
 
     if (!isPasswordValid) {
@@ -188,16 +190,12 @@ export class AuthService {
       throw new UnauthorizedException('Account is disabled');
     }
 
-    // Update last active
-    try {
-      if (user.id && !user.id.startsWith('usr-')) {
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { lastActive: new Date() },
-        });
-      }
-    } catch (err: any) {
-      // Ignore DB write failures when database is offline
+    // Update last active (only for real database users)
+    if (user.id && !user.id.startsWith('usr-')) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { lastActive: new Date() },
+      });
     }
 
     const roles = user.roles.map((r: any) => (typeof r === 'string' ? r : r.role));
@@ -223,7 +221,8 @@ export class AuthService {
   }
 
   async validateToken(token: string): Promise<JwtPayload> {
-    if (token === 'demo-token' || token.startsWith('demo-')) {
+    // DEMO MODE: Allow demo-token bypass
+    if (this.config.isDemoMode && (token === 'demo-token' || token.startsWith('demo-'))) {
       return {
         sub: 'usr-001',
         email: 'a.mehta@bel-defence.in',
@@ -231,6 +230,8 @@ export class AuthService {
         did: 'did:bel:actor:001',
       };
     }
+    
+    // REAL MODE: Only validate JWT tokens
     try {
       const payload = jwt.verify(token, this.config.jwtSecret, {
         issuer: this.config.jwtIssuer,
@@ -243,32 +244,31 @@ export class AuthService {
   }
 
   async getMe(userId: string): Promise<UserMeResponse> {
-    const fallback = FALLBACK_USERS.find(
-      (u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase(),
-    );
-    if (fallback) {
-      return {
-        id: fallback.id,
-        email: fallback.email,
-        name: fallback.name,
-        status: fallback.status,
-        roles: fallback.roles,
-        actor: fallback.actor,
-      };
+    // DEMO MODE: Use fallback users
+    if (this.config.isDemoMode) {
+      const fallback = FALLBACK_USERS.find(
+        (u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase(),
+      );
+      if (fallback) {
+        return {
+          id: fallback.id,
+          email: fallback.email,
+          name: fallback.name,
+          status: fallback.status,
+          roles: fallback.roles,
+          actor: fallback.actor,
+        };
+      }
     }
 
-    let user: any = null;
-    try {
-      user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          roles: true,
-          actor: true,
-        },
-      });
-    } catch (err: any) {
-      this.logger.warn(`Prisma getMe lookup failed: ${err.message}.`);
-    }
+    // REAL MODE: Always use database
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        roles: true,
+        actor: true,
+      },
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { supplyChainService, ShipmentResponse, FacilityResponse, LotResponse } from "../../../services/supply-chain";
+import { supplyChainService, ShipmentResponse, FacilityResponse } from "../../../services/supply-chain";
 import StatusBadge from "../../../components/ui/StatusBadge";
 
 const overlay: React.CSSProperties = {
@@ -27,7 +27,6 @@ const lbl: React.CSSProperties = {
 export default function ShipmentsList() {
   const [shipments, setShipments] = useState<ShipmentResponse[]>([]);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
-  const [lots, setLots] = useState<LotResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -36,12 +35,9 @@ export default function ShipmentsList() {
 
   const [originId, setOriginId] = useState("");
   const [destId, setDestId] = useState("");
-  const [lotId, setLotId] = useState("");
-  const [carrier, setCarrier] = useState("");
   const [tracking, setTracking] = useState("");
-  const [eta, setEta] = useState("");
 
-  useEffect(() => { load(); loadFacilities(); loadLots(); }, []);
+  useEffect(() => { load(); loadFacilities(); }, []);
 
   const load = async () => {
     try {
@@ -56,22 +52,14 @@ export default function ShipmentsList() {
       const d = await supplyChainService.listFacilities();
       const list: FacilityResponse[] = (d as any).items || (d as any) || [];
       setFacilities(list);
-      if (list.length > 0) setOriginId(list[0].id);
-      if (list.length > 1) setDestId(list[1].id);
-    } catch (e) { console.error(e); }
-  };
-
-  const loadLots = async () => {
-    try {
-      const d = await supplyChainService.listLots();
-      setLots((d as any).items || (d as any) || []);
+      if (list.length > 0) setOriginId(list[0].id); // Use database ID
+      if (list.length > 1) setDestId(list[1].id); // Use database ID
     } catch (e) { console.error(e); }
   };
 
   const openModal = () => {
     setOriginId(facilities[0]?.id || ""); setDestId(facilities[1]?.id || "");
-    setLotId(lots[0]?.id || ""); setCarrier("");
-    setTracking(`TRK-${Date.now().toString(36).toUpperCase()}`); setEta("");
+    setTracking(`TRK-${Date.now().toString(36).toUpperCase()}`);
     setStatus(null); setShowModal(true);
   };
 
@@ -84,27 +72,42 @@ export default function ShipmentsList() {
     try {
       await supplyChainService.createShipment({
         shipmentId: `SHP-${Date.now().toString(36).toUpperCase()}`,
-        lotId: lotId || undefined,
-        originFacilityId: originId,
-        destinationFacilityId: destId,
-        carrier: carrier.trim() || undefined,
+        dispatchFacilityId: originId, // Use database ID
+        receiveFacilityId: destId, // Use database ID
         trackingNumber: tracking.trim() || undefined,
-        estimatedArrival: eta || undefined,
       });
-      setStatus({ type: "success", msg: "Shipment dispatched successfully!" });
+      setStatus({ type: "success", msg: "Shipment created successfully!" });
       await load();
       setTimeout(() => { setShowModal(false); setStatus(null); }, 1400);
     } catch (err: any) {
-      setStatus({ type: "error", msg: err?.data?.message || err?.message || "Failed to dispatch shipment." });
+      setStatus({ type: "error", msg: err?.data?.message || err?.message || "Failed to create shipment." });
     } finally { setIsSubmitting(false); }
+  };
+
+  const handleDispatch = async (id: string) => {
+    try {
+      await supplyChainService.dispatchShipment(id);
+      await load();
+    } catch (err: any) {
+      console.error("Failed to dispatch shipment:", err);
+    }
+  };
+
+  const handleReceive = async (id: string) => {
+    try {
+      await supplyChainService.receiveShipment(id);
+      await load();
+    } catch (err: any) {
+      console.error("Failed to receive shipment:", err);
+    }
   };
 
   const filtered = shipments.filter(s =>
     !search ||
     (s.shipment_id || "").toLowerCase().includes(search.toLowerCase()) ||
     ((s as any).shipmentId || "").toLowerCase().includes(search.toLowerCase()) ||
-    (s.lot?.lot_id || "").toLowerCase().includes(search.toLowerCase()) ||
-    (s.destination_facility?.name || "").toLowerCase().includes(search.toLowerCase())
+    ((s as any).dispatchFacility?.name || "").toLowerCase().includes(search.toLowerCase()) ||
+    ((s as any).receiveFacility?.name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const destFacilities = facilities.filter(f => f.id !== originId);
@@ -185,10 +188,12 @@ export default function ShipmentsList() {
             {/* Scrollable body */}
             <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
               {status && (
-                <div style={{ marginBottom: 16, padding: "10px 14px", borderRadius: 6, fontSize: "0.8125rem",
+                <div style={{
+                  marginBottom: 16, padding: "10px 14px", borderRadius: 6, fontSize: "0.8125rem",
                   background: status.type === "success" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
                   border: `1px solid ${status.type === "success" ? "#22c55e" : "#ef4444"}`,
-                  color: status.type === "success" ? "#4ade80" : "#f87171" }}>
+                  color: status.type === "success" ? "#4ade80" : "#f87171"
+                }}>
                   {status.type === "success" ? "✓ " : "⚠ "}{status.msg}
                 </div>
               )}
@@ -202,38 +207,19 @@ export default function ShipmentsList() {
                   <label style={lbl}>Origin Facility <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={originId} onChange={e => { setOriginId(e.target.value); setDestId(""); }} required>
                     <option value="">— Select origin —</option>
-                    {facilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId || f.id}]</option>)}
+                    {facilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId}]</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={lbl}>Destination Facility <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={destId} onChange={e => setDestId(e.target.value)} required>
                     <option value="">— Select destination —</option>
-                    {destFacilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId || f.id}]</option>)}
+                    {destFacilities.map(f => <option key={f.id} value={f.id}>{f.name} [{f.facility_id || (f as any).facilityId}]</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={lbl}>Attached Lot <span style={{ fontWeight: 400, fontSize: "0.68rem", textTransform: "none" }}>(optional)</span></label>
-                  <select style={{ ...inp, cursor: "pointer" }} value={lotId} onChange={e => setLotId(e.target.value)}>
-                    <option value="">— No lot attached —</option>
-                    {lots.map(l => <option key={l.id} value={l.id}>
-                      {l.lot_id || (l as any).lotId || l.id}{l.description || (l as any).materialType ? ` — ${l.description || (l as any).materialType}` : ""}
-                    </option>)}
-                  </select>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <label style={lbl}>Carrier / Transport</label>
-                    <input style={inp} type="text" placeholder="e.g. DRDO Secure Courier" value={carrier} onChange={e => setCarrier(e.target.value)} />
-                  </div>
-                  <div>
-                    <label style={lbl}>Tracking Number</label>
-                    <input style={inp} type="text" placeholder="Auto-generated" value={tracking} onChange={e => setTracking(e.target.value)} />
-                  </div>
-                </div>
-                <div>
-                  <label style={lbl}>Estimated Arrival</label>
-                  <input style={inp} type="date" value={eta} onChange={e => setEta(e.target.value)} />
+                  <label style={lbl}>Tracking Number</label>
+                  <input style={inp} type="text" placeholder="Auto-generated" value={tracking} onChange={e => setTracking(e.target.value)} />
                 </div>
               </form>
             </div>

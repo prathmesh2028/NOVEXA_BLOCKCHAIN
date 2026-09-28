@@ -54,7 +54,7 @@ export default function LotsList() {
       const d = await supplyChainService.listSuppliers();
       const list: SupplierResponse[] = (d as any).items || (d as any) || [];
       setSuppliers(list);
-      if (list.length) setSupplierId(list[0].id);
+      if (list.length) setSupplierId(list[0].id); // Use database ID
     } catch (e) { console.error(e); }
   };
 
@@ -76,7 +76,7 @@ export default function LotsList() {
     try {
       await supplyChainService.createLot({
         lotId: `LOT-${Date.now().toString(36).toUpperCase()}`,
-        facilityId: supplierId,
+        supplierId: supplierId, // Use database ID
         batchId: batchRef.trim() || undefined,
         description: materialType.trim(),
         quantity: qty, unit: "units",
@@ -95,7 +95,7 @@ export default function LotsList() {
     (l.lot_id || "").toLowerCase().includes(search.toLowerCase()) ||
     ((l as any).lotId || "").toLowerCase().includes(search.toLowerCase()) ||
     (l.batch_id || "").toLowerCase().includes(search.toLowerCase()) ||
-    (l.facility?.name || "").toLowerCase().includes(search.toLowerCase())
+    (l.supplier?.name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -121,14 +121,14 @@ export default function LotsList() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-              {["Lot ID", "Batch Reference", "Material / Type", "Qty", "Mfg Date", "Status"].map(h => (
+              {["Lot ID", "Batch Reference", "Material / Type", "Supplier", "Qty", "Mfg Date", "Status"].map(h => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading lots…</td></tr>
+              <tr><td colSpan={7} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading lots…</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No lots found. Click <strong>+ Create Material Lot</strong> to add one.</td></tr>
             ) : filtered.map((l, idx) => (
@@ -145,6 +145,7 @@ export default function LotsList() {
                   </span>
                 </td>
                 <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{l.description || (l as any).materialType || "—"}</td>
+                <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{l.supplier?.name || "—"}</td>
                 <td style={{ padding: "12px 14px", fontSize: "0.85rem", fontWeight: 500 }}>{l.quantity ?? 0} {l.unit || "units"}</td>
                 <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{l.manufactured_date || (l as any).manufacturedAt?.split?.("T")[0] || "—"}</td>
                 <td style={{ padding: "12px 14px" }}><StatusBadge status={(l as any).status || "CREATED"} size="sm" /></td>
@@ -169,10 +170,12 @@ export default function LotsList() {
             {/* Scrollable body */}
             <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
               {status && (
-                <div style={{ marginBottom: 16, padding: "10px 14px", borderRadius: 6, fontSize: "0.8125rem",
+                <div style={{
+                  marginBottom: 16, padding: "10px 14px", borderRadius: 6, fontSize: "0.8125rem",
                   background: status.type === "success" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
                   border: `1px solid ${status.type === "success" ? "#22c55e" : "#ef4444"}`,
-                  color: status.type === "success" ? "#4ade80" : "#f87171" }}>
+                  color: status.type === "success" ? "#4ade80" : "#f87171"
+                }}>
                   {status.type === "success" ? "✓ " : "⚠ "}{status.msg}
                 </div>
               )}
@@ -185,7 +188,7 @@ export default function LotsList() {
                   <label style={lbl}>Originating Supplier <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={supplierId} onChange={e => setSupplierId(e.target.value)} required>
                     <option value="">— Select supplier —</option>
-                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.supplier_id || (s as any).supplierId || s.id})</option>)}
+                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.supplier_id || (s as any).supplierId})</option>)}
                   </select>
                   {suppliers.length === 0 && <p style={{ margin: "4px 0 0", fontSize: "0.73rem", color: "#f59e0b" }}>⚠ Add a supplier first.</p>}
                 </div>

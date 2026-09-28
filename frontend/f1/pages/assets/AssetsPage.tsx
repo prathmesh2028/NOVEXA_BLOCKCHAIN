@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import { formatDate } from "../../data/utils";
@@ -14,32 +14,45 @@ import "./AssetsPage.css";
 
 export default function AssetsPage() {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [verificationFilter, setVerificationFilter] = useState("ALL");
+  const [assets, setAssets] = useState<AssetResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const stats = useMemo(() => getDefenceAssetStats(), []);
+  useEffect(() => {
+    loadAssets();
+  }, []);
+
+  const loadAssets = async () => {
+    try {
+      setLoading(true);
+      const response = await assetService.listAssets({
+        search: search || undefined,
+        lifecycle: statusFilter === "ALL" ? undefined : statusFilter,
+      });
+      setAssets(response.items);
+    } catch (err: any) {
+      setError(err.message || "Failed to load assets");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAssets();
+  }, [search, statusFilter]);
 
   const filteredAssets = useMemo(() => {
-    return getDefenceAssets({
-      search,
-      category: categoryFilter,
-      status: statusFilter,
-      verification: verificationFilter,
-    });
-  }, [search, categoryFilter, statusFilter, verificationFilter]);
+    return assets;
+  }, [assets]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
-    categoryFilter !== "ALL" ||
-    statusFilter !== "ALL" ||
-    verificationFilter !== "ALL";
+    statusFilter !== "ALL";
 
   const clearFilters = () => {
     setSearch("");
-    setCategoryFilter("ALL");
     setStatusFilter("ALL");
-    setVerificationFilter("ALL");
   };
 
   // Professional defence status badge styling (ChatGPT Minimal Palette)
@@ -74,7 +87,7 @@ export default function AssetsPage() {
       },
     };
 
-    const c = config[status] || config["Active"];
+    const c = config[status] || config["SUPPLIER_DECLARED"];
 
     return (
       <span
@@ -101,7 +114,7 @@ export default function AssetsPage() {
             background: c.dot,
           }}
         />
-        {status}
+        {status.replace(/_/g, " ")}
       </span>
     );
   };
@@ -132,7 +145,7 @@ export default function AssetsPage() {
       },
     };
 
-    const c = config[verification] || config["Verified"];
+    const c = config[verification] || config["PENDING"];
 
     return (
       <span
@@ -151,14 +164,14 @@ export default function AssetsPage() {
         }}
       >
         <span style={{ fontSize: "0.7rem" }}>{c.icon}</span>
-        {verification}
+        {verification.replace(/_/g, " ")}
       </span>
     );
   };
 
   // Blockchain proof status badge
-  const renderProofBadge = (proofStatus: DefenceAsset["proofStatus"], hash?: string) => {
-    if (proofStatus === "Anchored") {
+  const renderProofBadge = (certStatus: string, certId?: string | null) => {
+    if (certStatus === "CONFIRMED" && certId) {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-end" }}>
           <span
@@ -177,22 +190,30 @@ export default function AssetsPage() {
             }}
           >
             <span style={{ fontSize: "0.65rem" }}>⬡</span>
-            Anchored
+            Certified
           </span>
-          {hash && (
-            <span
-              className="font-mono-id"
-              style={{ fontSize: "0.6875rem", color: "#737373" }}
-              title={hash}
-            >
-              {hash.slice(0, 8)}...{hash.slice(-4)}
-            </span>
-          )}
-        </div>
+          <span
+            className="font-mono-id"
+            style={{ fontSize: "0.6875rem", color: "#64748b" }}
+          >
+            {certId}
+          </span>
+          {
+            hash && (
+              <span
+                className="font-mono-id"
+                style={{ fontSize: "0.6875rem", color: "#737373" }}
+                title={hash}
+              >
+                {hash.slice(0, 8)}...{hash.slice(-4)}
+              </span>
+            )
+          }
+        </div >
       );
     }
 
-    if (proofStatus === "Pending") {
+    if (certStatus === "PENDING") {
       return (
         <span
           style={{
@@ -210,7 +231,7 @@ export default function AssetsPage() {
           }}
         >
           <span style={{ fontSize: "0.65rem" }}>◷</span>
-          Proof Pending
+          Certification Pending
         </span>
       );
     }
@@ -232,7 +253,7 @@ export default function AssetsPage() {
         }}
       >
         <span style={{ fontSize: "0.65rem" }}>○</span>
-        Anchor Required
+        Not Certified
       </span>
     );
   };
@@ -402,7 +423,105 @@ export default function AssetsPage() {
       </div>
 
       {/* Asset Listing Content */}
-      {filteredAssets.length === 0 ? (
+      {loading ? (
+        <div
+          className="panel"
+          style={{
+            padding: "60px 24px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "rgba(30, 58, 96, 0.4)",
+              border: "1px solid #1e3a60",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.75rem",
+              color: "#64748b",
+              marginBottom: 16,
+            }}
+          >
+            ◈
+          </div>
+          <h3
+            className="font-display"
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 8,
+              letterSpacing: "0.02em",
+            }}
+          >
+            LOADING ASSETS
+          </h3>
+        </div>
+      ) : error ? (
+        <div
+          className="panel"
+          style={{
+            padding: "60px 24px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.2)",
+              border: "1px solid #ef4444",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.75rem",
+              color: "#ef4444",
+              marginBottom: 16,
+            }}
+          >
+            ✕
+          </div>
+          <h3
+            className="font-display"
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 8,
+              letterSpacing: "0.02em",
+            }}
+          >
+            ERROR LOADING ASSETS
+          </h3>
+          <p
+            style={{
+              fontSize: "0.875rem",
+              color: "#64748b",
+              maxWidth: 420,
+              margin: "0 auto 20px",
+              lineHeight: 1.5,
+            }}
+          >
+            {error}
+          </p>
+          <button onClick={loadAssets} className="btn-primary" style={{ fontSize: "0.8125rem" }}>
+            Retry
+          </button>
+        </div>
+      ) : filteredAssets.length === 0 ? (
         /* Empty State */
         <div
           className="ast-toolbar"
@@ -441,7 +560,7 @@ export default function AssetsPage() {
               letterSpacing: "0.02em",
             }}
           >
-            NO DEFENCE ASSETS FOUND
+            NO ASSETS FOUND
           </h3>
           <p
             style={{
@@ -452,7 +571,7 @@ export default function AssetsPage() {
               lineHeight: 1.5,
             }}
           >
-            No defence asset records match your current search query or filter selection. Adjust your
+            No asset records match your current search query or filter selection. Adjust your
             parameters or reset filters to view all registered inventory.
           </p>
           <button onClick={clearFilters} className="ast-view-btn" style={{ maxWidth: 160 }}>
@@ -480,59 +599,51 @@ export default function AssetsPage() {
                 </div>
 
                 {/* Status and Verification Badges */}
-                <div className="ast-badges-row">
-                  {renderStatusBadge(asset.status)}
-                  {renderVerificationBadge(asset.verificationStatus)}
-                </div>
+<<<<<<< HEAD
+  <div className="ast-badges-row">
+    {renderStatusBadge(asset.status)}
+    {renderVerificationBadge(asset.verificationStatus)}
+  </div>
 
-                {/* Key metadata grid */}
-                <div className="ast-meta-box">
-                  <div className="ast-meta-row">
-                    <span className="ast-meta-label">Holder / Command:</span>
-                    <span className="ast-meta-value">{asset.department}</span>
-                  </div>
-                  <div className="ast-meta-row">
-                    <span className="ast-meta-label">Base Location:</span>
-                    <span style={{ color: "#a3a3a3" }}>{asset.location}</span>
-                  </div>
-                  <div className="ast-meta-row">
-                    <span className="ast-meta-label">Last Maintenance:</span>
-                    <span style={{ color: "#a3a3a3" }}>{formatDate(asset.lastMaintenanceDate)}</span>
-                  </div>
-                  <div className="ast-meta-row">
-                    <span className="ast-meta-label">Proof Status:</span>
-                    {renderProofBadge(asset.proofStatus, asset.blockchainProof.assetHash)}
-                  </div>
-                </div>
-
-                {/* Action button */}
-                <div style={{ marginTop: "auto", paddingTop: 4 }}>
-                  <Link to={`/app/assets/${asset.id}`} className="ast-view-btn">
-                    View Details →
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="ast-footer-bar">
-            <span>
-              Showing {filteredAssets.length} of {stats.total} defence assets
-            </span>
-            <span>NOVEXA Cryptographic Trust Registry</span>
-          </div>
-        </div>
-      )}
+  {/* Key metadata grid */ }
+  <div className="ast-meta-box">
+    <div className="ast-meta-row">
+      <span className="ast-meta-label">Holder / Command:</span>
+      <span className="ast-meta-value">{asset.department}</span>
     </div>
+    <div className="ast-meta-row">
+      <span className="ast-meta-label">Base Location:</span>
+      <span style={{ color: "#a3a3a3" }}>{asset.location}</span>
+      <div className="ast-meta-row">
+        <span className="ast-meta-label">Last Maintenance:</span>
+        <span style={{ color: "#a3a3a3" }}>{formatDate(asset.lastMaintenanceDate)}</span>
+      </div>
+      <div className="ast-meta-row">
+        <span className="ast-meta-label">Proof Status:</span>
+        {renderProofBadge(asset.proofStatus, asset.blockchainProof.assetHash)}
+      </div>
+    </div>
+
+    {/* Action button */}
+    <div style={{ marginTop: "auto", paddingTop: 4 }}>
+      View Details →
+=======
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        fontSize: "0.75rem",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ color: "#64748b" }}>Supplier:</span>
+        <span style={{ color: "#cbd5e1", textAlign: "right" }}>
+          {asset.supplier || "—"}
+        </span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span style={{ color: "#64748b" }}>Batch ID:</span>
+        <span className="font-mono-id" style={{ color: "#cbd5e1", textAlign: "right" }}>
+          {asset.batch_id || "—"}
+        </div >
+      )}
+    </div >
   );
 }
-
-const tableHeaderStyle: React.CSSProperties = {
-  padding: "12px 16px",
-  fontSize: "0.6875rem",
-  fontWeight: 700,
-  color: "#64748b",
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  whiteSpace: "nowrap",
-};
