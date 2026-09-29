@@ -6,6 +6,7 @@ import { dashboardService, DashboardSummary } from "../../services/dashboard";
 import { certificationService, CertificationResponse } from "../../services/certifications";
 import { auditService, AuditEventResponse } from "../../services/audit";
 import BelIconMark from "../../components/ui/BelIconMark";
+import { DEMO_DASHBOARD_SUMMARY, DEMO_AUDIT_EVENTS, DEMO_CERTIFICATIONS } from "./dashboardDemoData";
 import "./DashboardPage.css";
 
 /* ── Count-up Hook ─────────────────────────────────────────────────── */
@@ -760,6 +761,13 @@ function OverviewModal({ onClose }: { onClose: () => void }) {
    MAIN COMMAND CENTER DASHBOARD COMPONENT
    ════════════════════════════════════════════════════════════════════ */
 export default function DashboardPage() {
+  const [isDemoActive, setIsDemoActive] = useState(() => {
+    try {
+      return localStorage.getItem("novexa_demo_mode") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [auditEvents, setAuditEvents] = useState<AuditEventResponse[]>([]);
   const [certifications, setCertifications] = useState<CertificationResponse[]>([]);
@@ -767,7 +775,7 @@ export default function DashboardPage() {
   const [, setError] = useState<string | null>(null);
   const [showOverview, setShowOverview] = useState(false);
 
-  const loadData = () => {
+  const loadRealData = () => {
     setError(null);
     setLoading(true);
     dashboardService.getSummary()
@@ -785,8 +793,34 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isDemoActive) {
+      setSummary(DEMO_DASHBOARD_SUMMARY);
+      setAuditEvents(DEMO_AUDIT_EVENTS);
+      setCertifications(DEMO_CERTIFICATIONS);
+      setLoading(false);
+    } else {
+      loadRealData();
+    }
+  }, [isDemoActive]);
+
+  const handleLoadDemo = () => {
+    setIsDemoActive(true);
+    try {
+      localStorage.setItem("novexa_demo_mode", "true");
+    } catch {}
+    setSummary(DEMO_DASHBOARD_SUMMARY);
+    setAuditEvents(DEMO_AUDIT_EVENTS);
+    setCertifications(DEMO_CERTIFICATIONS);
+    setError(null);
+  };
+
+  const handleResetDemo = () => {
+    setIsDemoActive(false);
+    try {
+      localStorage.removeItem("novexa_demo_mode");
+    } catch {}
+    loadRealData();
+  };
 
   const totalAssets   = useCountUp(summary?.total_assets ?? 0, 800, 100);
   const activeUsers   = useCountUp(summary?.active_users ?? 0, 700, 180);
@@ -796,10 +830,63 @@ export default function DashboardPage() {
 
   const total = summary?.total_assets || 1;
   const issues = summary?.failed_verifications || 0;
-  const trustScore = Math.max(90, Math.round(((total - issues) / total) * 100 * 10) / 10);
+  const trustScore = isDemoActive
+    ? 96.0
+    : Math.max(90, Math.round(((total - issues) / total) * 100 * 10) / 10);
 
   return (
     <div className="db-v4-container page-fade">
+      {/* ── Command Center Tactical Control Bar ──────────── */}
+      <div className="db-action-bar">
+        <div className="db-action-bar-left">
+          <div className="db-action-title-group">
+            <h1 className="db-action-title">BEL Defence Trust Command Center</h1>
+            <p className="db-action-subtitle">
+              Sovereign Blockchain-Anchored Asset Integrity & Cryptographic Provenance
+            </p>
+          </div>
+          <div className="db-action-meta-strip">
+            <span className="db-telemetry-badge">
+              <span className="db-telemetry-dot" />
+              LIVE TELEMETRY
+            </span>
+            <span className="db-meta-sep">•</span>
+            <LiveClock />
+            <span className="db-meta-sep">•</span>
+            <span className="db-synthetic-badge">SYNTHETIC DEMO PROTOCOL</span>
+          </div>
+        </div>
+
+        <div className="db-action-bar-right">
+          {isDemoActive ? (
+            <div className="db-demo-active-group">
+              <span className="db-demo-pill">
+                <span className="db-demo-pill-pulse" />
+                DEMO DATA LOADED (12 ASSETS)
+              </span>
+              <button
+                id="reset-demo-btn"
+                className="db-demo-reset-btn"
+                onClick={handleResetDemo}
+                title="Clear demo data and reload live backend telemetry"
+              >
+                ↺ RESET DEMO
+              </button>
+            </div>
+          ) : (
+            <button
+              id="load-demo-btn"
+              className="db-load-demo-btn"
+              onClick={handleLoadDemo}
+              title="Populate dashboard with realistic demonstration data for presentation"
+            >
+              <span className="db-demo-btn-icon">⚡</span>
+              LOAD DEMO DATA
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* ── 5 KPI Metric Cards ────────────────────────────── */}
       <div id="dashboard-metrics" className="db-kpi-grid">
         <KpiCard
