@@ -43,7 +43,7 @@ const FALLBACK_USERS = [
     name: 'Arjun Mehta',
     passwordHash: '$2a$10$wT28t/4t.eZ8R9h0zN8WReK9Jm0v8t6s1K8m7y6d5e4r3q2w1e0r9',
     status: 'ACTIVE',
-    roles: ['SYSTEM_ADMIN', 'ADMIN'],
+    roles: ['SYSTEM_ADMIN'],
     actor: {
       id: 'act-001',
       did: 'did:bel:actor:001',
@@ -226,7 +226,7 @@ export class AuthService {
       return {
         sub: 'usr-001',
         email: 'a.mehta@bel-defence.in',
-        roles: ['SYSTEM_ADMIN', 'ADMIN'],
+        roles: ['SYSTEM_ADMIN'],
         did: 'did:bel:actor:001',
       };
     }
