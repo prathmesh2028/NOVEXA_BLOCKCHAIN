@@ -15,7 +15,7 @@ describe('AuthService (Authentication & Password Management)', () => {
     name: 'Arjun Mehta',
     status: 'ACTIVE',
     passwordHash,
-    roles: [{ role: 'ADMIN' }],
+    roles: [{ role: 'SYSTEM_ADMIN' }],
     actor: { did: 'did:bel:actor:001' },
   };
   const mockNftUser = {

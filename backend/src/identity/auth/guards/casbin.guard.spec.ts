@@ -45,13 +45,13 @@ describe('CasbinGuard (Fine-Grained RBAC)', () => {
 
     const context = createMockContext({
       sub: 'user-1',
-      roles: ['ADMIN'],
+      roles: ['SYSTEM_ADMIN'],
     }, 'GET', '/api/v1/assets');
 
     const result = await guard.canActivate(context);
     expect(result).toBe(true);
     expect(mockCasbinService.checkPermission).toHaveBeenCalledWith(
-      ['ADMIN', 'ROLE_ADMIN'],
+      ['SYSTEM_ADMIN', 'ROLE_SYSTEM_ADMIN'],
       '/api/v1/assets',
       'GET',
     );

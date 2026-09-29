@@ -71,9 +71,11 @@ export default function VerificationCenterPage() {
 
     if (foundAsset) {
       try {
-        evidence = await evidenceService.listEvidence({ assetId: foundAsset.id });
+        const evidenceRes = await evidenceService.listEvidence({ assetId: foundAsset.id });
+        evidence = evidenceRes.items || [];
       } catch (e) {
         console.warn("Backend evidence API failed:", e);
+        evidence = [];
       }
 
       try {

@@ -46,7 +46,7 @@ describe('LifecycleService', () => {
       assetId: 'nonexistent',
       toState: 'RECEIVED',
       actorId: 'usr-1',
-      actorRole: 'ADMIN',
+      actorRole: 'SYSTEM_ADMIN',
     })).rejects.toThrow(BadRequestException);
   });
 
@@ -62,7 +62,7 @@ describe('LifecycleService', () => {
       assetId: 'ast-1',
       toState: 'ACCEPTED_FOR_ASSEMBLY',
       actorId: 'usr-1',
-      actorRole: 'ADMIN',
+      actorRole: 'SYSTEM_ADMIN',
     })).rejects.toThrow(BadRequestException);
   });
 
@@ -78,7 +78,7 @@ describe('LifecycleService', () => {
       assetId: 'ast-1',
       toState: 'SUPPLIER_DECLARED',
       actorId: 'usr-1',
-      actorRole: 'AUDITOR', // AUDITOR is not in ['TECHNICIAN', 'ADMIN']
+      actorRole: 'AUDITOR', // AUDITOR is not in ['QUALITY_INSPECTOR', 'SYSTEM_ADMIN']
     })).rejects.toThrow(ForbiddenException);
   });
 
