@@ -198,10 +198,10 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     const payload = event.payload;
     this.logger.log(`Mint request for certification ${payload.certId}: asset ${payload.assetId}`);
 
-    const contractAddress =
-      process.env.CONTRACT_ADDRESS ||
-      process.env.KAVACH_SBT_ADDRESS ||
-      '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+    const contractAddress = process.env.CONTRACT_ADDRESS;
+    if (!contractAddress) {
+      throw new Error('CONTRACT_ADDRESS environment variable is required for mint operations');
+    }
 
     // Fetch certification & asset details to get actual evidence hash and batch
     const certDetails = await this.prisma.certification.findUnique({
