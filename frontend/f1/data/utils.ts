@@ -19,6 +19,7 @@ export function formatDateTime(iso: string): string {
 }
 
 export function shortHash(hash: string, chars = 6): string {
+  if (!hash) return "—";
   if (hash.length <= chars * 2 + 3) return hash;
   return hash.slice(0, chars) + "..." + hash.slice(-4);
 }
