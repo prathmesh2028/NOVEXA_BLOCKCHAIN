@@ -1,11 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import { formatDate, formatDateTime } from "../../data/utils";
-import {
-  getDefenceAssetById,
-  DefenceAsset,
-} from "./assetData";
+import { DefenceAsset, INITIAL_DEFENCE_ASSETS } from "./assetData";
 import { assetService, AssetResponse } from "../../services/assets";
 
 function mapBackendToDefenceAsset(res: AssetResponse): DefenceAsset {
@@ -79,12 +76,8 @@ export default function AssetDetailPage() {
   const [apiAsset, setApiAsset] = useState<DefenceAsset | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const staticAsset = useMemo(() => {
-    return id ? getDefenceAssetById(id) : undefined;
-  }, [id]);
-
   useEffect(() => {
-    if (!staticAsset && id) {
+    if (id) {
       setLoading(true);
       assetService.getAsset(id)
         .then((res) => {
@@ -97,9 +90,10 @@ export default function AssetDetailPage() {
         })
         .finally(() => setLoading(false));
     }
-  }, [id, staticAsset]);
+  }, [id]);
 
-  const asset = staticAsset || apiAsset;
+  const fallbackAsset = INITIAL_DEFENCE_ASSETS.find((a) => a.id === id || a.serialNumber === id) || null;
+  const asset = apiAsset || fallbackAsset;
 
   const copyToClipboard = (text: string, fieldName: string) => {
     if (navigator.clipboard) {

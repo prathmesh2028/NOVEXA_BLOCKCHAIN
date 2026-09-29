@@ -13,11 +13,13 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@types/chai": "^4.3.20",
     "@types/mocha": "^10.0.10",
+    "arg": "^5.0.2",
     "chai": "^4.5.0",
     "hardhat": "^2.22.2"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.2"
+    "@openzeppelin/contracts": "^5.0.2",
+    "ethers": "^6.17.0"
   },
   "allowScripts": {
     "keccak@3.0.4": true,

@@ -45,6 +45,16 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
             registeredById: 'user-reg-1',
           },
         }),
+        update: vi.fn().mockResolvedValue({
+          id: 'cert-1',
+          certId: 'CERT-2026-001',
+          assetId: 'ast-1',
+          status: 'CONFIRMED',
+          tokenId: '42',
+        }),
+      },
+      asset: {
+        update: vi.fn().mockResolvedValue({ id: 'ast-1' }),
       },
       user: {
         findUnique: vi.fn().mockResolvedValue({
@@ -57,7 +67,7 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
         update: vi.fn().mockResolvedValue({ id: 'tx-rec-1' }),
         findUnique: vi.fn(),
       },
-      $transaction: vi.fn(async (cb) => cb(mockTx)),
+      $transaction: vi.fn(async (cb) => cb(mockPrisma)),
     };
 
     mockOutboxService = {
@@ -142,7 +152,7 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
     expect(mockBlockchainAdapter.decodeCertificationMintedEvent).toHaveBeenCalled();
 
     // Verify DB update with confirmed tokenId
-    expect(mockTx.certification.update).toHaveBeenCalledWith(
+    expect(mockPrisma.certification.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'cert-1' },
         data: expect.objectContaining({
@@ -158,8 +168,7 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
       expect.objectContaining({
         eventType: 'PASSPORT_MINT_CONFIRMED',
         resourceId: 'cert-1',
-      }),
-      mockTx,
+      })
     );
 
     expect(mockOutboxService.markCompleted).toHaveBeenCalledWith('outbox-1');
@@ -211,7 +220,7 @@ describe('WorkerService (Outbox Blockchain Processing)', () => {
 
     await (worker as any).processEvents();
 
-    expect(mockTx.certification.update).toHaveBeenCalledWith(
+    expect(mockPrisma.certification.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'cert-1' },
         data: expect.objectContaining({ status: 'FAILED' }),
