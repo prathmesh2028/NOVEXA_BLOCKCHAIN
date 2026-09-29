@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { supplyChainService, FacilityResponse, SupplierResponse } from "../../../services/supply-chain";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import { useAuth, normalizeRole } from "../../../context/AuthContext";
 
 const overlay: React.CSSProperties = {
   position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -25,6 +26,44 @@ const lbl: React.CSSProperties = {
 };
 
 export default function FacilitiesList() {
+  const { role, user } = useAuth();
+
+  const isApproverRole = useMemo(() => {
+    const normalized = normalizeRole(role);
+    if (normalized === "system-admin" || normalized === "quality-inspector") {
+      return true;
+    }
+    const userRoles = (user?.roles || []).map((r) =>
+      r.toLowerCase().replaceAll("_", "-").trim()
+    );
+    return userRoles.some(
+      (r) =>
+        r === "system-admin" ||
+        r === "admin" ||
+        r === "administrator" ||
+        r === "quality-inspector" ||
+        r === "inspector" ||
+        r === "tech" ||
+        r === "technician"
+    );
+  }, [role, user]);
+
+  const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+
+  const handleApprove = (id: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "approved" ? ("" as any) : "approved",
+    }));
+  };
+
+  const handleDisapprove = (id: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "disapproved" ? ("" as any) : "disapproved",
+    }));
+  };
+
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,35 +151,64 @@ export default function FacilitiesList() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-              {["Facility ID", "Facility Name", "Managing Supplier", "Location", "Type", "Status"].map(h => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
+              {["Facility ID", "Facility Name", "Managing Supplier", "Location", "Type", "Status", ...(isApproverRole ? ["Actions"] : [])].map(h => (
+                <th key={h} style={{ padding: "10px 14px", textAlign: h === "Actions" ? "right" : "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading facilities…</td></tr>
+              <tr><td colSpan={isApproverRole ? 7 : 6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading facilities…</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No facilities found. Click <strong>+ Add Facility</strong> to register one.</td></tr>
-            ) : filtered.map((f, idx) => (
-              <tr
-                key={f.id}
-                className="interactive-row sc-table-row"
-                style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
-              >
-                <td style={{ padding: "12px 14px" }}><span style={{ color: "#06b6d4", fontWeight: 600 }}>{f.facility_id || (f as any).facilityId || f.id}</span></td>
-                <td style={{ padding: "12px 14px", fontWeight: 600 }}>{f.name}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{f.supplier?.name || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>
-                  <span className="sc-facility-radar-tag">
-                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#06b6d4" }} />
-                    {f.location || "Secure Site"}
-                  </span>
-                </td>
-                <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{f.type || "Manufacturing"}</td>
-                <td style={{ padding: "12px 14px" }}><StatusBadge status={(f as any).status || "OPERATIONAL"} size="sm" /></td>
-              </tr>
-            ))}
+              <tr><td colSpan={isApproverRole ? 7 : 6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No facilities found. Click <strong>+ Add Facility</strong> to register one.</td></tr>
+            ) : filtered.map((f, idx) => {
+              const facId = f.facility_id || (f as any).facilityId || f.id;
+              return (
+                <tr
+                  key={f.id}
+                  className="interactive-row sc-table-row"
+                  style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
+                >
+                  <td style={{ padding: "12px 14px" }}><span style={{ color: "#06b6d4", fontWeight: 600 }}>{facId}</span></td>
+                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>{f.name}</td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{f.supplier?.name || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>
+                    <span className="sc-facility-radar-tag">
+                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#06b6d4" }} />
+                      {f.location || "Secure Site"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{f.type || "Manufacturing"}</td>
+                  <td style={{ padding: "12px 14px" }}><StatusBadge status={(f as any).status || "OPERATIONAL"} size="sm" /></td>
+                  {isApproverRole && (
+                    <td style={{ padding: "10px 14px", textAlign: "right", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
+                        <button
+                          type="button"
+                          className={`sc-btn-approve ${approvalStatus[f.id || facId] === "approved" ? "is-approved" : ""}`}
+                          onClick={() => handleApprove(f.id || facId)}
+                          title="Approve facility verification"
+                          aria-label={`Approve ${f.name || facId}`}
+                        >
+                          <span style={{ fontSize: "0.75rem" }}>✓</span>
+                          <span>{approvalStatus[f.id || facId] === "approved" ? "Approved" : "APPROVED"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`sc-btn-disapprove ${approvalStatus[f.id || facId] === "disapproved" ? "is-disapproved" : ""}`}
+                          onClick={() => handleDisapprove(f.id || facId)}
+                          title="Disapprove facility verification"
+                          aria-label={`Disapprove ${f.name || facId}`}
+                        >
+                          <span style={{ fontSize: "0.75rem" }}>✕</span>
+                          <span>{approvalStatus[f.id || facId] === "disapproved" ? "Disapproved" : "DISAPPROVED"}</span>
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

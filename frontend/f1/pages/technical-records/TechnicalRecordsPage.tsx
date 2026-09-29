@@ -4,6 +4,20 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatDateTime } from "../../data/utils";
 import { technicalRecordsService, TechnicalRecordResponse } from "../../services/technical-records";
+import "./TechnicalRecordsPage.css";
+
+const DEMO_TECHNICAL_RECORD = {
+  asset_id: "EF-2026-001",
+  record_type: "MAINTENANCE",
+  classification: "INTERNAL",
+  dataFields: [
+    { key: "Torque_Nm", value: "450" },
+    { key: "Operating_Temp_C", value: "82.4" },
+    { key: "Hydraulic_Pressure_PSI", value: "3200" },
+    { key: "Calibration_Standard", value: "MIL-STD-810H" },
+    { key: "Vibration_Index_RMS", value: "0.042" },
+  ],
+};
 
 export default function TechnicalRecordsPage() {
   const [records, setRecords] = useState<TechnicalRecordResponse[]>([]);
@@ -22,6 +36,7 @@ export default function TechnicalRecordsPage() {
   const [dataFields, setDataFields] = useState<{ key: string; value: string }[]>([{ key: "", value: "" }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [demoLoaded, setDemoLoaded] = useState(false);
 
   useEffect(() => {
     fetchRecords();
@@ -52,6 +67,27 @@ export default function TechnicalRecordsPage() {
     const updated = [...dataFields];
     updated[index][field] = value;
     setDataFields(updated);
+  };
+
+  const handleLoadDemoData = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setCreateForm({
+      asset_id: DEMO_TECHNICAL_RECORD.asset_id,
+      record_type: DEMO_TECHNICAL_RECORD.record_type,
+      data: {},
+      classification: DEMO_TECHNICAL_RECORD.classification,
+    });
+    setDataFields(
+      DEMO_TECHNICAL_RECORD.dataFields.map((f) => ({ key: f.key, value: f.value }))
+    );
+    setError("");
+    setDemoLoaded(true);
+    setTimeout(() => {
+      setDemoLoaded(false);
+    }, 2500);
   };
 
   const handleCreate = async () => {
@@ -326,6 +362,25 @@ export default function TechnicalRecordsPage() {
                   {error}
                 </div>
               )}
+
+              {/* DEMO DATA QUICK FILL BAR */}
+              <div className="tr-demo-bar">
+                <div className="tr-demo-bar-info">
+                  <span className="tr-demo-badge">SIH DEMO</span>
+                  <span className="tr-demo-text">Pre-fill realistic synthetic parameters for testing</span>
+                </div>
+                <button
+                  type="button"
+                  id="tr-load-demo-btn"
+                  className={`tr-load-demo-btn ${demoLoaded ? "tr-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Automatically fill form with realistic demo values"
+                >
+                  <span className="tr-demo-icon">{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "DEMO DATA LOADED" : "LOAD DEMO DATA"}</span>
+                </button>
+              </div>
+
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Asset ID <span style={{ color: "#ef4444" }}>*</span>
@@ -406,13 +461,25 @@ export default function TechnicalRecordsPage() {
                   + Add Parameter Field
                 </button>
               </div>
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 16, borderTop: "1px solid var(--border)", flexShrink: 0 }}>
-                <button className="btn-secondary" onClick={() => setShowCreateModal(false)} disabled={submitting}>
-                  Cancel
+              <div style={{ display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", paddingTop: 16, borderTop: "1px solid var(--border)", flexShrink: 0 }}>
+                <button
+                  type="button"
+                  id="tr-load-demo-footer-btn"
+                  className={`tr-load-demo-footer-btn ${demoLoaded ? "tr-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Pre-fill form with synthetic demo parameters"
+                >
+                  <span>{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "Demo Data Applied" : "USE DUMMY DATA"}</span>
                 </button>
-                <button className="btn-primary" onClick={handleCreate} disabled={submitting}>
-                  {submitting ? "Creating..." : "Create Record"}
-                </button>
+                <div style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
+                  <button className="btn-secondary" onClick={() => setShowCreateModal(false)} disabled={submitting}>
+                    Cancel
+                  </button>
+                  <button className="btn-primary" onClick={handleCreate} disabled={submitting}>
+                    {submitting ? "Creating..." : "Create Record"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

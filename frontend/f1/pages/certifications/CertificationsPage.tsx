@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatCard from "../../components/ui/StatCard";
 import { formatDate } from "../../data/utils";
 import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
-import { CERTIFICATION_TYPES, CERTIFICATION_STATUSES, VERIFICATION_STATUSES } from "./certificationData";
+import {
+  CERTIFICATION_TYPES,
+  CERTIFICATION_STATUSES,
+  VERIFICATION_STATUSES,
+  getDemoCertifications,
+} from "./certificationData";
 import { useAuth } from "../../context/AuthContext";
-import CertificateImageUpload from "../../components/certifications/CertificateImageUpload";
+import CertificateImageUpload, { PRESET_CERTIFICATE_SEALS } from "../../components/certifications/CertificateImageUpload";
 import "./CertificationsPage.css";
 
 
@@ -24,6 +30,12 @@ export default function CertificationsPage() {
   const [total, setTotal] = useState(0);
   const [pending, setPending] = useState(0);
   const [confirmed, setConfirmed] = useState(0);
+
+  /* ============================================================
+     FRONTEND DEMO STATE
+     ============================================================ */
+  const [isDemoActive, setIsDemoActive] = useState(false);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
 
   /* ============================================================
      SEARCH / FILTER STATE
@@ -46,6 +58,26 @@ export default function CertificationsPage() {
   const [batchIdInput, setBatchIdInput] = useState("");
   const [certificateImage, setCertificateImage] = useState<string | null>(null);
   const [certificateImageName, setCertificateImageName] = useState<string | null>(null);
+  const [modalDemoLoaded, setModalDemoLoaded] = useState(false);
+
+  const handleModalLoadDemoData = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setAssetIdInput("EF-2026-001");
+    setBatchIdInput("FUZE-BATCH-2026-001");
+    if (PRESET_CERTIFICATE_SEALS && PRESET_CERTIFICATE_SEALS.length > 0) {
+      const demoSeal = PRESET_CERTIFICATE_SEALS[0];
+      setCertificateImage(demoSeal.dataUrl);
+      setCertificateImageName(`${demoSeal.name.toLowerCase().replace(/\s+/g, "_")}.svg`);
+    }
+    setCreateStatus(null);
+    setModalDemoLoaded(true);
+    setTimeout(() => {
+      setModalDemoLoaded(false);
+    }, 2500);
+  };
 
   const [createStatus, setCreateStatus] = useState<{
     type: "success" | "error";
@@ -60,6 +92,7 @@ export default function CertificationsPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setIsDemoActive(false);
 
     try {
       const listRes = await certificationService.listCertifications({ page_size: 100 });
@@ -91,9 +124,84 @@ export default function CertificationsPage() {
     }
   };
 
+  const handleLoadDemo = () => {
+    setIsLoadingDemo(true);
+    setTimeout(() => {
+      const demoData = getDemoCertifications();
+      setCerts(demoData);
+      setTotal(demoData.length);
+      setIsDemoActive(true);
+      setIsLoadingDemo(false);
+    }, 280);
+  };
+
+  const handleResetDemo = () => {
+    setIsDemoActive(false);
+    fetchData();
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  /* Viewport scroll lock for Create Certification modal */
+  useEffect(() => {
+    if (!showCreateModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showCreateModal]);
+
+  /* Close modal on Escape key */
+  useEffect(() => {
+    if (!showCreateModal) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowCreateModal(false);
+        setCreateStatus(null);
+        setCertificateImage(null);
+        setCertificateImageName(null);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showCreateModal]);
 
   /* ============================================================
      CREATE CERTIFICATION
@@ -146,6 +254,13 @@ export default function CertificationsPage() {
 
   };
 
+  const getVerificationStatus = (cert: any) =>
+    cert.verificationStatus ||
+    cert.verification_status ||
+    (cert.status === "CONFIRMED"
+      ? "Verified"
+      : "Pending Verification");
+
   /* ============================================================
      FRONTEND FILTERING
      ============================================================ */
@@ -153,28 +268,35 @@ export default function CertificationsPage() {
   const filteredCerts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    return certs.filter((cert: CertificationResponse) => {
+    return certs.filter((cert: any) => {
+      const id = String(cert.id ?? cert.cert_id ?? "").toLowerCase();
+      const certNum = String(cert.certificateNumber ?? "").toLowerCase();
+      const assetId = String(cert.asset?.assetId ?? cert.asset_id ?? "").toLowerCase();
+      const assetName = String(cert.asset?.assetName ?? cert.asset_name ?? "").toLowerCase();
+      const authority = String(cert.authority?.name ?? cert.issued_by ?? cert.issuedBy ?? "").toLowerCase();
+      const txHash = String(cert.proof?.txHash ?? cert.tx_hash ?? "").toLowerCase();
+
       const matchesSearch =
         !normalizedSearch ||
-        String(cert.cert_id ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(cert.asset_id ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        String(cert.tx_hash ?? "")
-          .toLowerCase()
-          .includes(normalizedSearch);
+        id.includes(normalizedSearch) ||
+        certNum.includes(normalizedSearch) ||
+        assetId.includes(normalizedSearch) ||
+        assetName.includes(normalizedSearch) ||
+        authority.includes(normalizedSearch) ||
+        txHash.includes(normalizedSearch);
 
+      const statusVal = cert.status || "Valid";
       const matchesStatus =
-        statusFilter === "ALL" || cert.status === statusFilter;
+        statusFilter === "ALL" || statusVal === statusFilter;
 
+      const typeVal = cert.type;
       const matchesType =
-        typeFilter === "ALL" || (cert.type && cert.type === typeFilter);
+        typeFilter === "ALL" || (typeVal && typeVal === typeFilter);
 
+      const vStatus = getVerificationStatus(cert);
       const matchesVerification =
         verificationFilter === "ALL" ||
-        (cert.verificationStatus && cert.verificationStatus === verificationFilter);
+        vStatus === verificationFilter;
 
       return matchesSearch && matchesStatus && matchesType && matchesVerification;
     });
@@ -212,21 +334,24 @@ export default function CertificationsPage() {
     ).length;
 
     const expiring = certs.filter(
-      (c: any) => c.status === "Expiring"
+      (c: any) => c.status === "Expiring" || c.status === "EXPIRING"
     ).length;
 
     const verified = certs.filter(
       (c: any) =>
-        c.status === "CONFIRMED"
+        c.status === "CONFIRMED" ||
+        c.verificationStatus === "Verified" ||
+        c.verification_status === "Verified" ||
+        c.proof?.verificationStatus === "Verified"
     ).length;
 
     return {
-      total: total || certs.length,
+      total: certs.length,
       valid,
       expiring,
       verified,
     };
-  }, [certs, total]);
+  }, [certs]);
 
   /* ============================================================
      STATUS BADGE
@@ -530,11 +655,6 @@ export default function CertificationsPage() {
   const getStatus = (cert: any) =>
     cert.status || "Valid";
 
-  const getVerificationStatus = (cert: any) =>
-  (cert.status === "CONFIRMED"
-    ? "Verified"
-    : "Pending Verification");
-
   /* ============================================================
      RENDER
      ============================================================ */
@@ -565,8 +685,45 @@ export default function CertificationsPage() {
               display: "flex",
               gap: "10px",
               alignItems: "center",
+              flexWrap: "wrap",
             }}
           >
+            {isDemoActive ? (
+              <div className="cert-demo-btn-group">
+                <button
+                  id="cert-load-demo-btn"
+                  className="cert-load-demo-btn cert-demo-btn--active"
+                  onClick={handleLoadDemo}
+                  disabled={isLoadingDemo}
+                  title="Click to restore / reload deterministic certification demo records"
+                >
+                  <span className="cert-demo-spark-icon">✓</span>
+                  <span>{isLoadingDemo ? "Loading Demo Data..." : "Demo Data Loaded"}</span>
+                </button>
+                <button
+                  id="cert-reset-demo-btn"
+                  className="cert-demo-reset-btn"
+                  onClick={handleResetDemo}
+                  title="Clear demo data and reload live records"
+                >
+                  ↺ Reset Demo
+                </button>
+              </div>
+            ) : (
+              <button
+                id="cert-load-demo-btn"
+                className="cert-load-demo-btn"
+                onClick={handleLoadDemo}
+                disabled={isLoadingDemo}
+                title="Populate Certifications page with realistic demonstration records for evaluation"
+              >
+                <span className={`cert-demo-spark-icon ${isLoadingDemo ? "cert-demo-spinner" : ""}`}>
+                  {isLoadingDemo ? "◌" : "⚡"}
+                </span>
+                <span>{isLoadingDemo ? "Loading Demo Data..." : "LOAD DEMO DATA"}</span>
+              </button>
+            )}
+
             {!isAuditor && (
               <>
                 <Link
@@ -595,8 +752,8 @@ export default function CertificationsPage() {
 
             <button
               className="btn-ghost"
-              onClick={fetchData}
-              disabled={loading}
+              onClick={handleResetDemo}
+              disabled={loading || isLoadingDemo}
             >
               {loading ? "Loading..." : "↻ Refresh"}
             </button>
@@ -1729,92 +1886,53 @@ export default function CertificationsPage() {
           CREATE CERTIFICATION MODAL
       ====================================================== */}
 
-      {showCreateModal && (
+      {showCreateModal && typeof document !== "undefined" && createPortal(
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "rgba(3, 7, 18, 0.75)",
-            backdropFilter:
-              "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 20,
+          className="cert-modal-overlay"
+          onClick={() => {
+            setShowCreateModal(false);
+            setCreateStatus(null);
+            setCertificateImage(null);
+            setCertificateImageName(null);
           }}
         >
           <div
-            className="panel"
-            style={{
-              width: "100%",
-              maxWidth: 540,
-              maxHeight: "90vh",
-              overflowY: "auto",
-              padding: 24,
-              background: "var(--card, #181818)",
-              border: "1px solid var(--border, #303030)",
-              borderRadius: "12px",
-            }}
+            className="cert-modal-dialog"
+            onClick={(e) => e.stopPropagation()}
           >
             {/* MODAL HEADER */}
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 18,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: 700,
-                  color: "var(--foreground, #171717)",
-                }}
-              >
-                Create Certification
+            <div className="cert-modal-header">
+              <div className="cert-modal-header-title">
+                <span style={{ color: "#38bdf8", fontSize: "1.1rem" }}>🛡</span>
+                <span>Create Certification</span>
               </div>
 
               <button
+                className="cert-modal-close-btn"
                 onClick={() => {
                   setShowCreateModal(false);
                   setCreateStatus(null);
                   setCertificateImage(null);
                   setCertificateImageName(null);
                 }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--muted, #64748b)",
-                  cursor: "pointer",
-                  fontSize: "1.2rem",
-                }}
+                title="Close modal"
+                aria-label="Close modal"
               >
                 ✕
               </button>
             </div>
 
+            {/* MODAL BODY / FORM */}
             <form
               onSubmit={handleCreateSubmit}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-              }}
+              className="cert-modal-body"
             >
               {/* STATUS */}
-
               {createStatus && (
                 <div
                   style={{
                     padding: "8px 12px",
-                    borderRadius: 4,
+                    borderRadius: 6,
                     fontSize: "0.8125rem",
                     background:
                       createStatus.type === "success"
@@ -1826,16 +1944,33 @@ export default function CertificationsPage() {
                         : "1px solid rgba(239,68,68,0.3)",
                     color:
                       createStatus.type === "success"
-                        ? "#16a34a"
-                        : "#dc2626",
+                        ? "#22c55e"
+                        : "#ef4444",
                   }}
                 >
                   {createStatus.message}
                 </div>
               )}
 
-              {/* ASSET ID */}
+              {/* DEMO DATA QUICK FILL BAR */}
+              <div className="cert-modal-demo-bar">
+                <div className="cert-modal-demo-bar-info">
+                  <span className="cert-modal-demo-badge">SIH DEMO</span>
+                  <span className="cert-modal-demo-text">Pre-fill realistic certification data</span>
+                </div>
+                <button
+                  type="button"
+                  id="cert-modal-load-demo-btn"
+                  className={`cert-modal-load-demo-btn ${modalDemoLoaded ? "loaded" : ""}`}
+                  onClick={handleModalLoadDemoData}
+                  title="Automatically fill form with realistic demo values"
+                >
+                  <span>{modalDemoLoaded ? "✓" : "⚡"}</span>
+                  <span>{modalDemoLoaded ? "DEMO DATA LOADED" : "LOAD DEMO DATA"}</span>
+                </button>
+              </div>
 
+              {/* ASSET ID */}
               <div>
                 <label
                   style={{
@@ -1851,14 +1986,12 @@ export default function CertificationsPage() {
 
                 <input
                   type="text"
-                  className="input-field"
+                  className="input-field cert-form-input"
                   style={{
                     width: "100%",
                     padding: "8px 12px",
-                    background: "var(--input-bg, #171717)",
-                    border: "1px solid var(--border, #303030)",
                     borderRadius: 6,
-                    color: "var(--foreground, #171717)",
+                    boxSizing: "border-box",
                   }}
                   value={assetIdInput}
                   onChange={(e) => setAssetIdInput(e.target.value)}
@@ -1868,7 +2001,6 @@ export default function CertificationsPage() {
               </div>
 
               {/* BATCH */}
-
               <div>
                 <label
                   style={{
@@ -1884,14 +2016,12 @@ export default function CertificationsPage() {
 
                 <input
                   type="text"
-                  className="input-field"
+                  className="input-field cert-form-input"
                   style={{
                     width: "100%",
                     padding: "8px 12px",
-                    background: "var(--input-bg, #171717)",
-                    border: "1px solid var(--border, #303030)",
                     borderRadius: 6,
-                    color: "var(--foreground, #171717)",
+                    boxSizing: "border-box",
                   }}
                   value={batchIdInput}
                   onChange={(e) => setBatchIdInput(e.target.value)}
@@ -1910,61 +2040,56 @@ export default function CertificationsPage() {
               />
 
               {/* INFORMATION */}
-
-              <div
-                style={{
-                  padding: "10px 12px",
-                  background: "rgba(139,92,246,0.08)",
-                  border: "1px solid rgba(139,92,246,0.2)",
-                  borderRadius: 4,
-                  fontSize: "0.75rem",
-                  color: "var(--foreground, #171717)",
-                  lineHeight: 1.45,
-                }}
-              >
+              <div className="cert-modal-info-panel">
                 Creating a certification initiates cryptographic verification, soulbound token generation, and anchors the uploaded seal to BEL-TRUST-CHAIN.
               </div>
 
               {/* ACTIONS */}
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent:
-                    "flex-end",
-                  gap: 8,
-                  marginTop: 8,
-                }}
-              >
+              <div className="cert-modal-footer-actions">
                 <button
                   type="button"
-                  className="btn-ghost"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setCreateStatus(null);
-                    setCertificateImage(null);
-                    setCertificateImageName(null);
-                  }}
+                  id="cert-modal-load-demo-footer-btn"
+                  className={`cert-modal-load-demo-footer-btn ${modalDemoLoaded ? "loaded" : ""}`}
+                  onClick={handleModalLoadDemoData}
+                  title="Populate demo data"
                 >
-                  Cancel
+                  <span>{modalDemoLoaded ? "✓" : "⚡"}</span>
+                  <span>{modalDemoLoaded ? "Demo Filled" : "Use Dummy Data"}</span>
                 </button>
 
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={
-                    isSubmitting ||
-                    !assetIdInput.trim()
-                  }
-                >
-                  {isSubmitting
-                    ? "Creating..."
-                    : "Create Certification"}
-                </button>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setCreateStatus(null);
+                      setCertificateImage(null);
+                      setCertificateImageName(null);
+                      setModalDemoLoaded(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={
+                      isSubmitting ||
+                      !assetIdInput.trim()
+                    }
+                  >
+                    {isSubmitting
+                      ? "Creating..."
+                      : "Create Certification"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
