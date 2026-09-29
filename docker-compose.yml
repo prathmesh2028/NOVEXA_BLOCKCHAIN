@@ -9,6 +9,7 @@
 
 services:
   # ── PostgreSQL ──────────────────────────────────────────────
+  # NOTE: Application uses Supabase PostgreSQL. This local instance is for development/testing only.
   postgres:
     image: postgres:16-alpine
     container_name: kavachtrust-postgres
@@ -22,10 +23,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kavach} -d ${POSTGRES_DB}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U kavach -d kavachtrust || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   # ── MinIO (S3-compatible object storage) ────────────────────
   minio:
@@ -46,6 +48,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
   # ── Besu (Ethereum client for private blockchain) ─────────────
   besu:
@@ -74,6 +84,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
 volumes:
   pgdata:

@@ -16,7 +16,7 @@ async function bootstrap() {
   // Security
   app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS
+  // CORS - Explicit allowlist from environment
   app.enableCors({
     origin: config.corsOrigins,
     credentials: true,
@@ -56,6 +56,7 @@ async function bootstrap() {
   logger.log(`KavachTrust Backend V2 running on http://localhost:${port}`);
   logger.log(`API prefix: ${config.apiPrefix}`);
   logger.log(`Environment: ${config.nodeEnv}`);
+  logger.log(`CORS origins: ${config.corsOrigins.join(', ')}`);
 }
 
 bootstrap();

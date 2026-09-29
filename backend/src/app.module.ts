@@ -1,4 +1,5 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ConfigModule } from './core/config/config.module';
 import { PrismaModule } from './core/database/prisma.module';
 import { AuthModule } from './identity/auth/auth.module';
@@ -27,6 +28,17 @@ import { SupplyChainModule } from './supply-chain/supply-chain.module';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+      {
+        ttl: 60000,
+        limit: 20,
+        name: 'strict',
+      },
+    ]),
     ConfigModule,
     PrismaModule,
     CasbinModule,
