@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { formatDateTime } from "../../data/utils";
 import { usersService, UserResponse } from "../../services/users";
+import { useAuth } from "../../context/AuthContext";
 import "./UsersPage.css";
 
 /* ── Count-up Hook for KPI Numbers ─────────────────────────────────── */
@@ -233,6 +234,45 @@ function UserEcosystemGraphic() {
    MAIN USERS PAGE COMPONENT
    ════════════════════════════════════════════════════════════════════ */
 export default function UsersPage() {
+  const { role, user } = useAuth();
+
+  /* Role permission check: Approve & Disapprove visible ONLY for System Administrator and Quality Inspector */
+  const isApproverRole = useMemo(() => {
+    if (role === "system-admin" || role === "quality-inspector") {
+      return true;
+    }
+    const userRoles = (user?.roles || []).map((r) =>
+      r.toLowerCase().replaceAll("_", "-").trim()
+    );
+    return userRoles.some(
+      (r) =>
+        r === "system-admin" ||
+        r === "admin" ||
+        r === "administrator" ||
+        r === "quality-inspector" ||
+        r === "inspector" ||
+        r === "tech" ||
+        r === "technician"
+    );
+  }, [role, user]);
+
+  /* Track frontend-only approval state per user without modifying backend */
+  const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+
+  const handleApprove = (userId: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [userId]: "approved",
+    }));
+  };
+
+  const handleDisapprove = (userId: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [userId]: "disapproved",
+    }));
+  };
+
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -862,18 +902,56 @@ export default function UsersPage() {
                         </td>
 
                         {/* ACTION */}
-                        <td style={{ position: "relative" }}>
-                          <button
-                            className="users-action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActionMenuOpenId(isMenuOpen ? null : u.id);
-                            }}
-                            title="Open contextual action menu"
-                            aria-label={`Actions for ${u.name}`}
-                          >
-                            ···
-                          </button>
+                        <td className="users-action-td">
+                          <div className="users-action-cell">
+                            {isApproverRole && (
+                              <div className="users-approval-actions">
+                                <button
+                                  type="button"
+                                  className={`users-btn-approve ${
+                                    approvalStatus[u.id] === "approved" ? "is-approved" : ""
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleApprove(u.id);
+                                  }}
+                                  title={`Approve user ${u.name}`}
+                                  aria-label={`Approve ${u.name}`}
+                                >
+                                  <span className="users-btn-symbol">✓</span>
+                                  <span>{approvalStatus[u.id] === "approved" ? "Approved" : "Approve"}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className={`users-btn-disapprove ${
+                                    approvalStatus[u.id] === "disapproved" ? "is-disapproved" : ""
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDisapprove(u.id);
+                                  }}
+                                  title={`Disapprove user ${u.name}`}
+                                  aria-label={`Disapprove ${u.name}`}
+                                >
+                                  <span className="users-btn-symbol">✕</span>
+                                  <span>{approvalStatus[u.id] === "disapproved" ? "Disapproved" : "Disapprove"}</span>
+                                </button>
+                              </div>
+                            )}
+
+                            <button
+                              className="users-action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActionMenuOpenId(isMenuOpen ? null : u.id);
+                              }}
+                              title="Open contextual action menu"
+                              aria-label={`Actions for ${u.name}`}
+                            >
+                              ···
+                            </button>
+                          </div>
 
                           {/* Interactive Contextual Three-Dot Popover */}
                           {isMenuOpen && (
@@ -1125,7 +1203,39 @@ export default function UsersPage() {
               </div>
 
               {/* Action buttons */}
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 22 }}>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", alignItems: "center", marginTop: 22, flexWrap: "wrap" }}>
+                {isApproverRole && (
+                  <div className="users-approval-actions" style={{ marginRight: "auto" }}>
+                    <button
+                      type="button"
+                      className={`users-btn-approve ${
+                        approvalStatus[selectedUserDetail.id] === "approved" ? "is-approved" : ""
+                      }`}
+                      onClick={() => handleApprove(selectedUserDetail.id)}
+                      title={`Approve user ${selectedUserDetail.name}`}
+                    >
+                      <span className="users-btn-symbol">✓</span>
+                      <span>
+                        {approvalStatus[selectedUserDetail.id] === "approved" ? "Approved" : "Approve"}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`users-btn-disapprove ${
+                        approvalStatus[selectedUserDetail.id] === "disapproved" ? "is-disapproved" : ""
+                      }`}
+                      onClick={() => handleDisapprove(selectedUserDetail.id)}
+                      title={`Disapprove user ${selectedUserDetail.name}`}
+                    >
+                      <span className="users-btn-symbol">✕</span>
+                      <span>
+                        {approvalStatus[selectedUserDetail.id] === "disapproved" ? "Disapproved" : "Disapprove"}
+                      </span>
+                    </button>
+                  </div>
+                )}
+
                 <button
                   className="btn-secondary"
                   onClick={() => handleCopyDid(selectedUserDetail.did || "did:bel:actor:001")}

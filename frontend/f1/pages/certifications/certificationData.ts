@@ -109,6 +109,87 @@ export const VERIFICATION_STATUSES: CertVerificationStatus[] = [
 
 export const INITIAL_CERTIFICATIONS: CertificationRecord[] = [
   {
+    id: "CERT-BEL-2026-001",
+    certificateNumber: "BEL/QA/FUZE/2026-001-V",
+    type: "Quality Certification",
+    status: "Valid",
+    verificationStatus: "Verified",
+    issueDate: "2026-02-15",
+    expiryDate: "2027-02-14",
+    validityDuration: "12 Months",
+    standard: "MIL-STD-1316F Munition Fuze Safety & Functional Clearance",
+    complianceScope: "Acceleration sensing threshold (25,000 g setback tolerance), electronic timing delay, and proximity sensor burst height accuracy",
+    summary: "Production batch quality and functional assurance certification for Electronic Fuze Assembly.",
+    authority: {
+      name: "BEL Defence QA",
+      code: "AUTH-BEL-QA-001",
+      signatoryOfficer: "Col. R. K. Nair",
+      rank: "Director, Quality Assurance & Reliability",
+      accreditation: "Ministry of Defence, Department of Defence Production (DDP)",
+      office: "BEL Central Quality Complex, Bangalore",
+      sealCode: "SEAL-BEL-QA-2026-991",
+    },
+    asset: {
+      assetId: "EF-2026-001",
+      assetName: "Electronic Fuze Assembly",
+      category: "Electronic Equipment",
+      department: "Munitions & Armament Division",
+      status: "Active",
+      serialNumber: "BEL-FUZE-2026-0814",
+      location: "Central Ordnance Depot, Jabalpur",
+    },
+    document: {
+      documentId: "DOC-CERT-BEL-2026-001",
+      referenceNumber: "FUZE-BATCH-2026-001",
+      format: "PDF/A-1b Military Archive",
+      fileSize: "3.4 MB",
+      classification: "RESTRICTED",
+      sealedAt: "2026-02-15T09:30:00Z",
+      checksum: "0x4b7f9a2e1d0c8b3a5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a",
+    },
+    proof: {
+      verificationStatus: "Anchored on Novexa Defence Ledger",
+      certificateHash: "0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b",
+      proofHash: "0x9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d",
+      txHash: "0x8f9a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+      contractAddress: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      network: "BEL-TRUST-CHAIN (Private PoA)",
+      blockNumber: 482930,
+      confirmations: 120,
+      timestamp: "2026-02-15T09:45:00Z",
+      consensusSeal: "BFT-Seal-Validated-BEL-QA",
+    },
+    timeline: [
+      {
+        id: "TLE-BEL-01",
+        timestamp: "2026-02-10T10:00:00Z",
+        title: "Munitions Fuze Stress Analysis",
+        description: "Batch samples cleared 25,000 g acceleration shock test with 100% arming circuit integrity.",
+        status: "Passed",
+        badge: "TESTING",
+        performedBy: "BEL Ordnance Quality Lab",
+      },
+      {
+        id: "TLE-BEL-02",
+        timestamp: "2026-02-15T09:30:00Z",
+        title: "Formal Quality Certificate Issued",
+        description: "Batch authorized for ordnance depot distribution under warrant BEL/QA/FUZE/2026-001.",
+        status: "Authorized",
+        badge: "ISSUED",
+        performedBy: "Col. R. K. Nair",
+      },
+      {
+        id: "TLE-BEL-03",
+        timestamp: "2026-02-15T09:45:00Z",
+        title: "Ledger State Anchored",
+        description: "Committed to BEL-TRUST-CHAIN block #482,930.",
+        status: "Anchored",
+        badge: "BLOCKCHAIN",
+        performedBy: "Novexa Automated Ledger Gateway",
+      },
+    ],
+  },
+  {
     id: "CERT-2026-00124",
     certificateNumber: "DGQA/ARMY/AFV/2026-0891-V",
     type: "Safety Certification",
@@ -1336,4 +1417,14 @@ export function getCertificationStats() {
     verified,
     pending,
   };
+}
+
+export function getDemoCertifications() {
+  return INITIAL_CERTIFICATIONS.map((c) => ({
+    ...c,
+    cert_id: c.id,
+    asset_id: c.asset?.assetId || "",
+    batch_id: (c as any).document?.referenceNumber || "FUZE-BATCH-2026-001",
+    tx_hash: c.proof?.txHash || "0x0000000000000000000000000000000000000000",
+  }));
 }

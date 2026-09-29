@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
@@ -259,6 +260,62 @@ export default function LifecyclePage() {
   useEffect(() => {
     fetchRules();
   }, []);
+
+  /* Viewport scroll lock for Execute Lifecycle State Transition modal */
+  useEffect(() => {
+    if (!showTransitionModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showTransitionModal]);
+
+  /* Close modal on Escape key */
+  useEffect(() => {
+    if (!showTransitionModal) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowTransitionModal(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showTransitionModal]);
 
   const fetchRules = async () => {
     setLoading(true);
@@ -980,8 +1037,8 @@ export default function LifecyclePage() {
         </div>
       )}
 
-      {/* ─── EXECUTE TRANSITION MODAL ─── */}
-      {showTransitionModal && (
+      {/* ─── EXECUTE TRANSITION MODAL (Viewport-Fixed Portal) ─── */}
+      {showTransitionModal && typeof document !== "undefined" && createPortal(
         <div
           className="lc-modal-backdrop"
           onClick={(e) => {
@@ -1006,114 +1063,118 @@ export default function LifecyclePage() {
                 className="lc-modal-close"
                 onClick={() => setShowTransitionModal(false)}
                 aria-label="Close modal"
+                title="Close modal"
               >
                 ✕
               </button>
             </div>
 
-            {/* Quick Fill Dummy Asset Selector for Testing */}
-            <div className="lc-quick-fill-box">
-              <div className="lc-quick-fill-label">
-                ⚡ Quick Fill Asset for Testing:
-              </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {lifecycleAssets.slice(0, 4).map((a) => (
-                  <button
-                    key={a.asset_id}
-                    type="button"
-                    className={`lc-quick-btn ${transitionForm.asset_id === a.asset_id ? "active" : ""}`}
-                    onClick={() => quickFillDummyAsset(a)}
-                  >
-                    {a.asset_id} ({a.lifecycle_state.split("_")[0]})
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleTransition} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Target Asset ID *
-                </label>
-                <input
-                  type="text"
-                  className="lc-search-input"
-                  style={{ height: 42, paddingLeft: 14 }}
-                  value={transitionForm.asset_id}
-                  onChange={(e) => setTransitionForm({ ...transitionForm, asset_id: e.target.value })}
-                  placeholder="e.g. EF-2026-00421"
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Target Lifecycle State *
-                </label>
-                <select
-                  className="lc-select"
-                  style={{ width: "100%", height: 42 }}
-                  value={transitionForm.to_state}
-                  onChange={(e) => setTransitionForm({ ...transitionForm, to_state: e.target.value })}
-                  required
-                >
-                  <option value="">Select destination state...</option>
-                  {(stateMachine?.states || [
-                    "SUPPLIER_DECLARED",
-                    "RECEIVED",
-                    "INSPECTION_RECORDED",
-                    "INSPECTION_OVERDUE",
-                    "ACCEPTED_FOR_ASSEMBLY",
-                    "REJECTED_QUARANTINED",
-                  ]).map((state: string) => (
-                    <option key={state} value={state}>
-                      {state.replace(/_/g, " ")}
-                    </option>
+            <div className="lc-modal-body">
+              {/* Quick Fill Dummy Asset Selector for Testing */}
+              <div className="lc-quick-fill-box">
+                <div className="lc-quick-fill-label">
+                  ⚡ Quick Fill Asset for Testing:
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {lifecycleAssets.slice(0, 4).map((a) => (
+                    <button
+                      key={a.asset_id}
+                      type="button"
+                      className={`lc-quick-btn ${transitionForm.asset_id === a.asset_id ? "active" : ""}`}
+                      onClick={() => quickFillDummyAsset(a)}
+                    >
+                      {a.asset_id} ({a.lifecycle_state.split("_")[0]})
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Transition Justification & Reason *
-                </label>
-                <textarea
-                  className="lc-search-input"
-                  style={{ width: "100%", height: 80, padding: "10px 14px", resize: "vertical" }}
-                  value={transitionForm.reason}
-                  onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })}
-                  placeholder="State reason for advancing asset to next lifecycle stage..."
-                  rows={3}
-                  required
-                />
-              </div>
+              <form onSubmit={handleTransition} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Target Asset ID *
+                  </label>
+                  <input
+                    type="text"
+                    className="lc-search-input"
+                    style={{ height: 42, paddingLeft: 14 }}
+                    value={transitionForm.asset_id}
+                    onChange={(e) => setTransitionForm({ ...transitionForm, asset_id: e.target.value })}
+                    placeholder="e.g. EF-2026-00421"
+                    required
+                  />
+                </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
-                <button
-                  type="button"
-                  className="lc-btn-secondary"
-                  onClick={() => setShowTransitionModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="lc-btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <span className="lc-refresh-icon spinning">↻</span>
-                      Transitioning...
-                    </>
-                  ) : (
-                    "Execute Transition"
-                  )}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Target Lifecycle State *
+                  </label>
+                  <select
+                    className="lc-select"
+                    style={{ width: "100%", height: 42 }}
+                    value={transitionForm.to_state}
+                    onChange={(e) => setTransitionForm({ ...transitionForm, to_state: e.target.value })}
+                    required
+                  >
+                    <option value="">Select destination state...</option>
+                    {(stateMachine?.states || [
+                      "SUPPLIER_DECLARED",
+                      "RECEIVED",
+                      "INSPECTION_RECORDED",
+                      "INSPECTION_OVERDUE",
+                      "ACCEPTED_FOR_ASSEMBLY",
+                      "REJECTED_QUARANTINED",
+                    ]).map((state: string) => (
+                      <option key={state} value={state}>
+                        {state.replace(/_/g, " ")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Transition Justification & Reason *
+                  </label>
+                  <textarea
+                    className="lc-search-input"
+                    style={{ width: "100%", height: 80, padding: "10px 14px", resize: "vertical" }}
+                    value={transitionForm.reason}
+                    onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })}
+                    placeholder="State reason for advancing asset to next lifecycle stage..."
+                    rows={3}
+                    required
+                  />
+                </div>
+
+                <div className="lc-modal-footer">
+                  <button
+                    type="button"
+                    className="lc-btn-secondary"
+                    onClick={() => setShowTransitionModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="lc-btn-primary"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="lc-refresh-icon spinning">↻</span>
+                        Transitioning...
+                      </>
+                    ) : (
+                      "Execute Transition"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
