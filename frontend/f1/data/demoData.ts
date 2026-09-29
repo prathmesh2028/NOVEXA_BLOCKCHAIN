@@ -63,6 +63,21 @@ export const DEMO_ASSETS: DemoRecord[] = [
     }
   },
   {
+    id: 'a2415a9b-c653-40c4-b79a-a2683b29c9b0',
+    label: 'RBAC-TEST-001 (RBAC Test - ACCEPTED_FOR_ASSEMBLY, ELIGIBLE FOR CERTIFICATION)',
+    type: 'asset',
+    data: {
+      asset_id: 'RBAC-TEST-001',
+      batch_id: 'RBAC-BATCH-001',
+      type: 'RBAC Test',
+      model: 'RBAC-MODEL',
+      serial_number: 'RBAC-SN-001',
+      lifecycle_state: 'ACCEPTED_FOR_ASSEMBLY',
+      verification_status: 'PENDING',
+      supplier: 'Test Supplier',
+    }
+  },
+  {
     id: '59be7f8f-9188-4919-9958-99117c4d5ecd',
     label: 'EF-2026-00421 (Electronic Fuze - FULL LIFECYCLE)',
     type: 'asset',
