@@ -393,14 +393,17 @@ export default function TechnicalRecordsPage() {
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Asset ID <span style={{ color: "#ef4444" }}>*</span>
                 </label>
-                <input
-                  type="text"
-                  className="internal-search-input"
-                  style={{ width: "100%" }}
-                  value={createForm.asset_id}
-                  onChange={(e) => setCreateForm({ ...createForm, asset_id: e.target.value })}
-                  placeholder="e.g., AST-2024-0001"
-                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="text"
+                    className="internal-search-input"
+                    style={{ flex: 1 }}
+                    value={createForm.asset_id}
+                    onChange={(e) => setCreateForm({ ...createForm, asset_id: e.target.value })}
+                    placeholder="e.g., EF-2026-00422"
+                  />
+                  <DemoDataDropdown type="asset" onSelect={handleDemoDataSelect} />
+                </div>
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
