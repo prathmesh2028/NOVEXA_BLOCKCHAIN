@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import { formatDate, formatDateTime } from "../../data/utils";
-import type { DefenceAsset } from "./assetData";
+import { DefenceAsset, INITIAL_DEFENCE_ASSETS } from "./assetData";
 import { assetService, AssetResponse } from "../../services/assets";
 
 function mapBackendToDefenceAsset(res: AssetResponse): DefenceAsset {
@@ -92,7 +92,8 @@ export default function AssetDetailPage() {
     }
   }, [id]);
 
-  const asset = apiAsset;
+  const fallbackAsset = INITIAL_DEFENCE_ASSETS.find((a) => a.id === id || a.serialNumber === id) || null;
+  const asset = apiAsset || fallbackAsset;
 
   const copyToClipboard = (text: string, fieldName: string) => {
     if (navigator.clipboard) {
