@@ -146,6 +146,19 @@ export class AssetsService {
       }
 
       if (!asset) {
+        asset = await this.prisma.asset.findFirst({
+          where: {
+            OR: [
+              { serialNumber: id },
+              { batchRefId: id },
+              { batch: { batchId: id } },
+            ],
+          },
+          include: { batch: true, evidence: true, inspections: true, lifecycleEvents: true },
+        });
+      }
+
+      if (!asset) {
         throw new NotFoundException(`Asset ${id} not found`);
       }
 

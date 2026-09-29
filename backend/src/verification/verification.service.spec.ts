@@ -4,6 +4,7 @@ import { VerificationService } from './verification.service';
 describe('VerificationService', () => {
   let verificationService: VerificationService;
   let mockPrisma: any;
+  let mockBlockchainAdapter: any;
 
   beforeEach(() => {
     mockPrisma = {
@@ -11,7 +12,10 @@ describe('VerificationService', () => {
         findFirst: vi.fn(),
       },
     };
-    verificationService = new VerificationService(mockPrisma);
+    mockBlockchainAdapter = {
+      isConnected: vi.fn().mockReturnValue(false),
+    };
+    verificationService = new VerificationService(mockPrisma, mockBlockchainAdapter);
   });
 
   it('should return MISSING when asset does not exist', async () => {
@@ -41,9 +45,9 @@ describe('VerificationService', () => {
     });
 
     const result = await verificationService.verifyAsset('BEL-RADAR-001');
-    expect(result.overall).toBe('VALID');
+    expect(result.overall).toBe('UNVERIFIED'); // UNVERIFIED because blockchain is offline
     expect(result.checks.find(c => c.domain === 'evidence')?.status).toBe('VALID');
-    expect(result.checks.find(c => c.domain === 'blockchain')?.status).toBe('VALID');
+    expect(result.checks.find(c => c.domain === 'blockchain')?.status).toBe('BLOCKCHAIN_UNAVAILABLE');
     expect(result.checks.find(c => c.domain === 'identity')?.status).toBe('VALID');
   });
 
@@ -64,5 +68,22 @@ describe('VerificationService', () => {
     const result = await verificationService.verifyAsset('BEL-OPT-002');
     expect(result.overall).toBe('INVALID');
     expect(result.checks.find(c => c.domain === 'evidence')?.status).toBe('MISMATCH');
+    expect(result.checks.find(c => c.domain === 'blockchain')?.status).toBe('BLOCKCHAIN_UNAVAILABLE');
+  });
+
+  it('should show VALID blockchain status when connected and cert has txHash', async () => {
+    mockBlockchainAdapter.isConnected.mockReturnValue(true);
+    mockPrisma.asset.findFirst.mockResolvedValue({
+      id: 'ast-3',
+      assetId: 'BEL-RADAR-003',
+      registeredById: 'usr-1',
+      lifecycleState: 'ACCEPTED_FOR_ASSEMBLY',
+      evidence: [{ id: 'ev-1', integrityVerified: true }],
+      inspections: [{ id: 'insp-1', result: 'PASS' }],
+      certifications: [{ id: 'cert-1', certId: 'CERT-001', status: 'CONFIRMED', txHash: '0x123abc' }],
+    });
+
+    const result = await verificationService.verifyAsset('BEL-RADAR-003');
+    expect(result.checks.find(c => c.domain === 'blockchain')?.status).toBe('VALID');
   });
 });

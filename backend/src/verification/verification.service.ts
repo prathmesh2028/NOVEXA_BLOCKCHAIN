@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../core/database/prisma.service';
+import { BlockchainAdapter } from '../trust/blockchain/blockchain.adapter';
 
-export type CheckResult = 'VALID' | 'INVALID' | 'MISMATCH' | 'MISSING' | 'UNVERIFIED' | 'NOT_APPLICABLE';
+export type CheckResult = 'VALID' | 'INVALID' | 'MISMATCH' | 'MISSING' | 'UNVERIFIED' | 'NOT_APPLICABLE' | 'BLOCKCHAIN_UNAVAILABLE';
 
 export interface VerificationCheck {
   domain: string;
@@ -13,7 +14,10 @@ export interface VerificationCheck {
 export class VerificationService {
   private readonly logger = new Logger(VerificationService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly blockchainAdapter: BlockchainAdapter,
+  ) {}
 
   async verifyAsset(assetId: string): Promise<{ asset_id: string; checks: VerificationCheck[]; overall: CheckResult }> {
     const checks: VerificationCheck[] = [];
@@ -66,11 +70,26 @@ export class VerificationService {
       });
 
       // Blockchain check
-      checks.push({
-        domain: 'blockchain',
-        status: cert?.txHash ? 'VALID' : 'UNVERIFIED',
-        reason: cert?.txHash ? `On-chain: ${cert.txHash}` : 'No blockchain anchor',
-      });
+      const blockchainConnected = this.blockchainAdapter.isConnected();
+      if (!blockchainConnected) {
+        checks.push({
+          domain: 'blockchain',
+          status: 'BLOCKCHAIN_UNAVAILABLE',
+          reason: 'Blockchain RPC offline — on-chain verification not available',
+        });
+      } else if (cert?.txHash) {
+        checks.push({
+          domain: 'blockchain',
+          status: 'VALID',
+          reason: `On-chain: ${cert.txHash}`,
+        });
+      } else {
+        checks.push({
+          domain: 'blockchain',
+          status: 'UNVERIFIED',
+          reason: 'No blockchain anchor',
+        });
+      }
 
       // Overall
       const hasInvalid = checks.some(c => c.status === 'INVALID' || c.status === 'MISMATCH');

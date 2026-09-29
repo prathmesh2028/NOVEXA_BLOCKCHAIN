@@ -1,8 +1,8 @@
-import { IsString, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class CreateCertificationDto {
   @IsString()
-  @IsUUID()
+  @IsNotEmpty()
   asset_id!: string;
 
   @IsString()
