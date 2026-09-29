@@ -8,7 +8,7 @@ export const DEFAULT_DEMO_USER: UserMeResponse = {
   email: "a.mehta@bel-defence.in",
   name: "Arjun Mehta",
   status: "ACTIVE",
-  roles: ["SYSTEM_ADMIN", "ADMIN"],
+  roles: ["SYSTEM_ADMIN"],
   actor: {
     id: "act-001",
     did: "did:bel:actor:001",

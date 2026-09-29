@@ -99,7 +99,7 @@ export default function AssetDetailPage() {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedField(fieldName);
-      setTimeout(() => setCopiedField(null), 2000);
+      setTimeout(() => setCopiedField(null), 3000);
     }
   };
 
