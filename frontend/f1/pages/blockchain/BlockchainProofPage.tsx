@@ -1,7 +1,9 @@
 import { useState } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { api } from "../../services/api";
+import { DemoRecord } from "../../data/demoData";
 
 interface BlockchainProof {
   asset_id: string;
@@ -36,6 +38,12 @@ export default function BlockchainProofPage() {
   const [proof, setProof] = useState<BlockchainProof | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setAssetId(record.data.asset_id);
+    }
+  };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +96,7 @@ export default function BlockchainProofPage() {
                 type="text"
                 value={assetId}
                 onChange={(e) => setAssetId(e.target.value)}
-                placeholder="e.g., AST-2024-0001"
+                placeholder="e.g., EF-2026-00422"
                 style={{
                   flex: 1,
                   padding: "10px 12px",
@@ -99,6 +107,7 @@ export default function BlockchainProofPage() {
                   fontSize: "0.875rem",
                 }}
               />
+              <DemoDataDropdown type="asset" onSelect={handleDemoDataSelect} />
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? "Verifying..." : "Verify Proof"}
               </button>

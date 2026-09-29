@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { searchService, SearchResult } from "../../services/search";
+import { DemoRecord } from "../../data/demoData";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,6 +52,14 @@ export default function SearchPage() {
 
   const total = results.length;
 
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    const searchTerm = record.data.asset_id || record.data.cert_id || record.label;
+    setQuery(searchTerm);
+    setSearchParams({ q: searchTerm });
+    setSubmitted(true);
+    performSearch(searchTerm);
+  };
+
   return (
     <div className="page-fade">
       <PageHeader
@@ -71,6 +81,7 @@ export default function SearchPage() {
               autoFocus
             />
           </div>
+          <DemoDataDropdown onSelect={handleDemoDataSelect} />
           <button type="submit" className="btn-primary" style={{ padding: "11px 20px" }}>Search</button>
         </div>
       </form>

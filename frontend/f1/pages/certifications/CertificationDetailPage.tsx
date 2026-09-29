@@ -1,16 +1,26 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import { formatDateTime, shortHash } from "../../data/utils";
 import { certificationService, CertificationResponse } from "../../services/certifications";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
+import CertificateQR from "../../components/ui/CertificateQR";
+import { DemoRecord } from "../../data/demoData";
 
 export default function CertificationDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const [cert, setCert] = useState<CertificationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'certification') {
+      navigate(`/app/certifications/${record.id}`);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -174,9 +184,11 @@ export default function CertificationDetailPage() {
           { label: cert.cert_id },
         ]}
         actions={
-          <Link
-            to="/app/certifications"
-            className="btn-ghost"
+          <div style={{ display: "flex", gap: 8 }}>
+            <DemoDataDropdown type="certification" onSelect={handleDemoDataSelect} />
+            <Link
+              to="/app/certifications"
+              className="btn-ghost"
             style={{
               fontSize: "0.8125rem",
               padding: "6px 14px",
@@ -185,6 +197,7 @@ export default function CertificationDetailPage() {
           >
             ← Back to Certifications
           </Link>
+          </div>
         }
       />
 
@@ -272,6 +285,24 @@ export default function CertificationDetailPage() {
               {cert.network || "BEL-TRUST-CHAIN"}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", marginBottom: "16px" }}>
+          Certificate Verification QR
+        </h3>
+        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+          <CertificateQR
+            certId={cert.cert_id}
+            assetId={cert.asset_id}
+            contractAddress={cert.contract_address}
+            size={160}
+            showLabel={true}
+          />
+        </div>
+        <div style={{ textAlign: "center", fontSize: "0.75rem", color: "#64748b", marginTop: "8px" }}>
+          Scan this QR code to verify this certificate on the BEL-TRUST-CHAIN blockchain
         </div>
       </div>
 
