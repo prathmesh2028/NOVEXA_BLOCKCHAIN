@@ -59,13 +59,21 @@ services:
       --rpc-http-enabled
       --rpc-http-host=0.0.0.0
       --rpc-http-cors-origins=*
+      --rpc-http-api=ETH,NET,QBFT
+      --host-allowlist=*
       --genesis-file=/besu/genesis.json
       --node-private-key-file=/besu/key.priv
       --sync-min-peers=0
+      --min-block-occupancy-ratio=0
     volumes:
       - besudata:/besu/data
       - ./besu/genesis.json:/besu/genesis.json
       - ./besu/key.priv:/besu/key.priv
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -X POST --data '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' http://localhost:8545 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
 volumes:
   pgdata:
