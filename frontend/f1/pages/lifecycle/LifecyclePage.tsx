@@ -299,16 +299,16 @@ export default function LifecyclePage() {
     } catch {
       // Fallback default rules if offline
       setRules([
-        { from_state: "UNREGISTERED", to_state: "SUPPLIER_DECLARED", allowed_role: "PROCUREMENT, QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Initial asset declaration by supplier" },
-        { from_state: "SUPPLIER_DECLARED", to_state: "RECEIVED", allowed_role: "PROCUREMENT, QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Logistics depot physical receipt" },
-        { from_state: "RECEIVED", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: true, description: "Physical bench test & QA checkpoint recorded" },
-        { from_state: "RECEIVED", to_state: "INSPECTION_OVERDUE", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Automated SLA deadline expiry" },
-        { from_state: "RECEIVED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Visual damage or seal violation on arrival" },
-        { from_state: "INSPECTION_OVERDUE", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: true, description: "Expedited bench test clearance" },
-        { from_state: "INSPECTION_OVERDUE", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Overdue timeout quarantine" },
-        { from_state: "INSPECTION_RECORDED", to_state: "ACCEPTED_FOR_ASSEMBLY", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: false, description: "Final QA sign-off and Soulbound NFT clearance" },
-        { from_state: "INSPECTION_RECORDED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: false, description: "Telemetry deviation or acoustic test failure" },
-        { from_state: "ACCEPTED_FOR_ASSEMBLY", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Post-assembly defect discovery quarantine" },
+        { from_state: "UNREGISTERED", to_state: "SUPPLIER_DECLARED", allowed_role: "PROCUREMENT_SUPPLY_CHAIN_OFFICER, QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Initial asset declaration by supplier" },
+        { from_state: "SUPPLIER_DECLARED", to_state: "RECEIVED", allowed_role: "PROCUREMENT_SUPPLY_CHAIN_OFFICER, QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Logistics depot physical receipt" },
+        { from_state: "RECEIVED", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: true, description: "Physical bench test & QA checkpoint recorded" },
+        { from_state: "RECEIVED", to_state: "INSPECTION_OVERDUE", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Automated SLA deadline expiry" },
+        { from_state: "RECEIVED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Visual damage or seal violation on arrival" },
+        { from_state: "INSPECTION_OVERDUE", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: true, description: "Expedited bench test clearance" },
+        { from_state: "INSPECTION_OVERDUE", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Overdue timeout quarantine" },
+        { from_state: "INSPECTION_RECORDED", to_state: "ACCEPTED_FOR_ASSEMBLY", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: false, description: "Final QA sign-off and Soulbound NFT clearance" },
+        { from_state: "INSPECTION_RECORDED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: false, description: "Telemetry deviation or acoustic test failure" },
+        { from_state: "ACCEPTED_FOR_ASSEMBLY", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Post-assembly defect discovery quarantine" },
       ]);
       setStateMachine({
         states: [
@@ -416,7 +416,7 @@ export default function LifecyclePage() {
     return matchesSearch && matchesState;
   });
 
-  const uniqueRoles = ["QUALITY_INSPECTOR", "PROCUREMENT", "SYSTEM_ADMIN"];
+  const uniqueRoles = ["QUALITY_INSPECTOR", "PROCUREMENT_SUPPLY_CHAIN_OFFICER", "SYSTEM_ADMIN"];
 
   // Real KPI Computations with animated numbers
   const totalStates = stateMachine?.states?.length || 7;

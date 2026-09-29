@@ -71,14 +71,14 @@ function KpiMiniSparkline({ color = "#3b82f6", variant = 1 }: { color?: string; 
 function RolePill({ roleStr }: { roleStr: string }) {
   const r = (roleStr || "").toLowerCase();
 
-  if (r.includes("admin")) {
-    return <span className="role-pill role-pill-admin">ADMIN</span>;
+  if (r.includes("system") && r.includes("admin")) {
+    return <span className="role-pill role-pill-admin">SYSTEM_ADMIN</span>;
   }
   if (r.includes("supply") || r.includes("creator") || r.includes("procurement") || r.includes("nft")) {
-    return <span className="role-pill role-pill-creator">CREATOR</span>;
+    return <span className="role-pill role-pill-creator">PROCUREMENT_SUPPLY_CHAIN_OFFICER</span>;
   }
   if (r.includes("inspect") || r.includes("tech") || r.includes("quality")) {
-    return <span className="role-pill role-pill-tech">TECH</span>;
+    return <span className="role-pill role-pill-tech">QUALITY_INSPECTOR</span>;
   }
   if (r.includes("audit")) {
     return <span className="role-pill role-pill-auditor">AUDITOR</span>;
@@ -350,7 +350,7 @@ export default function UsersPage() {
       // 2. Role Filter
       if (roleFilter !== "ALL") {
         const userRoles = (u.roles || []).map((r) => r.toLowerCase());
-        if (roleFilter === "ADMIN" && !userRoles.some((r) => r.includes("admin"))) return false;
+        if (roleFilter === "ADMIN" && !userRoles.some((r) => r.includes("system") && r.includes("admin"))) return false;
         if (roleFilter === "CREATOR" && !userRoles.some((r) => r.includes("supply") || r.includes("creator") || r.includes("procurement") || r.includes("nft"))) return false;
         if (roleFilter === "TECH" && !userRoles.some((r) => r.includes("inspect") || r.includes("tech") || r.includes("quality"))) return false;
         if (roleFilter === "AUDITOR" && !userRoles.some((r) => r.includes("audit"))) return false;
@@ -591,10 +591,10 @@ export default function UsersPage() {
             aria-label="Filter by role"
           >
             <option value="ALL">All Roles</option>
-            <option value="ADMIN">Admin</option>
-            <option value="CREATOR">Creator / NFT</option>
-            <option value="TECH">Technician</option>
-            <option value="AUDITOR">Auditor</option>
+            <option value="ADMIN">SYSTEM_ADMIN</option>
+            <option value="CREATOR">PROCUREMENT_SUPPLY_CHAIN_OFFICER</option>
+            <option value="TECH">QUALITY_INSPECTOR</option>
+            <option value="AUDITOR">AUDITOR</option>
           </select>
 
           {/* Status Filter */}

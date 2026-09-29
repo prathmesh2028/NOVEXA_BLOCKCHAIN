@@ -99,7 +99,7 @@ describe('UsersService', () => {
           status: 'ACTIVE',
           createdAt: new Date(),
           lastActive: new Date(),
-          roles: [{ role: 'ADMIN' }],
+          roles: [{ role: 'SYSTEM_ADMIN' }],
           actor: { did: 'did:web:example', identityStatus: 'VERIFIED' },
         },
       ];
@@ -109,7 +109,7 @@ describe('UsersService', () => {
       const result = await service.listUsers({ page: 1, page_size: 10 });
       expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
-      expect(result.items[0].roles).toContain('ADMIN');
+      expect(result.items[0].roles).toContain('SYSTEM_ADMIN');
     });
 
     it('filters by search term in database query', async () => {
@@ -120,7 +120,7 @@ describe('UsersService', () => {
           name: 'Arjun Mehta',
           status: 'ACTIVE',
           createdAt: new Date(),
-          roles: [{ role: 'ADMIN' }],
+          roles: [{ role: 'SYSTEM_ADMIN' }],
           actor: null,
         },
       ]);
@@ -148,21 +148,21 @@ describe('UsersService', () => {
           name: 'Admin User',
           status: 'ACTIVE',
           createdAt: new Date(),
-          roles: [{ role: 'ADMIN' }],
+          roles: [{ role: 'SYSTEM_ADMIN' }],
           actor: null,
         },
       ]);
       mockPrisma.user.count.mockResolvedValue(1);
 
-      const result = await service.listUsers({ role: 'ADMIN' });
+      const result = await service.listUsers({ role: 'SYSTEM_ADMIN' });
       expect(mockPrisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            roles: { some: { role: 'ADMIN' } },
+            roles: { some: { role: 'SYSTEM_ADMIN' } },
           }),
         }),
       );
-      expect(result.items[0].roles).toContain('ADMIN');
+      expect(result.items[0].roles).toContain('SYSTEM_ADMIN');
     });
 
     it('throws database error when database is offline in production mode', async () => {

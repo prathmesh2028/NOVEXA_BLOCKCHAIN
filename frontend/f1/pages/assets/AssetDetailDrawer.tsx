@@ -7,17 +7,54 @@ import { formatDateTime } from "../../data/utils";
 interface AssetDetailDrawerProps {
   asset: DefenceAsset | null;
   onClose: () => void;
+  loading?: boolean;
 }
 
-export default function AssetDetailDrawer({ asset, onClose }: AssetDetailDrawerProps) {
+export default function AssetDetailDrawer({ asset, onClose, loading = false }: AssetDetailDrawerProps) {
   const [copied, setCopied] = useState(false);
 
-  if (!asset) return null;
+  if (!asset && !loading) return null;
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(3, 7, 18, 0.72)",
+          backdropFilter: "blur(4px)",
+          zIndex: 9999,
+          display: "flex",
+          justifyContent: "flex-end",
+          animation: "fadeIn 0.2s ease-out",
+        }}
+        onClick={onClose}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "540px",
+            height: "100%",
+            backgroundColor: "#0f172a",
+            animation: "slideInRight 0.3s ease-out",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ padding: "24px" }}>
+            <div style={{ height: "32px", marginBottom: "24px", background: "rgba(255,255,255,0.05)", borderRadius: "4px" }} />
+            <div style={{ height: "120px", marginBottom: "16px", background: "rgba(255,255,255,0.05)", borderRadius: "4px" }} />
+            <div style={{ height: "80px", marginBottom: "16px", background: "rgba(255,255,255,0.05)", borderRadius: "4px" }} />
+            <div style={{ height: "60px", background: "rgba(255,255,255,0.05)", borderRadius: "4px" }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(asset.id);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 3000);
   };
 
   const classificationColor: Record<string, { bg: string; text: string; border: string }> = {

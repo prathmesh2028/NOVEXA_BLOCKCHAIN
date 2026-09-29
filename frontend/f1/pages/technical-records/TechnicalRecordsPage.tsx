@@ -313,14 +313,14 @@ export default function TechnicalRecordsPage() {
         >
           <div
             className="internal-card modal-content-animated"
-            style={{ width: 600, maxWidth: "90%", padding: 0, maxHeight: "90vh", overflow: "auto" }}
+            style={{ width: 600, maxWidth: "90%", padding: 0, maxHeight: "85vh", display: "flex", flexDirection: "column" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
               <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--foreground)", margin: 0 }}>Add Technical Record</h2>
               <button onClick={() => setShowCreateModal(false)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.2rem" }}>✕</button>
             </div>
-            <div style={{ padding: 24 }}>
+            <div style={{ padding: 24, overflow: "auto", flex: 1 }}>
               {error && (
                 <div style={{ padding: 12, background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, marginBottom: 16, color: "#ef4444", fontSize: "0.875rem" }}>
                   {error}
@@ -406,7 +406,7 @@ export default function TechnicalRecordsPage() {
                   + Add Parameter Field
                 </button>
               </div>
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 16, borderTop: "1px solid var(--border)", flexShrink: 0 }}>
                 <button className="btn-secondary" onClick={() => setShowCreateModal(false)} disabled={submitting}>
                   Cancel
                 </button>
