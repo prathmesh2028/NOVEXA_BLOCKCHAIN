@@ -300,10 +300,10 @@ export default function EvidencePage() {
               <div className="ev-crypto-badge-row">
                 <span className="ev-crypto-tag">
                   <span className="ev-pulse-dot" style={{ width: 5, height: 5 }} />
-                  ALGORITHM: SHA-256 / IPFS
+                  ALGORITHM: SHA-256
                 </span>
                 <span style={{ fontSize: "0.6875rem", color: "var(--ev-text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
-                  IMMUTABLE DIGEST
+                  CRYPTOGRAPHIC DIGEST
                 </span>
               </div>
 
@@ -312,7 +312,7 @@ export default function EvidencePage() {
               </h2>
 
               <p className="ev-crypto-desc">
-                Every file payload produces an immutable 256-bit hash. Any byte-level alteration invalidates the verification seal.
+                Every file payload produces a unique 256-bit cryptographic hash. Any byte-level alteration produces a different hash, enabling tamper detection.
               </p>
 
               <div className="ev-crypto-hex-stream">
