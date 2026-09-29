@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UsersService } from './users.service';
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { AppRole } from '@prisma/client';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -36,18 +35,19 @@ describe('UsersService', () => {
         name: 'Tech User',
         status: 'PENDING',
         createdAt: new Date('2026-01-01'),
-        roles: [{ role: AppRole.QUALITY_INSPECTOR }],
+        roles: [{ role: 'QUALITY_INSPECTOR' }],
       };
       mockPrisma.user.create.mockResolvedValue(mockUser);
 
       const result = await service.inviteUser({
         email: 'tech@example.com',
         name: 'Tech User',
-        role: AppRole.QUALITY_INSPECTOR,
+        role: 'QUALITY_INSPECTOR',
       });
 
       expect(result.email).toBe('tech@example.com');
-      expect(result.roles).toContain(AppRole.QUALITY_INSPECTOR);
+      expect(Array.isArray(result.roles)).toBe(true);
+      expect(result.roles).toContain('QUALITY_INSPECTOR');
       expect(result.status).toBe('PENDING');
     });
 
@@ -69,7 +69,7 @@ describe('UsersService', () => {
         service.inviteUser({
           email: 'duplicate@example.com',
           name: 'Dup User',
-          role: AppRole.AUDITOR,
+          role: 'AUDITOR',
         }),
       ).rejects.toThrow(ConflictException);
     });
@@ -81,7 +81,7 @@ describe('UsersService', () => {
         service.inviteUser({
           email: 'offline@example.com',
           name: 'Offline User',
-          role: AppRole.QUALITY_INSPECTOR,
+          role: 'QUALITY_INSPECTOR',
         }),
       ).rejects.toThrow('Connection refused');
     });

@@ -58,7 +58,7 @@ const FALLBACK_USERS = [
     name: 'Priya Sharma',
     passwordHash: '$2a$10$wT28t/4t.eZ8R9h0zN8WReK9Jm0v8t6s1K8m7y6d5e4r3q2w1e0r9',
     status: 'ACTIVE',
-    roles: ['PROCUREMENT_SUPPLY_CHAIN_OFFICER', 'NFT_CREATOR', 'CREATOR'],
+    roles: ['PROCUREMENT_SUPPLY_CHAIN_OFFICER'],
     actor: {
       id: 'act-002',
       did: 'did:bel:actor:002',
@@ -73,7 +73,7 @@ const FALLBACK_USERS = [
     name: 'Rajesh Kumar',
     passwordHash: '$2a$10$wT28t/4t.eZ8R9h0zN8WReK9Jm0v8t6s1K8m7y6d5e4r3q2w1e0r9',
     status: 'ACTIVE',
-    roles: ['QUALITY_INSPECTOR', 'TECHNICIAN', 'TECH'],
+    roles: ['QUALITY_INSPECTOR'],
     actor: {
       id: 'act-003',
       did: 'did:bel:actor:003',

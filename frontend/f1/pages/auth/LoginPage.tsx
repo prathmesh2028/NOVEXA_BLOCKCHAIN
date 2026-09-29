@@ -21,7 +21,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     id: "admin",
     name: "Arjun Mehta",
-    role: "ADMIN",
+    role: "SYSTEM_ADMIN",
     rolePillClass: "pill-admin",
     email: "a.mehta@bel-defence.in",
     password: "password",
@@ -29,7 +29,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     id: "creator",
     name: "Priya Sharma",
-    role: "CREATOR",
+    role: "PROCUREMENT_SUPPLY_CHAIN_OFFICER",
     rolePillClass: "pill-creator",
     email: "p.sharma@bel-defence.in",
     password: "password",
@@ -37,7 +37,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     id: "tech",
     name: "Rajesh Kumar",
-    role: "TECH",
+    role: "QUALITY_INSPECTOR",
     rolePillClass: "pill-tech",
     email: "r.kumar@bel-defence.in",
     password: "password",
