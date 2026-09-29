@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { formatDateTime } from "../../data/utils";
 import { usersService, UserResponse } from "../../services/users";
@@ -276,6 +277,46 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  /* Viewport scroll lock for Invite New User modal */
+  useEffect(() => {
+    if (!showInviteModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showInviteModal]);
 
   /* Close action popover on click outside or Escape key */
   useEffect(() => {
@@ -1105,29 +1146,16 @@ export default function UsersPage() {
       )}
 
       {/* ── 7. INVITE USER MODAL ────────────────────────────────────── */}
-      {showInviteModal && (
+      {showInviteModal && typeof document !== "undefined" && createPortal(
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
+          className="users-invite-modal-overlay"
           onClick={() => setShowInviteModal(false)}
         >
           <div
-            className="users-table-card"
-            style={{ width: 480, maxWidth: "90%", padding: 0, animation: "usersCardEntrance 0.25s ease-out" }}
+            className="users-table-card users-invite-modal-dialog"
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--border-subtle, #152b4a)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="users-invite-modal-header">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ color: "#38bdf8", fontSize: "1.1rem" }}>👤</span>
                 <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--foreground, #e2e8f0)", margin: 0 }}>
@@ -1142,7 +1170,7 @@ export default function UsersPage() {
               </button>
             </div>
 
-            <div style={{ padding: 24 }}>
+            <div className="users-invite-modal-body">
               {error && (
                 <div style={{ padding: 12, background: "rgba(239,68,68,0.15)", border: "1px solid #ef4444", borderRadius: 8, marginBottom: 16, color: "#fca5a5", fontSize: "0.8125rem" }}>
                   {error}
@@ -1228,7 +1256,8 @@ export default function UsersPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

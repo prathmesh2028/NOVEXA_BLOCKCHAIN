@@ -24,7 +24,7 @@ describe('AuthService (Authentication & Password Management)', () => {
     name: 'Priya Sharma',
     status: 'ACTIVE',
     passwordHash,
-    roles: [{ role: 'NFT_CREATOR' }],
+    roles: [{ role: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER' }],
     actor: { did: 'did:bel:actor:002' },
   };
 
@@ -103,7 +103,7 @@ describe('AuthService (Authentication & Password Management)', () => {
         name: 'Disabled',
         status: 'DISABLED',
         passwordHash: await bcrypt.hash('password', 10),
-        roles: [{ role: 'TECHNICIAN' }],
+        roles: [{ role: 'QUALITY_INSPECTOR' }],
         actor: null,
       };
       mockPrisma.user.findUnique = vi.fn().mockResolvedValue(disabledUser);

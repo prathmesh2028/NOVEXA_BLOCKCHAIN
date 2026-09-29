@@ -21,7 +21,10 @@
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs",
-      "moduleResolution": "node"
-    }
+      "moduleResolution": "node",
+      "esModuleInterop": true
+    },
+    "transpileOnly": true,
+    "files": true
   }
 }
