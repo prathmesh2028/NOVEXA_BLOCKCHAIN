@@ -1,4 +1,4 @@
-import type { LifecycleState } from "../../data/mockData";
+import type { LifecycleState } from "../../data/types";
 
 const LIFECYCLE_STEPS = [
   { key: "UNREGISTERED", label: "Unregistered" },

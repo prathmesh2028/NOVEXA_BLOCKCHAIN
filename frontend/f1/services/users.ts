@@ -30,5 +30,9 @@ export const usersService = {
     if (params.page_size) query.append('page_size', params.page_size.toString());
     
     return api.get<UserListResponse>(`/users?${query.toString()}`);
+  },
+
+  inviteUser: async (data: { email: string; name: string; role: string }) => {
+    return api.post<UserResponse>('/users', data);
   }
 };

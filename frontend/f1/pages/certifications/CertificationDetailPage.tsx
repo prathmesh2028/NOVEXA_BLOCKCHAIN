@@ -1,144 +1,318 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
-import StatusBadge from "../../components/ui/StatusBadge";
-import { CERTIFICATIONS, EVIDENCE_LIST, ASSETS, formatDateTime, shortHash } from "../../data/mockData";
+import { formatDateTime, shortHash } from "../../data/utils";
+import { certificationService, CertificationResponse } from "../../services/certifications";
 
 export default function CertificationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const cert = CERTIFICATIONS.find((c) => c.id === id);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  if (!cert) {
+  const [cert, setCert] = useState<CertificationResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    certificationService.getCertification(id)
+      .then(setCert)
+      .catch((err) => {
+        console.error("Failed to load certification:", err);
+        setError(err.message || "Failed to load certification");
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const copyToClipboard = (text: string, fieldName: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
+
+  // Loading state
+  if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "80px 24px" }}>
-        <div style={{ fontSize: "2rem", marginBottom: 16, opacity: 0.3 }}>◆</div>
-        <h2 className="font-display" style={{ color: "#e2e8f0" }}>CERTIFICATION NOT FOUND</h2>
-        <Link to="/app/certifications" className="btn-secondary" style={{ marginTop: 16 }}>← Back to Certifications</Link>
+      <div className="page-fade" style={{ maxWidth: "800px", margin: "60px auto", textAlign: "center" }}>
+        <div className="panel" style={{ padding: "60px 32px", background: "#0a1320", border: "1px solid #1e3a60", borderRadius: "8px" }}>
+          <div style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Loading certification...</div>
+        </div>
       </div>
     );
   }
 
-  const asset = ASSETS.find((a) => a.id === cert.assetId);
-  const evidence = EVIDENCE_LIST.filter((e) => e.assetId === cert.assetId);
+  // Error state
+  if (error) {
+    return (
+      <div className="page-fade" style={{ maxWidth: "800px", margin: "60px auto", textAlign: "center" }}>
+        <div className="panel" style={{ padding: "60px 32px", background: "#0a1320", border: "1px solid #1e3a60", borderRadius: "8px" }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.12)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "2rem",
+              color: "#ef4444",
+              margin: "0 auto 20px",
+            }}
+          >
+            ✕
+          </div>
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "1.75rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 10,
+              letterSpacing: "0.02em",
+            }}
+          >
+            ERROR LOADING CERTIFICATION
+          </h2>
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "0.875rem",
+              marginBottom: 24,
+              lineHeight: 1.6,
+            }}
+          >
+            {error}
+          </p>
+          <Link
+            to="/app/certifications"
+            className="btn-primary"
+            style={{ padding: "10px 20px", textDecoration: "none" }}
+          >
+            Back to Certifications
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // If certificate not found (after successful load but null result)
+  if (!cert) {
+    return (
+      <div
+        className="page-fade"
+        style={{ maxWidth: "800px", margin: "60px auto", textAlign: "center" }}
+      >
+        <div className="panel" style={{ padding: "60px 32px", background: "#0a1320", border: "1px solid #1e3a60", borderRadius: "8px" }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.12)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "2rem",
+              color: "#ef4444",
+              margin: "0 auto 20px",
+            }}
+          >
+            ✕
+          </div>
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "1.75rem",
+              fontWeight: 700,
+              color: "#e2e8f0",
+              marginBottom: 10,
+              letterSpacing: "0.02em",
+            }}
+          >
+            CERTIFICATION RECORD NOT FOUND
+          </h2>
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "0.875rem",
+              marginBottom: 24,
+              lineHeight: 1.6,
+            }}
+          >
+            No sovereign defence certificate or airworthiness record exists for identifier:{" "}
+            <span className="font-mono-id" style={{ color: "#f87171" }}>
+              {id}
+            </span>
+            . Please check your certificate identifier or consult the certification registry.
+          </p>
+          <Link
+            to="/app/certifications"
+            className="btn-primary"
+            style={{ padding: "10px 20px", textDecoration: "none" }}
+          >
+            ← Back to Certifications
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="page-fade">
+    <div className="page-fade" style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader
-        title={cert.id}
-        subtitle={`Digital certification for asset ${cert.assetId}`}
+        title={cert.cert_id}
+        subtitle={`Asset: ${cert.asset_id}`}
         breadcrumbs={[
           { label: "Dashboard", to: "/app/dashboard" },
           { label: "Certifications", to: "/app/certifications" },
-          { label: cert.id },
+          { label: cert.cert_id },
         ]}
-        badge={<StatusBadge status={cert.status} />}
-        actions={<Link to="/app/certifications" className="btn-ghost">← Back</Link>}
+        actions={
+          <Link
+            to="/app/certifications"
+            className="btn-ghost"
+            style={{
+              fontSize: "0.8125rem",
+              padding: "6px 14px",
+              textDecoration: "none",
+            }}
+          >
+            ← Back to Certifications
+          </Link>
+        }
       />
 
-      {/* Non-transferable notice — prominent */}
-      <div
-        style={{
-          padding: "14px 20px",
-          background: "rgba(139,92,246,0.08)",
-          border: "1px solid rgba(139,92,246,0.25)",
-          borderRadius: "6px",
-          marginBottom: 24,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <span style={{ color: "#8b5cf6", fontSize: "1.1rem" }}>⊠</span>
-        <div>
-          <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.04em" }}>NON-TRANSFERABLE CERTIFICATION</div>
-          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 2 }}>
-            This digital certification represents the recorded certification state of this asset/batch.
-            It is not a physical ownership record. Transfer is permanently locked.
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Certification ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.cert_id}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Asset ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.asset_id}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Batch ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.batch_id || "N/A"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Status
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: cert.status === "CONFIRMED" ? "#22c55e" : cert.status === "PENDING" ? "#f59e0b" : "#ef4444", fontWeight: 600 }}>
+              {cert.status}
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        {/* Certification overview */}
-        <div className="panel" style={{ padding: 20 }}>
-          <div className="section-label" style={{ marginBottom: 14 }}>CERTIFICATION OVERVIEW</div>
-          {[
-            { label: "Certification ID", value: cert.id, mono: true },
-            { label: "Token ID", value: cert.tokenId, mono: true },
-            { label: "Asset ID", value: cert.assetId, mono: true, link: `/app/assets/${cert.assetId}` },
-            { label: "Batch ID", value: cert.batchId, mono: true },
-            { label: "Status", value: cert.status, badge: true },
-            { label: "Issued by", value: cert.issuedBy },
-            { label: "Issuer DID", value: cert.issuedByDid, mono: true },
-            { label: "Issued at", value: formatDateTime(cert.issuedAt) },
-            { label: "Confirmed at", value: cert.confirmedAt ? formatDateTime(cert.confirmedAt) : "Awaiting confirmation" },
-            { label: "Confirmations", value: cert.confirmations.toString() },
-          ].map((row) => (
-            <div key={row.label} style={{ display: "flex", gap: 12, padding: "7px 0", borderBottom: "1px solid #152b4a", alignItems: "center" }}>
-              <span style={{ fontSize: "0.6875rem", color: "#475569", width: 110, flexShrink: 0 }}>{row.label}</span>
-              {row.badge ? (
-                <StatusBadge status={row.value} size="sm" />
-              ) : row.link ? (
-                <Link to={row.link} style={{ textDecoration: "none" }}>
-                  <span className="meta-id" style={{ color: "#60a5fa" }}>{row.value}</span>
-                </Link>
-              ) : row.mono ? (
-                <span className="meta-id" style={{ color: "#94a3b8" }}>{row.value}</span>
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", marginBottom: "16px" }}>
+          Blockchain Information
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Token ID
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.token_id || "Pending"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Transaction Hash
+            </div>
+            <div style={{ fontSize: "0.875rem", color: "#e2e8f0", fontWeight: 500, fontFamily: "monospace" }}>
+              {cert.tx_hash ? (
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() => copyToClipboard(cert.tx_hash!, "txHash")}
+                >
+                  {shortHash(cert.tx_hash)}
+                  {copiedField === "txHash" && " ✓"}
+                </span>
               ) : (
-                <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{row.value}</span>
+                "Pending"
               )}
             </div>
-          ))}
-        </div>
-
-        {/* Blockchain proof */}
-        <div>
-          <div className="panel" style={{ padding: 20, marginBottom: 16 }}>
-            <div className="section-label" style={{ marginBottom: 14 }}>BLOCKCHAIN PROOF</div>
-            {[
-              { label: "Network", value: cert.network },
-              { label: "Contract", value: shortHash(cert.contractAddress, 10), mono: true },
-              { label: "Transaction", value: shortHash(cert.txHash, 10), mono: true },
-              { label: "Block Number", value: cert.blockNumber > 0 ? cert.blockNumber.toLocaleString() : "Pending" },
-              { label: "Confirmations", value: cert.confirmations.toString() },
-            ].map((row) => (
-              <div key={row.label} style={{ display: "flex", gap: 12, padding: "7px 0", borderBottom: "1px solid #152b4a", alignItems: "center" }}>
-                <span style={{ fontSize: "0.6875rem", color: "#475569", width: 110, flexShrink: 0 }}>{row.label}</span>
-                {row.mono ? (
-                  <span className="meta-id" style={{ color: "#94a3b8" }}>{row.value}</span>
-                ) : (
-                  <span style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{row.value}</span>
-                )}
-              </div>
-            ))}
-            <div style={{ marginTop: 14 }}>
-              <div className="section-label" style={{ marginBottom: 8 }}>FULL TRANSACTION HASH</div>
-              <div style={{ background: "#070f1d", padding: "10px 12px", borderRadius: "4px", border: "1px solid #152b4a", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                <span className="meta-id" style={{ color: "#64748b", wordBreak: "break-all", fontSize: "0.7rem" }}>{cert.txHash}</span>
-              </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Block Number
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.block_number || "Pending"}
             </div>
           </div>
-
-          {/* Evidence summary */}
-          <div className="panel" style={{ padding: 20 }}>
-            <div className="section-label" style={{ marginBottom: 14 }}>EVIDENCE LINKED TO CERTIFICATION</div>
-            {evidence.length === 0 ? (
-              <div style={{ fontSize: "0.8125rem", color: "#475569" }}>No evidence records</div>
-            ) : evidence.map((e) => (
-              <div key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #152b4a" }}>
-                <div>
-                  <div style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>{e.filename}</div>
-                  <div className="meta-id" style={{ color: "#475569" }}>{e.hash}</div>
-                </div>
-                <StatusBadge status={e.integrityVerified ? "VERIFIED" : "FAILED"} size="sm" />
-              </div>
-            ))}
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Network
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.network || "BEL-TRUST-CHAIN"}
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ marginTop: 24, display: "flex", gap: 10 }}>
-        {asset && <Link to={`/app/assets/${asset.id}`} className="btn-secondary">View Asset →</Link>}
-        <Link to="/app/blockchain" className="btn-secondary">View Blockchain Transactions →</Link>
+      <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", marginBottom: "16px" }}>
+          Issuance Information
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Issued By
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.issued_by || "N/A"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Issued At
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {formatDateTime(cert.issued_at)}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Confirmed At
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.confirmed_at ? formatDateTime(cert.confirmed_at) : "Pending"}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: "0.6875rem", color: "#64748b", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+              Confirmations
+            </div>
+            <div style={{ fontSize: "0.9375rem", color: "#e2e8f0", fontWeight: 500 }}>
+              {cert.confirmations}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

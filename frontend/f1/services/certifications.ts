@@ -33,5 +33,17 @@ export const certificationService = {
     if (params.page_size) query.append('page_size', params.page_size.toString());
     
     return api.get<CertificationListResponse>(`/certifications?${query.toString()}`);
+  },
+
+  getCertification: async (id: string) => {
+    return api.get<CertificationResponse>(`/certifications/${id}`);
+  },
+
+  createCertification: async (data: { asset_id: string; batch_id?: string; certificate_image?: string; image_name?: string }) => {
+    return api.post<CertificationResponse>('/certifications', data);
+  },
+
+  revokeCertification: async (id: string, reason?: string) => {
+    return api.post<CertificationResponse>(`/certifications/${id}/revoke`, { reason });
   }
 };

@@ -1,53 +1,112 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, UserMeResponse } from '../services/auth';
-import type { Role } from './RoleContext';
+
+export type Role = "system-admin" | "procurement-supply-chain-officer" | "quality-inspector" | "auditor";
+
+export const DEFAULT_DEMO_USER: UserMeResponse = {
+  id: "usr-001",
+  email: "a.mehta@bel-defence.in",
+  name: "Arjun Mehta",
+  status: "ACTIVE",
+  roles: ["SYSTEM_ADMIN", "ADMIN"],
+  actor: {
+    id: "act-001",
+    did: "did:bel:actor:001",
+    credential_status: "ACTIVE",
+    identity_status: "VERIFIED",
+    wallet_address: "0x8A42b3c5d1e7f2a919F2",
+  },
+};
+
+export function normalizeRole(roleStr?: string | null): Role {
+  if (!roleStr) return "system-admin";
+  const r = roleStr.toLowerCase().replaceAll("_", "-").trim();
+  if (r === "system-admin" || r === "admin" || r === "administrator") return "system-admin";
+  if (
+    r === "procurement-supply-chain-officer" ||
+    r === "creator" ||
+    r === "nft-creator" ||
+    r === "procurement-officer" ||
+    r === "supply-chain"
+  ) {
+    return "procurement-supply-chain-officer";
+  }
+  if (
+    r === "quality-inspector" ||
+    r === "tech" ||
+    r === "technician" ||
+    r === "inspector"
+  ) {
+    return "quality-inspector";
+  }
+  if (r === "auditor" || r === "audit") return "auditor";
+  return "system-admin";
+}
 
 interface AuthContextType {
   user: UserMeResponse | null;
-  role: Role | null; // Keep this for backwards compatibility during migration
+  role: Role | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  error: string | null;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserMeResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<UserMeResponse | null>(() => {
+    const stored = localStorage.getItem('kavach_user');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {}
+    }
+    return null; // No default user - must authenticate
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Derive the active role from the user's backend roles
-  const activeRole = (user?.roles?.[0]?.toLowerCase().replace('_', '-') as Role) || null;
+  // Derive the active role cleanly from backend roles with fallback normalization
+  const activeRole: Role = user?.roles?.[0]
+    ? normalizeRole(user.roles[0])
+    : "system-admin";
   const isAuthenticated = !!user;
 
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('kavach_token');
+      
       if (token) {
         try {
           const userData = await authService.getMe();
           setUser(userData);
-        } catch (error) {
-          console.error("Session expired or invalid", error);
+          localStorage.setItem('kavach_user', JSON.stringify(userData));
+        } catch (err) {
+          console.warn('Session verification failed, clearing invalid session', err);
           localStorage.removeItem('kavach_token');
+          localStorage.removeItem('kavach_user');
+          setUser(null);
         }
       }
-      setIsLoading(false);
     };
 
     initAuth();
   }, []);
 
-  const login = async (email: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      await authService.login(email, "password"); // Hardcoded password for demo purposes
+      await authService.login(email, password);
       const userData = await authService.getMe();
       setUser(userData);
-    } catch (error) {
-      console.error("Login failed", error);
-      throw error;
+      localStorage.setItem('kavach_user', JSON.stringify(userData));
+    } catch (err: any) {
+      const msg = err?.message || err?.data?.detail || 'Authentication failed. Check credentials.';
+      setError(msg);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -55,18 +114,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     authService.logout();
+    localStorage.removeItem('kavach_user');
     setUser(null);
+    setError(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, role: activeRole, isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, role: activeRole, isAuthenticated, isLoading, login, logout, error }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Export useAuth hook. 
-// Note: We'll eventually replace useRole with useAuth across the app.
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

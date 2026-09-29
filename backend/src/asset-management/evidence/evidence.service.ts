@@ -1,6 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { MinioService } from './minio.service';
+import { AuditService } from '../audit/audit.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -10,7 +11,32 @@ export class EvidenceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly minio: MinioService,
+    private readonly auditService: AuditService,
   ) {}
+
+  private getSupplierDomain(email?: string): string | null {
+    if (!email) return null;
+    const parts = email.split('@');
+    return parts.length > 1 ? parts[1] : null;
+  }
+
+  private async enforceAssetAccess(assetId: string, user: any) {
+    if (!user || user.roles.includes('SYSTEM_ADMIN') || user.roles.includes('AUDITOR')) return;
+    const asset = await this.prisma.asset.findFirst({
+      where: { OR: [{ id: assetId }, { assetId: assetId }] },
+    });
+    if (!asset || !asset.registeredById) return;
+    if (asset.registeredById === user.sub) return;
+
+    const creator = await this.prisma.user.findUnique({ where: { id: asset.registeredById } });
+    if (creator) {
+      const creatorDomain = this.getSupplierDomain(creator.email);
+      const userDomain = this.getSupplierDomain(user.email);
+      if (creatorDomain && userDomain && creatorDomain !== userDomain) {
+        throw new ForbiddenException('You do not have permission to access evidence for another supplier');
+      }
+    }
+  }
 
   private mapEvidence(e: any) {
     // Map DB enum to frontend Title Case
@@ -41,14 +67,47 @@ export class EvidenceService {
     event_type?: string;
     page?: number;
     page_size?: number;
+    user?: any;
   }) {
     const page = params.page || 1;
     const pageSize = params.page_size || 20;
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
-    if (params.asset_id) where.assetId = params.asset_id;
+    let targetAssetId = params.asset_id;
+    if (params.asset_id) {
+      const foundAsset = await this.prisma.asset.findFirst({
+        where: { OR: [{ id: params.asset_id }, { assetId: params.asset_id }] },
+        select: { id: true },
+      });
+      if (foundAsset) {
+        targetAssetId = foundAsset.id;
+      }
+      where.assetId = targetAssetId;
+    }
     if (params.event_type) where.event = params.event_type;
+
+    if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
+      const userDomain = this.getSupplierDomain(params.user.email);
+      if (userDomain) {
+        const usersInDomain = await this.prisma.user.findMany({
+          where: { email: { endsWith: `@${userDomain}` } },
+          select: { id: true },
+        });
+        const assets = await this.prisma.asset.findMany({
+          where: { registeredById: { in: usersInDomain.map(u => u.id) } },
+          select: { id: true },
+        });
+        // If an asset filter is already provided, ensure it's in the allowed list
+        if (targetAssetId) {
+          if (!assets.some(a => a.id === targetAssetId)) {
+             where.assetId = 'NOT_FOUND_NO_ACCESS'; 
+          }
+        } else {
+          where.assetId = { in: assets.map(a => a.id) };
+        }
+      }
+    }
 
     let evidence: any[] = [];
     let total = 0;
@@ -66,29 +125,9 @@ export class EvidenceService {
       evidence = dbEvidence;
       total = dbTotal;
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_EVIDENCE;
-        return {
-          items: fallback.map(ev => ({
-            id: ev.id,
-            evidence_id: ev.id,
-            asset_id: ev.assetId,
-            filename: ev.filename,
-            type: ev.type,
-            mime_type: ev.mimeType,
-            size_kb: ev.sizeKb,
-            status: ev.status,
-            hash: ev.hash,
-            event: ev.event,
-            integrity_verified: ev.integrityVerified,
-            blockchain_tx: ev.blockchainTx,
-            created_at: ev.uploadedAt,
-          })),
-          total: fallback.length,
-          page,
-          page_size: pageSize,
-          has_next: false,
-        };
+      if (process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo' || process.env.NODE_ENV === 'development') {
+        this.logger.warn(`Prisma listEvidence failed: ${e.message}. Returning empty list for demo.`);
+        return { items: [], total: 0, page, page_size: pageSize, has_next: false };
       }
       throw e;
     }
@@ -102,36 +141,21 @@ export class EvidenceService {
     };
   }
 
-  async getEvidence(id: string) {
+  async getEvidence(id: string, user?: any) {
     try {
       let evidence = await this.prisma.evidence.findUnique({ where: { id } });
       if (!evidence) {
         evidence = await this.prisma.evidence.findUnique({ where: { evidenceId: id } });
       }
       if (!evidence) throw new NotFoundException(`Evidence ${id} not found`);
+      
+      if (user) {
+        await this.enforceAssetAccess(evidence.assetId, user);
+      }
+
       return this.mapEvidence(evidence);
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      if (process.env.APP_ENV === 'demo') {
-        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_EVIDENCE.find(ev => ev.id === id);
-        if (fallback) {
-          return {
-            id: fallback.id,
-            evidence_id: fallback.id,
-            asset_id: fallback.assetId,
-            filename: fallback.filename,
-            type: fallback.type,
-            mime_type: fallback.mimeType,
-            size_kb: fallback.sizeKb,
-            status: fallback.status,
-            hash: fallback.hash,
-            event: fallback.event,
-            integrity_verified: fallback.integrityVerified,
-            blockchain_tx: fallback.blockchainTx,
-            created_at: fallback.uploadedAt,
-          };
-        }
-      }
       throw e;
     }
   }
@@ -188,6 +212,12 @@ export class EvidenceService {
       });
       if (!asset) throw new NotFoundException(`Asset ${data.assetId} not found`);
 
+      // Enforce access
+      const uploaderUser = { sub: data.uploadedById, email: data.uploadedByName || '', roles: [data.uploadedByRole] }; // minimal mock user if full not passed
+      if (data.uploadedById && data.uploadedByName) {
+        await this.enforceAssetAccess(asset.id, uploaderUser);
+      }
+
       // Upload to MinIO
       const objectName = `${asset.assetId}/${evidenceId}-${data.filename}`;
       const fileUrl = await this.minio.uploadFile(objectName, data.content, data.mimeType);
@@ -204,6 +234,7 @@ export class EvidenceService {
               mimeType: data.mimeType,
               sizeKb: data.sizeKb,
               hash,
+              objectKey: objectName,
               event: data.event,
               status: 'COMPLETE',
               integrityVerified: true,
@@ -219,20 +250,29 @@ export class EvidenceService {
             data: { evidenceCount: { increment: 1 } },
           });
 
-          // Audit event
-          await tx.auditEvent.create({
-            data: {
+          // Audit event using canonical AuditService
+          await this.auditService.recordEvent(
+            {
               eventType: 'EVIDENCE_UPLOADED',
               actorId: data.uploadedById,
               actorDid: data.uploadedByDid,
               actorName: data.uploadedByName,
+              actorRole: data.uploadedByRole,
               action: `Evidence uploaded — ${data.filename}`,
               resourceType: 'Evidence',
               resourceId: evidence.id,
               result: 'SUCCESS',
               details: `SHA-256: ${hash.substring(0, 16)}... | Asset: ${asset.assetId}`,
+              payload: {
+                evidenceId,
+                filename: data.filename,
+                hash,
+                objectKey: objectName,
+                assetId: asset.assetId,
+              },
             },
-          });
+            tx,
+          );
 
           this.logger.log(`Evidence ${evidence.id} uploaded for asset ${asset.assetId} — hash: ${hash.substring(0, 16)}...`);
           return this.mapEvidence(evidence);
@@ -245,26 +285,6 @@ export class EvidenceService {
       return transactionResult;
     } catch (e: any) {
       if (e instanceof NotFoundException) throw e;
-      
-      if (process.env.APP_ENV === 'demo') {
-        this.logger.warn(`Database operation failed during evidence upload, generating fallback record: ${e.message}`);
-        return {
-          id: evidenceId,
-          evidence_id: evidenceId,
-          asset_id: data.assetId,
-          filename: data.filename,
-          type: data.type,
-          mime_type: data.mimeType,
-          size_kb: data.sizeKb,
-          status: 'COMPLETE',
-          hash,
-          event: data.event,
-          integrity_verified: true,
-          blockchain_tx: null,
-          created_at: new Date().toISOString(),
-        };
-      }
-      
       this.logger.error(`Evidence upload failed: ${e.message}`);
       throw e;
     }
@@ -275,7 +295,7 @@ export class EvidenceService {
    * Re-reads stored hashes and returns a per-item integrity report.
    * In fallback mode: uses stored integrityVerified flag.
    */
-  async getIntegrityReport(assetId: string): Promise<{
+  async getIntegrityReport(assetId: string, user?: any): Promise<{
     asset_id: string;
     total: number;
     verified: number;
@@ -283,6 +303,10 @@ export class EvidenceService {
     items: any[];
     overall_integrity: 'VERIFIED' | 'PARTIAL' | 'FAILED' | 'NO_EVIDENCE';
   }> {
+    if (user) {
+      await this.enforceAssetAccess(assetId, user);
+    }
+    
     try {
       const evidence = await this.prisma.evidence.findMany({
         where: { assetId },
@@ -302,32 +326,6 @@ export class EvidenceService {
 
       return this.buildIntegrityReport(assetId, evidence as any[]);
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const { FALLBACK_EVIDENCE } = await import('../../core/common/fallback-data');
-        let items = FALLBACK_EVIDENCE.filter((ev) => ev.assetId === assetId);
-        if (items.length === 0 && FALLBACK_EVIDENCE.length > 0) {
-          items = FALLBACK_EVIDENCE.filter((ev) => ev.assetId === 'EF-2026-00421');
-        }
-        const verified = items.filter((ev) => ev.integrityVerified).length;
-        const failed = items.filter((ev) => !ev.integrityVerified).length;
-        return {
-          asset_id: assetId,
-          total: items.length,
-          verified,
-          failed,
-          items: items.map((ev) => ({
-            id: ev.id,
-            filename: ev.filename,
-            type: ev.type,
-            stored_hash: ev.hash,
-            integrity_verified: ev.integrityVerified,
-            status: ev.integrityVerified ? 'VERIFIED' : 'FAILED',
-            event: ev.event,
-            uploaded_at: ev.uploadedAt,
-          })),
-          overall_integrity: items.length === 0 ? 'NO_EVIDENCE' : failed > 0 ? 'FAILED' : verified === items.length ? 'VERIFIED' : 'PARTIAL',
-        };
-      }
       throw e;
     }
   }
@@ -354,6 +352,32 @@ export class EvidenceService {
       overall_integrity: (
         items.length === 0 ? 'NO_EVIDENCE' : failed > 0 ? 'FAILED' : verified === items.length ? 'VERIFIED' : 'PARTIAL'
       ) as 'VERIFIED' | 'PARTIAL' | 'FAILED' | 'NO_EVIDENCE',
+    };
+  }
+
+  async downloadEvidence(id: string, user?: any) {
+    let evidence = await this.prisma.evidence.findUnique({ where: { id } });
+    if (!evidence) {
+      evidence = await this.prisma.evidence.findUnique({ where: { evidenceId: id } });
+    }
+    if (!evidence) {
+      throw new NotFoundException(`Evidence ${id} not found`);
+    }
+    
+    if (user) {
+      await this.enforceAssetAccess(evidence.assetId, user);
+    }
+
+    if (!evidence.objectKey) {
+      throw new NotFoundException(`Evidence ${id} has no stored object key`);
+    }
+
+    const buffer = await this.minio.downloadFile(evidence.objectKey);
+    return {
+      buffer,
+      filename: evidence.filename,
+      mimeType: evidence.mimeType,
+      sizeKb: evidence.sizeKb,
     };
   }
 }

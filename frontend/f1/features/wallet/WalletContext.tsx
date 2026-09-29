@@ -23,12 +23,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // Sync wallet state with backend
   const syncWalletState = async (currentAddress: string) => {
+    // Only attempt to sync if user has an auth token, as /wallet requires JWT authentication
+    const token = localStorage.getItem('kavach_token');
+    if (!token) {
+      setWalletBinding(null);
+      return;
+    }
+
     try {
       const wallets = await walletApi.getWallets();
       const binding = wallets.find(w => w.address.toLowerCase() === currentAddress.toLowerCase());
       setWalletBinding(binding || null);
     } catch (err) {
-      console.error("Failed to sync wallet state", err);
+      console.warn("Could not sync wallet state with backend", err);
       setWalletBinding(null);
     }
   };
@@ -45,7 +52,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setChainId(currentChainId);
         await syncWalletState(currentAddress);
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Suppress viem URL validation errors for localhost development
+      if (err.message && err.message.includes('TLD')) {
+        console.warn('Wallet connection check skipped (TLD validation error in development)');
+        return;
+      }
       console.error('Failed to check wallet connection', err);
     }
   };
@@ -90,13 +102,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const client = createWalletClient({ transport: custom(window.ethereum) });
       const [newAddress] = await client.requestAddresses();
       setAddress(newAddress);
-      
+
       const newChainId = await client.getChainId();
       setChainId(newChainId);
 
       // Fetch challenge
       const challenge = await walletApi.getChallenge(newAddress);
-      
+
       // Sign message
       const signature = await client.signMessage({
         account: newAddress as `0x${string}`,
@@ -108,6 +120,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWalletBinding(binding);
 
     } catch (err: any) {
+      // Suppress viem URL validation errors for localhost development
+      if (err.message && err.message.includes('TLD')) {
+        console.warn('Wallet connection skipped (TLD validation error in development)');
+        setError('Wallet connection not available in development environment');
+        return;
+      }
       console.error('Failed to connect wallet', err);
       if (err.code === 4001) {
         setError('User rejected the request');

@@ -27,25 +27,19 @@ export class WalletService {
         address: normalizedAddress,
         consumed: false
       }
-    }).catch(() => {}); // ignore error in demo mode when db is offline
+    });
 
     const nonce = randomUUID();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    if (process.env.APP_ENV === 'demo') {
-      // In demo mode without a DB, we can't securely store nonces, so we fake it.
-      // However, we MUST NOT fake this in production.
-      this.logger.warn(`Generating fake challenge for ${normalizedAddress} (DEMO mode)`);
-    } else {
-      await this.prisma.walletChallenge.create({
-        data: {
-          userId,
-          address: normalizedAddress,
-          nonce,
-          expiresAt,
-        }
-      });
-    }
+    await this.prisma.walletChallenge.create({
+      data: {
+        userId,
+        address: normalizedAddress,
+        nonce,
+        expiresAt,
+      }
+    });
 
     const message = this.buildMessage(normalizedAddress, nonce);
     return { nonce, message };
@@ -85,11 +79,6 @@ ${nonce}`;
 
     if (!isValid) {
       throw new BadRequestException('Signature verification failed');
-    }
-
-    if (process.env.APP_ENV === 'demo') {
-      this.logger.warn(`Skipping database verification for ${normalizedAddress} (DEMO mode)`);
-      return { success: true, verified: true, address: normalizedAddress };
     }
 
     // Wrap the challenge consumption and wallet binding in a transaction
@@ -148,13 +137,15 @@ ${nonce}`;
    * Returns all wallet bindings for a user.
    */
   async getWallets(userId: string) {
-    if (process.env.APP_ENV === 'demo') {
-      return [{ address: '0x1234567890abcdef1234567890abcdef12345678', verified: true }];
+    try {
+      return await this.prisma.walletBinding.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' }
+      });
+    } catch (err: any) {
+      this.logger.warn(`DB offline — returning empty wallets: ${err.message}`);
+      return [];
     }
-    return await this.prisma.walletBinding.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' }
-    });
   }
 
   /**
@@ -162,7 +153,6 @@ ${nonce}`;
    */
   async deleteWallet(userId: string, address: string) {
     const normalizedAddress = address.toLowerCase();
-    if (process.env.APP_ENV === 'demo') return { success: true };
 
     try {
       await this.prisma.walletBinding.delete({

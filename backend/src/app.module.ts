@@ -7,10 +7,10 @@ import { AssetsModule } from './asset-management/assets/assets.module';
 import { EvidenceModule } from './asset-management/evidence/evidence.module';
 import { LifecycleModule } from './asset-management/lifecycle/lifecycle.module';
 import { InspectionsModule } from './asset-management/inspections/inspections.module';
+import { TechnicalRecordsModule } from './asset-management/technical-records/technical-records.module';
 import { CertificationsModule } from './certification/certifications/certifications.module';
 import { BlockchainModule } from './trust/blockchain/blockchain.module';
 import { AuditModule } from './asset-management/audit/audit.module';
-import { MerkleModule } from './asset-management/merkle/merkle.module';
 import { OutboxModule } from './trust/outbox/outbox.module';
 import { VerificationModule } from './verification/verification.module';
 import { SearchModule } from './search/search.module';
@@ -19,7 +19,11 @@ import { HealthModule } from './health/health.module';
 import { IdentityModule } from './identity/identity.module';
 import { WalletModule } from './identity/wallet/wallet.module';
 import { CasbinModule } from './core/casbin/casbin.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ApprovalsModule } from './asset-management/approvals/approvals.module';
+import { PhysicalBindingsModule } from './asset-management/physical-bindings/physical-bindings.module';
 import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
+import { SupplyChainModule } from './supply-chain/supply-chain.module';
 
 @Module({
   imports: [
@@ -32,10 +36,10 @@ import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
     EvidenceModule,
     LifecycleModule,
     InspectionsModule,
+    TechnicalRecordsModule,
     CertificationsModule,
     BlockchainModule,
     AuditModule,
-    MerkleModule,
     OutboxModule,
     VerificationModule,
     SearchModule,
@@ -43,6 +47,10 @@ import { RequestIdMiddleware } from './core/middleware/request-id.middleware';
     HealthModule,
     IdentityModule,
     WalletModule,
+    NotificationsModule,
+    ApprovalsModule,
+    PhysicalBindingsModule,
+    SupplyChainModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -5,11 +5,30 @@ dotenv.config();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']).default('development'),
+  APP_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']),
   PORT: z.coerce.number().default(8000),
   API_PREFIX: z.string().default('/api/v1'),
   LOG_LEVEL: z.string().default('debug'),
   DATABASE_URL: z.string().min(1),
-  JWT_SECRET: z.string().min(16),
+  JWT_SECRET: z.string().min(16).refine(
+    (secret) => {
+      // In production, reject known dev defaults
+      if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+        const devDefaults = [
+          'super-secret-key-change-in-production-2026',
+          'dev-secret-key',
+          'test-secret-key',
+          'change-me-in-production',
+          'secret',
+        ];
+        return !devDefaults.includes(secret);
+      }
+      return true;
+    },
+    {
+      message: 'JWT_SECRET must not be a known development default in production',
+    }
+  ),
   JWT_ISSUER: z.string().default('kavachtrust'),
   JWT_AUDIENCE: z.string().default('kavachtrust-api'),
   JWT_EXPIRY: z.string().default('24h'),
@@ -27,6 +46,9 @@ const envSchema = z.object({
   BLOCKCHAIN_PRIVATE_KEY: z.string().min(1),
   CONTRACT_ADDRESS: z.string().default(''),
   BLOCKCHAIN_NETWORK_NAME: z.string().default('BEL-TRUST-CHAIN'),
+  BLOCKCHAIN_MODE: z.enum(['real', 'demo']).default('real'),
+  BLOCKCHAIN_CONFIRMATIONS_REQUIRED: z.coerce.number().default(1),
+  DEFAULT_NFT_RECIPIENT: z.string().optional().default(''),
   AES_KEY: z.string().default(''),
   SENTRY_DSN: z.string().optional().default(''),
   CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:8443'),

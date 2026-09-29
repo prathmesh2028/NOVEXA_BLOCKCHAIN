@@ -1,0 +1,373 @@
+/* ==========================================================================
+   BEL DEFENCE TRUST — CERTIFICATION QUEUE PAGE
+   ChatGPT-Inspired Black / Charcoal / Gray Enterprise UI
+   Scoped strictly to .cert-queue-page-root
+   ========================================================================== */
+
+.cert-queue-page-root {
+  max-width: 1600px;
+  margin: 0 auto;
+  color: #a3a3a3;
+  animation: queuePageFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes queuePageFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   BUTTON SYSTEM
+   ========================================== */
+.cert-queue-page-root .btn-primary,
+.queue-btn-primary {
+  background: #f5f5f5 !important;
+  color: #111111 !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.cert-queue-page-root .btn-primary:hover,
+.queue-btn-primary:hover {
+  background: #e5e5e5 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cert-queue-page-root .btn-secondary,
+.queue-btn-secondary {
+  background: transparent !important;
+  color: #d4d4d4 !important;
+  border: 1px solid #333333 !important;
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.cert-queue-page-root .btn-secondary:hover,
+.queue-btn-secondary:hover {
+  background: #242424 !important;
+  border-color: #404040 !important;
+  color: #f5f5f5 !important;
+}
+
+.cert-queue-page-root .btn-ghost,
+.queue-btn-ghost {
+  background: transparent !important;
+  color: #888888 !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+}
+
+.cert-queue-page-root .btn-ghost:hover,
+.queue-btn-ghost:hover {
+  background: #222222 !important;
+  color: #f5f5f5 !important;
+}
+
+/* ==========================================
+   TOOLBAR & FILTER TABS
+   ========================================== */
+.queue-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queue-tabs-group {
+  display: flex;
+  gap: 8px;
+}
+
+.queue-tab-btn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #737373;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.queue-tab-btn:hover {
+  border-color: #383838;
+  color: #d4d4d4;
+}
+
+.queue-tab-btn.active {
+  background: #242424;
+  border-color: #383838;
+  color: #f5f5f5;
+  font-weight: 600;
+}
+
+.queue-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  background: #171717;
+  border: 1px solid #303030;
+  border-radius: 8px;
+  color: #f5f5f5;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.queue-search-input:focus {
+  border-color: #525252;
+}
+
+/* ==========================================
+   TABLE WORKLIST
+   ========================================== */
+.queue-table-wrap {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.queue-table thead tr {
+  background: #141414;
+  border-bottom: 1px solid #262626;
+}
+
+.queue-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.6875rem;
+  color: #737373;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.queue-table tbody tr {
+  border-bottom: 1px solid #222222;
+  transition: background 0.15s ease;
+}
+
+.queue-table tbody tr:hover {
+  background: #202020;
+}
+
+.queue-table td {
+  padding: 14px 16px;
+  font-size: 0.8125rem;
+  color: #a3a3a3;
+  vertical-align: middle;
+}
+
+.queue-asset-link {
+  color: #f5f5f5;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 0.8125rem;
+  transition: color 0.15s ease;
+}
+
+.queue-asset-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.queue-table-footer {
+  padding: 12px 18px;
+  border-top: 1px solid #262626;
+  font-size: 0.75rem;
+  color: #737373;
+  display: flex;
+  justify-content: space-between;
+  background: #141414;
+}
+
+/* ==========================================
+   MODAL DIALOG
+   ========================================== */
+.queue-modal-panel {
+  width: 100%;
+  maxWidth: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  background: #181818;
+  border: 1px solid #303030;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+}
+
+.queue-form-input,
+.queue-form-select {
+  width: 100%;
+  padding: 9px 12px;
+  background: #171717;
+  border: 1px solid #303030;
+  border-radius: 8px;
+  color: #f5f5f5;
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.queue-form-input:focus,
+.queue-form-select:focus {
+  border-color: #525252;
+}
+
+/* ==========================================
+   LIGHT MODE OVERRIDES
+   ========================================== */
+[data-theme="light"] .cert-queue-page-root,
+.theme-light .cert-queue-page-root {
+  color: #171717;
+}
+
+[data-theme="light"] .queue-table-wrap,
+.theme-light .queue-table-wrap,
+[data-theme="light"] .queue-modal-panel,
+.theme-light .queue-modal-panel {
+  background: #ffffff;
+  border-color: #dadada;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .queue-tab-btn,
+.theme-light .queue-tab-btn {
+  border-color: #dadada;
+  color: #4a4a4a;
+  font-weight: 500;
+}
+
+[data-theme="light"] .queue-tab-btn:hover,
+.theme-light .queue-tab-btn:hover {
+  border-color: #cfcfcf;
+  color: #171717;
+}
+
+[data-theme="light"] .queue-tab-btn.active,
+.theme-light .queue-tab-btn.active {
+  background: #f1f1f2;
+  border-color: #cfcfcf;
+  color: #171717;
+  font-weight: 700;
+}
+
+[data-theme="light"] .queue-search-input,
+.theme-light .queue-search-input,
+[data-theme="light"] .queue-form-input,
+.theme-light .queue-form-input,
+[data-theme="light"] .queue-form-select,
+.theme-light .queue-form-select {
+  background: #ffffff;
+  border-color: #dadada;
+  color: #171717;
+}
+
+[data-theme="light"] .queue-search-input:focus,
+.theme-light .queue-search-input:focus,
+[data-theme="light"] .queue-form-input:focus,
+.theme-light .queue-form-input:focus,
+[data-theme="light"] .queue-form-select:focus,
+.theme-light .queue-form-select:focus {
+  border-color: #2563eb;
+}
+
+[data-theme="light"] .queue-table thead tr,
+.theme-light .queue-table thead tr {
+  background: #f1f1f2;
+  border-color: #dadada;
+}
+
+[data-theme="light"] .queue-table th,
+.theme-light .queue-table th {
+  color: #4a4a4a;
+  font-weight: 700;
+}
+
+[data-theme="light"] .queue-table tbody tr,
+.theme-light .queue-table tbody tr {
+  border-color: #eaeaea;
+}
+
+[data-theme="light"] .queue-table tbody tr:hover,
+.theme-light .queue-table tbody tr:hover {
+  background: #f7f7f8;
+}
+
+[data-theme="light"] .queue-asset-link,
+.theme-light .queue-asset-link {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+[data-theme="light"] .queue-table-footer,
+.theme-light .queue-table-footer {
+  background: #f1f1f2;
+  border-color: #dadada;
+  color: #707070;
+}
+
+[data-theme="light"] .cert-queue-page-root .btn-primary,
+.theme-light .cert-queue-page-root .btn-primary,
+[data-theme="light"] .queue-btn-primary,
+.theme-light .queue-btn-primary {
+  background: #171717 !important;
+  color: #ffffff !important;
+  border-color: #171717 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .cert-queue-page-root .btn-secondary,
+.theme-light .cert-queue-page-root .btn-secondary,
+[data-theme="light"] .queue-btn-secondary,
+.theme-light .queue-btn-secondary {
+  background: #ffffff !important;
+  border-color: #dadada !important;
+  color: #171717 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .cert-queue-page-root .btn-ghost,
+.theme-light .cert-queue-page-root .btn-ghost,
+[data-theme="light"] .queue-btn-ghost,
+.theme-light .queue-btn-ghost {
+  color: #4a4a4a !important;
+  font-weight: 500 !important;
+}

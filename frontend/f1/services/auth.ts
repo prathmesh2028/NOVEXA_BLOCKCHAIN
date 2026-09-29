@@ -24,7 +24,7 @@ export interface LoginResponse {
 }
 
 export const authService = {
-  login: async (email: string, password: string = 'password') => {
+  login: async (email: string, password: string) => {
     const data = await api.post<LoginResponse>('/auth/login', { email, password });
     localStorage.setItem('kavach_token', data.access_token);
     return data;
@@ -32,6 +32,13 @@ export const authService = {
 
   getMe: async () => {
     return api.get<UserMeResponse>('/auth/me');
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    return api.post<{ message: string }>('/auth/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
   },
 
   logout: () => {

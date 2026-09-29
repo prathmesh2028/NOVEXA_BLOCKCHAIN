@@ -1,11 +1,35 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { EVIDENCE_LIST, ASSETS, formatDateTime } from "../../data/mockData";
+import { formatDateTime } from "../../data/utils";
+import { evidenceService } from "../../services/evidence";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const evidence = EVIDENCE_LIST.find((e) => e.id === id);
+  const [backendEvidence, setBackendEvidence] = useState<any>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    evidenceService.getEvidence(id)
+      .then(res => setBackendEvidence(res))
+      .catch(err => console.warn("Could not fetch evidence from backend:", err));
+  }, [id]);
+
+  const evidence = backendEvidence ? {
+    id: backendEvidence.evidence_id || backendEvidence.id,
+    assetId: backendEvidence.asset_id,
+    filename: backendEvidence.filename,
+    type: backendEvidence.type,
+    mimeType: backendEvidence.mime_type,
+    sizeKb: backendEvidence.size_kb,
+    status: backendEvidence.status,
+    hash: backendEvidence.hash,
+    event: backendEvidence.event,
+    integrityVerified: backendEvidence.integrity_verified ?? true,
+    blockchainTx: backendEvidence.blockchain_tx,
+    createdAt: backendEvidence.created_at,
+  } : null;
 
   if (!evidence) {
     return (
@@ -16,8 +40,7 @@ export default function EvidenceDetailPage() {
     );
   }
 
-  const asset = ASSETS.find((a) => a.id === evidence.assetId);
-
+  // evidence.assetId is used for linking to asset detail
   return (
     <div className="page-fade">
       <PageHeader
@@ -29,7 +52,20 @@ export default function EvidenceDetailPage() {
           { label: evidence.id },
         ]}
         badge={<StatusBadge status={evidence.status} />}
-        actions={<Link to="/app/evidence" className="btn-ghost">← Back</Link>}
+        actions={
+          <div style={{ display: "flex", gap: 8 }}>
+            <a
+              href={`http://localhost:8000/api/v1/evidence/${evidence.id}/download`}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-secondary"
+              style={{ fontSize: "0.75rem", textDecoration: "none" }}
+            >
+              Download File ⤓
+            </a>
+            <Link to="/app/evidence" className="btn-ghost">← Back</Link>
+          </div>
+        }
       />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>

@@ -1,7 +1,8 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CasbinGuard, CasbinPolicy } from '../auth/guards/casbin.guard';
+import { InviteUserDto } from './dto/invite-user.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, CasbinGuard)
@@ -24,5 +25,11 @@ export class UsersController {
       page: page ? parseInt(page, 10) : undefined,
       page_size: pageSize ? parseInt(pageSize, 10) : undefined,
     });
+  }
+
+  @Post()
+  @CasbinPolicy('/api/v1/users', 'POST')
+  async inviteUser(@Body() body: InviteUserDto) {
+    return this.usersService.inviteUser(body);
   }
 }

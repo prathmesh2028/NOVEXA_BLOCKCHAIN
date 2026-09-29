@@ -1,15 +1,68 @@
-p, ADMIN, /*, (GET)|(POST)|(PUT)|(DELETE)|(PATCH)
-p, NFT_CREATOR, /api/v1/certifications*, (GET)|(POST)
-p, NFT_CREATOR, /api/v1/assets*, GET
-p, NFT_CREATOR, /api/v1/evidence*, GET
-p, TECHNICIAN, /api/v1/assets*, (GET)|(POST)|(PUT)
-p, TECHNICIAN, /api/v1/batches*, GET
-p, TECHNICIAN, /api/v1/evidence*, (GET)|(POST)
-p, TECHNICIAN, /api/v1/inspections*, (GET)|(POST)
-p, TECHNICIAN, /api/v1/lifecycle*, (GET)|(POST)
-p, AUDITOR, /*, GET
+p, SYSTEM_ADMIN, /*, (GET)|(POST)|(PUT)|(DELETE)|(PATCH)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/assets*, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/batches*, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/evidence*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/inspections*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/lifecycle*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/technical-records*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/approvals*, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/notifications*, (GET)|(POST)|(PATCH)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/blockchain*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/verification*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/dashboard*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/search*, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/suppliers, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/facilities, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/lots, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/shipments, (GET)|(POST)|(PATCH)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/custody-transfers, (GET)|(POST)|(PATCH)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/events, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/certifications, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/certifications/queue, GET
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/audit*, GET
 
-g, ADMIN, ROLE_ADMIN
-g, NFT_CREATOR, ROLE_NFT_CREATOR
-g, TECHNICIAN, ROLE_TECHNICIAN
+p, QUALITY_INSPECTOR, /api/v1/assets*, (GET)|(POST)|(PUT)
+p, QUALITY_INSPECTOR, /api/v1/batches*, GET
+p, QUALITY_INSPECTOR, /api/v1/evidence*, (GET)|(POST)
+p, QUALITY_INSPECTOR, /api/v1/physical-bindings*, (GET)|(POST)|(PATCH)|(DELETE)
+p, QUALITY_INSPECTOR, /api/v1/inspections*, (GET)|(POST)|(PUT)
+p, QUALITY_INSPECTOR, /api/v1/lifecycle*, (GET)|(POST)
+p, QUALITY_INSPECTOR, /api/v1/technical-records*, (GET)|(POST)|(PUT)
+p, QUALITY_INSPECTOR, /api/v1/approvals*, (GET)|(POST)
+p, QUALITY_INSPECTOR, /api/v1/notifications*, (GET)|(POST)|(PATCH)
+p, QUALITY_INSPECTOR, /api/v1/blockchain*, (GET)|(POST)
+p, QUALITY_INSPECTOR, /api/v1/verification*, (GET)|(POST)
+p, QUALITY_INSPECTOR, /api/v1/dashboard*, GET
+p, QUALITY_INSPECTOR, /api/v1/search*, GET
+p, QUALITY_INSPECTOR, /api/v1/supply-chain/suppliers, GET
+p, QUALITY_INSPECTOR, /api/v1/supply-chain/facilities, GET
+p, QUALITY_INSPECTOR, /api/v1/supply-chain/lots, GET
+p, QUALITY_INSPECTOR, /api/v1/supply-chain/shipments, GET
+p, QUALITY_INSPECTOR, /api/v1/supply-chain/custody-transfers, GET
+p, QUALITY_INSPECTOR, /api/v1/supply-chain/events, GET
+p, QUALITY_INSPECTOR, /api/v1/certifications, (GET)|(POST)
+p, QUALITY_INSPECTOR, /api/v1/certifications/queue, GET
+p, QUALITY_INSPECTOR, /api/v1/assets/eligible, GET
+p, QUALITY_INSPECTOR, /api/v1/audit*, GET
+p, AUDITOR, /*, GET
+p, AUDITOR, /api/v1/notifications*, (GET)|(POST)|(PATCH)
+p, AUDITOR, /api/v1/verification*, (GET)|(POST)
+p, AUDITOR, /api/v1/supply-chain/suppliers, GET
+p, AUDITOR, /api/v1/supply-chain/facilities, GET
+p, AUDITOR, /api/v1/supply-chain/lots, GET
+p, AUDITOR, /api/v1/supply-chain/shipments, GET
+p, AUDITOR, /api/v1/supply-chain/custody-transfers, GET
+p, AUDITOR, /api/v1/supply-chain/events, GET
+p, AUDITOR, /api/v1/certifications, GET
+
+g, ROLE_SYSTEM_ADMIN, SYSTEM_ADMIN
+g, SYSTEM_ADMIN, ROLE_SYSTEM_ADMIN
+
+g, ROLE_PROCUREMENT_SUPPLY_CHAIN_OFFICER, PROCUREMENT_SUPPLY_CHAIN_OFFICER
+g, PROCUREMENT_SUPPLY_CHAIN_OFFICER, ROLE_PROCUREMENT_SUPPLY_CHAIN_OFFICER
+
+g, ROLE_QUALITY_INSPECTOR, QUALITY_INSPECTOR
+g, QUALITY_INSPECTOR, ROLE_QUALITY_INSPECTOR
+
+g, ROLE_AUDITOR, AUDITOR
 g, AUDITOR, ROLE_AUDITOR

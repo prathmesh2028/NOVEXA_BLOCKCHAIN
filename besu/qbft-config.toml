@@ -1,0 +1,38 @@
+# QBFT Configuration for 4 validators
+genesis-file-name = "genesis.json"
+chain-id = 31337
+
+[genesis]
+alloc = [
+  { address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", balance = "1000000000000000000000" }
+]
+gas-limit = "5000000"
+coinbase = "0x0000000000000000000000000000000000000000"
+
+[genesis.config]
+chain-id = 31337
+homestead-block = 0
+eip150-block = 0
+eip155-block = 0
+eip158-block = 0
+byzantium-block = 0
+constantinople-block = 0
+petersburg-block = 0
+istanbul-block = 0
+berlin-block = 0
+london-block = 0
+merge-netsplit-block = 0
+shanghai-block = 0
+cancun-block = 0
+
+[genesis.config.consensus]
+consensus-mechanism = "qbft"
+
+[[genesis.config.qbft]]
+epoch-length = 30000
+request-timeout-seconds = 10
+block-period-seconds = 2
+validator-contract-address = "0x0000000000000000000000000000000000000000"
+
+[nodes]
+count = 4

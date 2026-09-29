@@ -41,12 +41,20 @@ export class CasbinGuard implements CanActivate {
       throw new ForbiddenException('User has no roles assigned for this action');
     }
 
-    // Convert string roles like 'ADMIN' to 'ROLE_ADMIN' for Casbin group matching
-    const casbinRoles = user.roles.map((role: string) => `ROLE_${role}`);
+    // Check both explicit role name and ROLE_ prefix for Casbin matching
+    const casbinRoles = Array.from(new Set([
+      ...user.roles,
+      ...user.roles.map((role: string) => `ROLE_${role}`),
+    ]));
     
     // For REST conventions, fallback to HTTP method and path if action/resource are not explicitly set
     const reqAction = action || request.method;
-    const reqResource = resource || request.route.path;
+    const rawPath = request.originalUrl
+      ? request.originalUrl.split('?')[0]
+      : (request.baseUrl && request.route?.path
+          ? `${request.baseUrl}${request.route.path === '/' ? '' : request.route.path}`
+          : (request.route?.path || request.path || '/'));
+    const reqResource = resource || rawPath;
 
     const allowed = await this.casbinService.checkPermission(casbinRoles, reqResource, reqAction);
     

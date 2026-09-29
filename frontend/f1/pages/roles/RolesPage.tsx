@@ -74,16 +74,17 @@ export default function RolesPage() {
 
       <div
         style={{
-          padding: "12px 16px",
-          background: "rgba(96,165,250,0.06)",
-          border: "1px solid rgba(96,165,250,0.15)",
-          borderRadius: "5px",
+          padding: "14px 18px",
+          background: "var(--primary-muted, rgba(37,99,235,0.06))",
+          border: "1px solid var(--border-subtle, rgba(37,99,235,0.2))",
+          borderRadius: "8px",
           marginBottom: 24,
           fontSize: "0.8125rem",
-          color: "#64748b",
+          color: "var(--muted, #4A4A4A)",
+          lineHeight: 1.5,
         }}
       >
-        <strong style={{ color: "#60a5fa" }}>RBAC Principle: </strong>
+        <strong style={{ color: "var(--primary, #2563eb)", fontWeight: 700 }}>RBAC Principle: </strong>
         No user can exceed the boundary of their assigned role. Every action is authorized against role permissions before execution.
         Role changes generate an audit event and require admin authorization.
       </div>
@@ -93,17 +94,23 @@ export default function RolesPage() {
           <div
             key={r.key}
             className="panel"
-            style={{ padding: 24, borderTop: `2px solid ${r.color}` }}
+            style={{
+              padding: 24,
+              borderTop: `3px solid ${r.color}`,
+              background: "var(--card)",
+              borderColor: "var(--border)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+            }}
           >
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
+                    width: 38,
+                    height: 38,
                     background: r.color + "18",
                     border: `1px solid ${r.color}40`,
-                    borderRadius: "7px",
+                    borderRadius: "8px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -116,22 +123,26 @@ export default function RolesPage() {
                 <div>
                   <div
                     className="font-display"
-                    style={{ fontSize: "1rem", fontWeight: 700, color: "#e2e8f0", letterSpacing: "0.04em" }}
+                    style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--foreground, #171717)", letterSpacing: "0.04em" }}
                   >
                     {r.label.toUpperCase()}
                   </div>
-                  <div style={{ fontSize: "0.6875rem", color: "#64748b" }}>{r.users} user{r.users !== 1 ? "s" : ""} assigned</div>
+                  <div style={{ fontSize: "0.72rem", color: "var(--muted, #4A4A4A)", fontWeight: 600 }}>
+                    {r.users} user{r.users !== 1 ? "s" : ""} assigned
+                  </div>
                 </div>
               </div>
             </div>
-            <p style={{ fontSize: "0.8125rem", color: "#64748b", lineHeight: 1.6, marginBottom: 16 }}>
+            <p style={{ fontSize: "0.8125rem", color: "var(--muted, #4A4A4A)", lineHeight: 1.6, marginBottom: 16, fontWeight: 500 }}>
               {r.description}
             </p>
-            <div className="section-label" style={{ marginBottom: 8 }}>CAPABILITIES</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            <div className="section-label" style={{ marginBottom: 10, fontSize: "0.6875rem", fontWeight: 700, color: "var(--subtle-text, #707070)", letterSpacing: "0.08em" }}>
+              CAPABILITIES
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               {r.capabilities.map((c) => (
-                <div key={c} style={{ display: "flex", alignItems: "flex-start", gap: 7, fontSize: "0.75rem", color: "#64748b" }}>
-                  <span style={{ color: r.color, fontSize: "0.625rem", marginTop: 3, flexShrink: 0 }}>✓</span>
+                <div key={c} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: "0.78125rem", color: "var(--foreground, #171717)", fontWeight: 500 }}>
+                  <span style={{ color: r.color, fontSize: "0.75rem", marginTop: 2, flexShrink: 0, fontWeight: 700 }}>✓</span>
                   <span>{c}</span>
                 </div>
               ))}

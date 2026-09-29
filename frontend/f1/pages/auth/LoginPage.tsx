@@ -1,329 +1,539 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
-import type { Role } from "../../context/RoleContext";
+import BelIconMark from "../../components/ui/BelIconMark";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 import "./LoginPage.css";
 
-const ROLES: { role: Role; label: string; icon: string; color: string; mental: string; did: string; email: string; }[] = [
+// Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
+import earthPanoramicImg from "./assets/earth_panoramic.jpg";
+
+interface DemoAccount {
+  id: string;
+  name: string;
+  role: string;
+  rolePillClass: string;
+  email: string;
+  password: string;
+}
+
+const DEMO_ACCOUNTS: DemoAccount[] = [
   {
-    role: "admin",
-    label: "Administrator",
-    icon: "⊛",
-    color: "#ef4444",
-    mental: "Control, governance and system oversight",
-    did: "did:ethr:sepolia:0x1234abcd...",
-    email: "admin@kavachtrust.bel.in",
+    id: "admin",
+    name: "Arjun Mehta",
+    role: "ADMIN",
+    rolePillClass: "pill-admin",
+    email: "a.mehta@bel-defence.in",
+    password: "password",
   },
   {
-    role: "nft-creator",
-    label: "NFT Creator",
-    icon: "◆",
-    color: "#8b5cf6",
-    mental: "Review records and create trusted digital certification",
-    did: "did:ethr:sepolia:0x5678efgh...",
-    email: "nft@kavachtrust.bel.in",
+    id: "creator",
+    name: "Priya Sharma",
+    role: "CREATOR",
+    rolePillClass: "pill-creator",
+    email: "p.sharma@bel-defence.in",
+    password: "password",
   },
   {
-    role: "technician",
-    label: "Technician",
-    icon: "◈",
-    color: "#f59e0b",
-    mental: "Create and maintain accurate technical records",
-    did: "did:ethr:sepolia:0x9012ijkl...",
-    email: "tech@kavachtrust.bel.in",
+    id: "tech",
+    name: "Rajesh Kumar",
+    role: "TECH",
+    rolePillClass: "pill-tech",
+    email: "r.kumar@bel-defence.in",
+    password: "password",
   },
   {
-    role: "auditor",
-    label: "Auditor",
-    icon: "◎",
-    color: "#22c55e",
-    mental: "Investigate and verify",
-    did: "did:ethr:sepolia:0x3456mnop...",
-    email: "audit@dod.gov.in",
+    id: "auditor",
+    name: "Deepa Nair",
+    role: "AUDITOR",
+    rolePillClass: "pill-auditor",
+    email: "d.nair@bel-defence.in",
+    password: "password",
   },
 ];
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<Role | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  async function handleSignIn() {
-    if (!selected) return;
+  const [email, setEmail] = useState("demo");
+  const [password, setPassword] = useState("demo");
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("admin");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { innerWidth, innerHeight } = window;
+    const x = ((e.clientX / innerWidth) - 0.5) * 2;
+    const y = ((e.clientY / innerHeight) - 0.5) * 2;
+    const root = e.currentTarget;
+    root.style.setProperty("--mouse-x", x.toFixed(3));
+    root.style.setProperty("--mouse-y", y.toFixed(3));
+  };
+
+  async function handleSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
     setLoading(true);
+    setError("");
     try {
-      const selectedRole = ROLES.find(r => r.role === selected);
-      if (selectedRole) {
-        await login(selectedRole.email);
-        navigate("/app/dashboard");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to login");
+      await login(email, password);
+      navigate("/app/dashboard");
+    } catch (err: any) {
+      setError(err?.message || err?.data?.detail || "Authentication failed. Check your credentials.");
     } finally {
       setLoading(false);
     }
   }
 
+  const selectDemoAccount = (account: DemoAccount) => {
+    setEmail(account.email);
+    setPassword(account.password);
+    setSelectedRole(account.id);
+  };
+
   return (
-    <div className="login-page">
-      {/* ─── Cinematic Background ─── */}
-      <div className="login-bg">
-        <div className="login-grid-overlay" />
-        <div className="login-scanline" />
+    <div className="login-page" onMouseMove={handleMouseMove}>
+      {/* ─── ATMOSPHERIC BACKGROUND (COOL PALETTE: NAVY / CYAN / BLUE) ─── */}
+      <div className="cmd-background-layer">
+        <div className="cmd-space-gradient" />
+        <div className="cmd-cyan-nebula-glow" />
+        <div className="cmd-ocean-gradient" />
+        <div
+          className="cmd-stars-canvas"
+          style={{ transform: "translate(calc(var(--mouse-x, 0) * 3px), calc(var(--mouse-y, 0) * 3px))" }}
+        />
+        <div className="cmd-grid-overlay" />
       </div>
 
-      {/* ─── LEFT: Visual Side — Advanced Defence System Coming Online ─── */}
-      <div className="login-visual-side">
-        {/* Satellite Grid — orbital reference rings */}
-        <div className="satellite-grid">
-          <div className="satellite-orbit satellite-orbit-1" />
-          <div className="satellite-orbit satellite-orbit-2" />
-          <div className="satellite-orbit satellite-orbit-3" />
-        </div>
-
-        {/* Defence Radar Monitoring System */}
-        <div className="radar-container">
-          <div className="radar-ring radar-ring-1" />
-          <div className="radar-ring radar-ring-2" />
-          <div className="radar-ring radar-ring-3" />
-          <div className="radar-ring radar-ring-4" />
-          <div className="radar-cross" />
-          <div className="radar-sweep" />
-          <div className="radar-sweep radar-sweep-2" />
-          <div className="radar-center" />
-          <div className="radar-glow" />
-          {/* 4 Detection points synchronized to sweep angles */}
-          <div className="radar-point radar-point-1" title="Node Alpha" />
-          <div className="radar-point radar-point-2" title="Asset EF-2026" />
-          <div className="radar-point radar-point-3" title="Telemetry Relay" />
-          <div className="radar-point radar-point-4" title="Audit Sentinel" />
-        </div>
-
-        {/* Stealth Defence Asset Visual (Slow Horizontal/Vertical Drift) */}
-        <div className="aircraft-visual">
-          <svg className="aircraft-svg" viewBox="0 0 70 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M 66 20 L 16 7 L 22 17 L 3 18 L 3 22 L 22 23 L 16 33 Z"
-              fill="rgba(74, 106, 138, 0.35)"
-              stroke="rgba(96, 165, 250, 0.4)"
-              strokeWidth="1"
-            />
-            <line x1="22" y1="20" x2="62" y2="20" stroke="rgba(96, 165, 250, 0.6)" strokeWidth="1" />
-            <circle cx="64" cy="20" r="1.5" fill="#60a5fa" />
-          </svg>
-          <div className="aircraft-contrail" />
-        </div>
-
-        {/* Blockchain Network (NODE → NODE flow with travelling data pulse) */}
-        <div className="blockchain-flow">
-          <svg className="blockchain-flow-svg" viewBox="0 0 250 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Background connection paths */}
-            <path className="bc-line bc-line-h1" d="M 30 25 L 125 25 L 220 25" />
-            <path className="bc-line bc-line-v1" d="M 30 25 L 30 70 L 125 70" />
-            <path className="bc-line bc-line-v2" d="M 125 25 L 125 70 L 220 70" />
-            
-            {/* Animated data pulse lines */}
-            <path className="bc-pulse-line bc-pulse-1" d="M 30 25 L 125 25 L 220 25" />
-            <path className="bc-pulse-line bc-pulse-2" d="M 30 25 L 30 70 L 125 70" />
-            <path className="bc-pulse-line bc-pulse-3" d="M 125 25 L 125 70 L 220 70" />
-
-            {/* Network Nodes */}
-            <g className="bc-node-group">
-              <circle cx="30" cy="25" r="3.5" className="bc-node-dot" />
-              <circle cx="30" cy="25" r="7" className="bc-node-halo" />
-              <text x="30" y="14" textAnchor="middle" className="bc-node-text">ASSET</text>
-            </g>
-            <g className="bc-node-group">
-              <circle cx="125" cy="25" r="3.5" className="bc-node-dot" />
-              <circle cx="125" cy="25" r="7" className="bc-node-halo" />
-              <text x="125" y="14" textAnchor="middle" className="bc-node-text">VERIFY</text>
-            </g>
-            <g className="bc-node-group">
-              <circle cx="220" cy="25" r="3.5" className="bc-node-dot" />
-              <circle cx="220" cy="25" r="7" className="bc-node-halo" />
-              <text x="220" y="14" textAnchor="middle" className="bc-node-text">BLOCKCHAIN</text>
-            </g>
-            <g className="bc-node-group">
-              <circle cx="30" cy="70" r="3.5" className="bc-node-dot" />
-              <circle cx="30" cy="70" r="7" className="bc-node-halo" />
-              <text x="30" y="84" textAnchor="middle" className="bc-node-text">EVIDENCE</text>
-            </g>
-            <g className="bc-node-group">
-              <circle cx="220" cy="70" r="3.5" className="bc-node-dot" />
-              <circle cx="220" cy="70" r="7" className="bc-node-halo" />
-              <text x="220" y="84" textAnchor="middle" className="bc-node-text">TRUST</text>
-            </g>
-          </svg>
-        </div>
-
-        {/* Asset Verification Visual Component (Dynamic Lifecycle Cycling) */}
-        <div className="asset-verif-badge">
-          <div className="verif-badge-top">
-            <span className="verif-badge-icon">⬡</span>
-            <span className="verif-badge-title">ASSET VERIFICATION</span>
+      {/* ─── TOP BAR: BRANDING & KAVACH ACCESS ─── */}
+      <header className="cmd-topbar">
+        <Link to="/" className="cmd-brand-group">
+          <div className="cmd-brand-icon">
+            <BelIconMark size={22} />
           </div>
-          <div className="verif-badge-id">EF-2026-001</div>
-          <div className="verif-badge-cycle">
-            <span className="verif-step verif-step-1">HASH CHECKING...</span>
-            <span className="verif-step verif-step-2">VERIFYING...</span>
-            <span className="verif-step verif-step-3">✓ VERIFIED</span>
-          </div>
-        </div>
-
-        {/* Signal / Data Flow Paths */}
-        <div className="signal-paths">
-          <div className="signal-path signal-path-1" />
-          <div className="signal-path signal-path-2" />
-          <div className="signal-path signal-path-3" />
-          <div className="signal-path signal-path-4" />
-        </div>
-
-        {/* Defence Asset Scan Line */}
-        <div className="defence-scan-line" />
-
-        {/* Communication Signal Arcs */}
-        <div className="signal-arc signal-arc-1" />
-        <div className="signal-arc signal-arc-2" />
-
-        {/* Technical Data Labels */}
-        <div className="tech-labels">
-          <div className="tech-label tech-label-secure">
-            <span className="tech-secure-scan" />
-            <span>SECURE NETWORK</span>
-          </div>
-          <div className="tech-label tech-label-verified">
-            <span className="tech-verified-dot" />
-            <span>BLOCKCHAIN VERIFIED</span>
-          </div>
-          <div className="tech-label tech-label-status">
-            <span className="tech-status-dot" />
-            <span>SYSTEM STATUS: OPERATIONAL</span>
-          </div>
-          <div className="tech-label tech-label-node">NODE: NOVEXA-01</div>
-          <div className="tech-label tech-label-trust">DEFENCE ASSET TRUST</div>
-        </div>
-
-        {/* Defence Title */}
-        <div className="defence-title">
-          <div className="defence-title-main">NOVEXA SECURE DEFENCE ACCESS</div>
-          <div className="defence-title-sub">ENCRYPTED · BLOCKCHAIN VERIFIED · MISSION-CRITICAL</div>
-        </div>
-      </div>
-
-      {/* ─── RIGHT: Login Form Side ─── */}
-      <div className="login-form-side">
-        {/* Branding */}
-        <Link to="/" className="login-branding" style={{ textDecoration: "none" }}>
-          <div className="login-brand-icon">NX</div>
-          <div className="login-brand-text">
-            <div className="login-brand-title">NOVEXA DEFENCE TRUST</div>
-            <div className="login-brand-sub">SYNTHETIC DEMONSTRATION PLATFORM · SIH 2026</div>
+          <div className="cmd-brand-text">
+            <span className="cmd-brand-title">BEL</span>
+            <span className="cmd-brand-subtitle">DEFENCE TRUST</span>
           </div>
         </Link>
 
-        {/* Login Card */}
-        <div className="login-card">
-          {/* Header */}
-          <div className="login-card-header login-stagger-1">
-            <h1 className="login-card-title">PLATFORM ACCESS</h1>
-            <p className="login-card-desc">
-              Select your assigned role to access the platform. Each role provides a different
-              view and capabilities governed by your permission level.
-            </p>
+        <div className="cmd-top-telemetry" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div className="cmd-telemetry-line" />
+          <span>KAVACH TRUST PLATFORM • SECURE ACCESS</span>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      {/* ─── MAIN WORKSPACE ─── */}
+      <main className="cmd-main-layout">
+        {/* ─── LEFT: HERO HEADLINE & FEATURE BLOCKS ─── */}
+        <div className="cmd-hero-column">
+          <div className="cmd-headline-group">
+            <span className="cmd-headline-secure">SECURE</span>
+            <span className="cmd-headline-defence">DEFENCE ASSETS</span>
+            <span className="cmd-headline-sub">FOR A SAFER TOMORROW</span>
           </div>
 
-          {/* Role selector */}
-          <div className="login-role-group login-stagger-2">
-            <div className="login-section-label">SELECT ROLE</div>
-            <div className="login-role-list">
-              {ROLES.map((r, idx) => (
-                <button
-                  key={r.role}
-                  className={`login-role-btn login-stagger-role-${idx + 1}`}
-                  data-selected={selected === r.role}
-                  onClick={() => setSelected(r.role)}
-                >
-                  <div
-                    className="login-role-icon"
-                    style={{
-                      background: (selected === r.role ? r.color : r.color) + "18",
-                      border: `1px solid ${selected === r.role ? r.color : r.color + "40"}`,
-                      color: r.color,
-                    }}
-                  >
-                    {r.icon}
-                  </div>
-                  <div className="login-role-info">
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <span className="login-role-name">
-                        {r.label.toUpperCase()}
-                      </span>
-                      <span className="login-role-did">{r.did}</span>
-                    </div>
-                    <div className="login-role-desc">{r.mental}</div>
-                  </div>
-                  <div className="login-radio" data-active={selected === r.role}>
-                    <div className="login-radio-dot" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          <p className="cmd-headline-desc">
+            Blockchain-powered defence asset trust platform ensuring transparency, security and sovereign control.
+          </p>
 
-          {/* DID / credential display */}
-          {selected && (
-            <div className="login-cred-panel login-stagger-4">
-              <div className="login-section-label" style={{ marginBottom: 8 }}>IDENTITY & CREDENTIAL</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {[
-                  { label: "DID", value: ROLES.find((r) => r.role === selected)?.did ?? "—" },
-                  { label: "Credential", value: "Verified ✓" },
-                  { label: "Identity Status", value: "VERIFIED" },
-                ].map((row) => (
-                  <div key={row.label} className="login-cred-row">
-                    <span className="login-cred-label">{row.label}</span>
-                    <span className="login-cred-value">{row.value}</span>
-                  </div>
-                ))}
+          <div className="cmd-features-list">
+            {/* Feature 1 */}
+            <div className="cmd-feature-item">
+              <div className="cmd-feature-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <div className="cmd-feature-info">
+                <span className="cmd-feature-title">Blockchain Verified</span>
+                <span className="cmd-feature-sub">Tamper-proof records</span>
               </div>
             </div>
-          )}
 
-          {/* Sign In Button */}
-          <div className="login-stagger-5">
-            <button
-              className="login-submit-btn"
-              onClick={handleSignIn}
-              disabled={!selected || loading}
-            >
-              {loading ? (
-                <>
-                  <div className="login-spinner" />
-                  <span>Authenticating…</span>
-                </>
-              ) : (
-                <span className="login-btn-content">
-                  <span>SIGN IN</span>
-                  <span className="login-btn-arrow">→</span>
-                </span>
-              )}
-            </button>
+            {/* Feature 2 */}
+            <div className="cmd-feature-item">
+              <div className="cmd-feature-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="2" width="20" height="8" rx="2" />
+                  <rect x="2" y="14" width="20" height="8" rx="2" />
+                  <line x1="6" y1="6" x2="6.01" y2="6" />
+                  <line x1="6" y1="18" x2="6.01" y2="18" />
+                </svg>
+              </div>
+              <div className="cmd-feature-info">
+                <span className="cmd-feature-title">Secure Network</span>
+                <span className="cmd-feature-sub">End-to-end encryption</span>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="cmd-feature-item">
+              <div className="cmd-feature-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="22" y1="12" x2="18" y2="12" />
+                  <line x1="6" y1="12" x2="2" y2="12" />
+                  <line x1="12" y1="6" x2="12" y2="2" />
+                  <line x1="12" y1="22" x2="12" y2="18" />
+                </svg>
+              </div>
+              <div className="cmd-feature-info">
+                <span className="cmd-feature-title">Mission Critical</span>
+                <span className="cmd-feature-sub">Built for defence ecosystem</span>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="cmd-feature-item">
+              <div className="cmd-feature-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div className="cmd-feature-info">
+                <span className="cmd-feature-title">Secure Communication</span>
+                <span className="cmd-feature-sub">Encrypted network</span>
+              </div>
+            </div>
           </div>
-
-          {/* Security Status Indicator */}
-          <div className="login-security-status">
-            <span className="login-security-dot" />
-            <span className="login-security-text">SECURE CONNECTION</span>
-          </div>
-
-          {/* Footer */}
-          <p className="login-footer">
-            This is a synthetic demonstration platform. No real credentials or classified data.
-          </p>
         </div>
-      </div>
+
+        {/* ─── CENTER: CINEMATIC DEFENCE ENVIRONMENT (CLEAN 3D LAYERS) ─── */}
+        <div className="cmd-scene-center">
+          {/* Subtle Cyber Network Arcs */}
+          <svg className="cmd-network-arcs-svg" viewBox="0 0 1440 900" fill="none">
+            <path className="arc-path" d="M 440 160 C 520 220, 600 290, 640 370" />
+            <path className="arc-pulse" d="M 440 160 C 520 220, 600 290, 640 370" />
+
+            <path className="arc-path" d="M 370 260 C 450 300, 540 340, 620 390" />
+            <path className="arc-pulse" d="M 370 260 C 450 300, 540 340, 620 390" style={{ animationDelay: "1.8s" }} />
+
+            <path className="arc-path" d="M 860 150 C 800 220, 740 300, 680 390" />
+            <path className="arc-pulse" d="M 860 150 C 800 220, 740 300, 680 390" style={{ animationDelay: "2.6s" }} />
+
+            <path className="arc-path" d="M 430 650 C 510 610, 580 540, 620 480" />
+            <path className="arc-pulse" d="M 430 650 C 510 610, 580 540, 620 480" style={{ animationDelay: "1.2s" }} />
+
+            <path className="arc-path" d="M 830 650 C 770 600, 720 530, 670 470" />
+            <path className="arc-pulse" d="M 830 650 C 770 600, 720 530, 670 470" style={{ animationDelay: "3.2s" }} />
+
+            <circle cx="440" cy="160" r="3.5" fill="#00e5ff" filter="drop-shadow(0 0 6px #00e5ff)" />
+            <circle cx="370" cy="260" r="3.5" fill="#00e5ff" filter="drop-shadow(0 0 6px #00e5ff)" />
+            <circle cx="860" cy="150" r="3.5" fill="#00e5ff" filter="drop-shadow(0 0 6px #00e5ff)" />
+            <circle cx="430" cy="650" r="3.5" fill="#00e5ff" filter="drop-shadow(0 0 6px #00e5ff)" />
+            <circle cx="830" cy="650" r="3.5" fill="#00e5ff" filter="drop-shadow(0 0 6px #00e5ff)" />
+          </svg>
+
+          {/* 1. Earth Globe System (Hero Centerpiece) */}
+          <div
+            className="earth-pos-wrapper"
+            style={{ transform: "translate(calc(var(--mouse-x, 0) * 6px), calc(var(--mouse-y, 0) * 6px))" }}
+          >
+            <div className="earth-system">
+              {/* Pulsating Atmospheric Glow */}
+              <div className="earth-atmosphere" />
+
+              {/* 3D Earth Globe Sphere */}
+              <div className="earth-globe">
+                {/* Continuous Rotating World Map with India Night City Lights */}
+                <div
+                  className="earth-texture-rotating"
+                  style={{ backgroundImage: `url(${earthPanoramicImg})` }}
+                />
+
+                {/* 3D Spherical Light & Deep Shadow Overlay */}
+                <div className="earth-spherical-shading" />
+
+                {/* Tactical Longitude / Latitude Rings */}
+                <svg className="earth-grid-lines-svg" viewBox="0 0 500 500">
+                  <ellipse cx="250" cy="250" rx="245" ry="245" stroke="rgba(0, 229, 255, 0.22)" strokeWidth="1.2" fill="none" />
+                  <ellipse cx="250" cy="250" rx="140" ry="245" stroke="rgba(0, 229, 255, 0.12)" strokeWidth="0.8" fill="none" />
+                  <ellipse cx="250" cy="250" rx="60" ry="245" stroke="rgba(0, 229, 255, 0.08)" strokeWidth="0.8" fill="none" />
+                  <line x1="5" y1="250" x2="495" y2="250" stroke="rgba(0, 229, 255, 0.12)" strokeWidth="0.8" />
+                  <line x1="250" y1="5" x2="250" y2="495" stroke="rgba(0, 229, 255, 0.12)" strokeWidth="0.8" />
+                </svg>
+
+                {/* Central Floating 3D Glowing "NX" Shield */}
+                <div className="earth-nx-shield">
+                  <svg viewBox="0 0 100 120" fill="none">
+                    <defs>
+                      <filter id="nx-glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
+                    <path
+                      d="M 50 6 L 88 22 L 88 64 Q 88 96 50 114 Q 12 96 12 64 L 12 22 Z"
+                      fill="rgba(6, 20, 48, 0.9)"
+                      stroke="#00e5ff"
+                      strokeWidth="3.5"
+                      filter="url(#nx-glow-filter)"
+                    />
+                    <path
+                      d="M 50 14 L 80 26 L 80 62 Q 80 88 50 102 Q 20 88 20 62 L 20 26 Z"
+                      fill="rgba(0, 160, 255, 0.22)"
+                      stroke="rgba(0, 229, 255, 0.65)"
+                      strokeWidth="1.5"
+                    />
+                    <text
+                      x="50"
+                      y="68"
+                      textAnchor="middle"
+                      fill="#ffffff"
+                      fontFamily="Barlow Condensed, sans-serif"
+                      fontWeight="900"
+                      fontSize="28"
+                      letterSpacing="1.2"
+                    >
+                      BEL
+                    </text>
+                  </svg>
+                </div>
+              </div>
+
+              {/* 3D Orbital Rings System */}
+              <div className="orbital-ring orbital-ring-1" />
+              <div className="orbital-ring orbital-ring-2" />
+              <div className="orbital-ring orbital-ring-3">
+                <div className="orbit-marker" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ─── RIGHT: STABLE LOGIN CONSOLE ─── */}
+        <div className="cmd-console-wrapper">
+          <div className="cmd-console-card">
+            {/* Corner Tech Brackets */}
+            <div className="corner-bracket bracket-tl" />
+            <div className="corner-bracket bracket-tr" />
+            <div className="corner-bracket bracket-bl" />
+            <div className="corner-bracket bracket-br" />
+
+            {/* Console Lockup */}
+            <div className="console-header-lockup">
+              <div className="console-nx-mini">
+                <BelIconMark size={16} />
+              </div>
+              <div className="console-header-text">
+                <span className="console-header-title">BEL DEFENCE TRUST</span>
+                <span className="console-header-sub">KAVACH TRUST PLATFORM • SECURE ACCESS</span>
+              </div>
+            </div>
+
+            <h1 className="cmd-card-title">PLATFORM ACCESS</h1>
+            <p className="cmd-card-instructions">
+              Enter your credentials to access the platform. Use <code>demo</code> / <code>demo</code> for instant access.
+            </p>
+
+            {/* 4 Demo Roles Grid */}
+            <div className="cmd-demo-section-label">
+              SELECT DEMO USER ACCOUNT (4 ROLES AVAILABLE):
+            </div>
+            <div className="cmd-demo-grid">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <div
+                  key={acc.id}
+                  className={`cmd-demo-card ${selectedRole === acc.id ? "active" : ""}`}
+                  onClick={() => selectDemoAccount(acc)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") selectDemoAccount(acc);
+                  }}
+                >
+                  <div className="cmd-demo-top-row">
+                    <span className="cmd-demo-name">{acc.name}</span>
+                    <span className={`cmd-demo-role-pill ${acc.rolePillClass}`}>{acc.role}</span>
+                  </div>
+                  <div className="cmd-demo-email">{acc.email}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Real Login Error Banner */}
+            {error && (
+              <div className="cmd-error-banner" role="alert">
+                ✕ {error}
+              </div>
+            )}
+
+            {/* Authentication Form */}
+            <form onSubmit={handleSignIn}>
+              {/* Username / Email */}
+              <div className="cmd-input-group">
+                <label htmlFor="login-email" className="cmd-input-label">
+                  USERNAME / EMAIL ADDRESS
+                </label>
+                <div className="cmd-input-box">
+                  <span className="cmd-input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    id="login-email"
+                    autoComplete="username"
+                    placeholder="demo"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="cmd-text-input"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="cmd-input-group">
+                <label htmlFor="login-password" className="cmd-input-label">
+                  PASSWORD
+                </label>
+                <div className="cmd-input-box">
+                  <span className="cmd-input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  </span>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="login-password"
+                    autoComplete="current-password"
+                    placeholder="••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="cmd-text-input"
+                  />
+                  <button
+                    type="button"
+                    className="cmd-password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button type="submit" className="cmd-submit-btn" disabled={loading}>
+                {loading ? (
+                  <>
+                    <div className="cmd-spinner" />
+                    <span>AUTHENTICATING...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>SIGN IN</span>
+                    <span className="cmd-btn-arrow">→</span>
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Security Indicator */}
+            <div className="cmd-security-line">
+              <span className="cmd-security-dot" />
+              <span>SECURE CONNECTION • TLS ENCRYPTED</span>
+            </div>
+
+            <p className="cmd-console-footer">
+              Access is governed by role-based permissions. Contact your administrator if you cannot sign in.
+            </p>
+          </div>
+        </div>
+      </main>
+
+      {/* ─── BOTTOM BAR: SOVEREIGN SEAL & HORIZONTAL TRUST PIPELINE ─── */}
+      <footer className="cmd-bottom-bar">
+        {/* Bottom Left Sovereign Defence Seal Badge */}
+        <div className="cmd-defence-seal">
+          <div className="cmd-seal-emblem">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <circle cx="12" cy="11" r="3" />
+            </svg>
+          </div>
+          <div className="cmd-seal-text">
+            <span className="cmd-seal-title">DEFENCE ASSET TRUST</span>
+            <span className="cmd-seal-sub">SOVEREIGN • SECURE • TRANSPARENT</span>
+          </div>
+        </div>
+
+        {/* Bottom Center Trust Pipeline */}
+        <div className="cmd-trust-pipeline">
+          <div className="cmd-pipeline-track">
+            <div className="cmd-pipeline-light-sweep" />
+          </div>
+
+          <div className="cmd-pipeline-node">
+            <div className="cmd-pipeline-node-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="2" width="20" height="20" rx="3" />
+                <path d="M7 12h10M12 7v10" />
+              </svg>
+            </div>
+            <span className="cmd-pipeline-node-title">ASSET</span>
+            <span className="cmd-pipeline-node-sub">REGISTRATION</span>
+          </div>
+
+          <div className="cmd-pipeline-node">
+            <div className="cmd-pipeline-node-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+            </div>
+            <span className="cmd-pipeline-node-title">VERIFICATION</span>
+            <span className="cmd-pipeline-node-sub">ON BLOCKCHAIN</span>
+          </div>
+
+          <div className="cmd-pipeline-node">
+            <div className="cmd-pipeline-node-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </div>
+            <span className="cmd-pipeline-node-title">EVIDENCE</span>
+            <span className="cmd-pipeline-node-sub">INTEGRITY</span>
+          </div>
+
+          <div className="cmd-pipeline-node">
+            <div className="cmd-pipeline-node-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg>
+            </div>
+            <span className="cmd-pipeline-node-title">TRUST</span>
+            <span className="cmd-pipeline-node-sub">ASSURED</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

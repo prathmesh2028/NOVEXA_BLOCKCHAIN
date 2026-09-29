@@ -7,6 +7,7 @@ import {
   Body,
   UseGuards,
   Req,
+  Res,
   BadRequestException,
 } from '@nestjs/common';
 import { EvidenceService } from './evidence.service';
@@ -25,12 +26,14 @@ export class EvidenceController {
     @Query('event_type') eventType?: string,
     @Query('page') page?: string,
     @Query('page_size') pageSize?: string,
+    @Req() req?: any,
   ) {
     return this.evidenceService.listEvidence({
       asset_id: assetId,
       event_type: eventType,
       page: page ? parseInt(page, 10) : undefined,
       page_size: pageSize ? parseInt(pageSize, 10) : undefined,
+      user: req?.user,
     });
   }
 
@@ -39,25 +42,35 @@ export class EvidenceController {
    * GET /evidence/integrity-report/:assetId
    * Returns a per-item integrity report for all evidence on an asset.
    * Checks stored hash vs integrityVerified flag.
-   * AUDITOR, ADMIN, NFT_CREATOR can read integrity reports.
+   * AUDITOR, SYSTEM_ADMIN, QUALITY_INSPECTOR can read integrity reports.
    */
   @Get('integrity-report')
   @UseGuards(RolesGuard)
-  @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
-  async getIntegrityReportByQuery(@Query('asset_id') assetId?: string) {
-    return this.evidenceService.getIntegrityReport(assetId || 'EF-2026-00421');
+  @RequireRoles('AUDITOR', 'SYSTEM_ADMIN', 'QUALITY_INSPECTOR', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER')
+  async getIntegrityReportByQuery(@Query('asset_id') assetId?: string, @Req() req?: any) {
+    return this.evidenceService.getIntegrityReport(assetId || 'EF-2026-00421', req?.user);
   }
 
   @Get('integrity-report/:assetId')
   @UseGuards(RolesGuard)
-  @RequireRoles('AUDITOR', 'ADMIN', 'NFT_CREATOR', 'TECHNICIAN')
-  async getIntegrityReport(@Param('assetId') assetId: string) {
-    return this.evidenceService.getIntegrityReport(assetId);
+  @RequireRoles('AUDITOR', 'SYSTEM_ADMIN', 'QUALITY_INSPECTOR', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER')
+  async getIntegrityReport(@Param('assetId') assetId: string, @Req() req?: any) {
+    return this.evidenceService.getIntegrityReport(assetId, req?.user);
+  }
+
+  @Get(':id/download')
+  async downloadEvidence(@Param('id') id: string, @Res() res: any, @Req() req?: any) {
+    const file = await this.evidenceService.downloadEvidence(id, req?.user);
+    const sanitizedFilename = (file.filename || 'evidence').replace(/["\r\n\/\\]/g, '_');
+    res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
+    res.setHeader('Content-Length', file.buffer.length);
+    res.end(file.buffer);
   }
 
   @Get(':id')
-  async getEvidence(@Param('id') id: string) {
-    return this.evidenceService.getEvidence(id);
+  async getEvidence(@Param('id') id: string, @Req() req?: any) {
+    return this.evidenceService.getEvidence(id, req?.user);
   }
 
   /**
@@ -65,11 +78,11 @@ export class EvidenceController {
    * Upload a new evidence item.
    * Body: { asset_id, filename, type, mime_type, size_kb, content_base64, event }
    * content_base64 is the file content encoded in base64 — hash computed server-side.
-   * TECHNICIAN and ADMIN only.
+   * QUALITY_INSPECTOR and SYSTEM_ADMIN only.
    */
   @Post()
   @UseGuards(RolesGuard)
-  @RequireRoles('TECHNICIAN', 'ADMIN')
+  @RequireRoles('QUALITY_INSPECTOR', 'SYSTEM_ADMIN')
   async uploadEvidence(@Body() body: any, @Req() req: any) {
     if (!body.asset_id || !body.filename || !body.content_base64) {
       throw new BadRequestException('asset_id, filename, and content_base64 are required');

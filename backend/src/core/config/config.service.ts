@@ -10,9 +10,11 @@ export class ConfigService {
   }
 
   get nodeEnv(): string { return this.config.NODE_ENV; }
-  get isDevelopment(): boolean { return this.config.NODE_ENV === 'development'; }
+  get appEnv(): string { return this.config.APP_ENV; }
+  get isDevelopment(): boolean { return this.config.NODE_ENV === 'development' || this.config.NODE_ENV === 'demo'; }
   get isProduction(): boolean { return this.config.NODE_ENV === 'production'; }
   get isTest(): boolean { return this.config.NODE_ENV === 'test'; }
+  get isDemoMode(): boolean { return this.config.APP_ENV === 'demo' || this.config.NODE_ENV === 'demo'; }
   get port(): number { return this.config.PORT; }
   get apiPrefix(): string { return this.config.API_PREFIX; }
   get logLevel(): string { return this.config.LOG_LEVEL; }
@@ -44,6 +46,9 @@ export class ConfigService {
   get blockchainPrivateKey(): string { return this.config.BLOCKCHAIN_PRIVATE_KEY; }
   get contractAddress(): string { return this.config.CONTRACT_ADDRESS; }
   get blockchainNetworkName(): string { return this.config.BLOCKCHAIN_NETWORK_NAME; }
+  get blockchainMode(): string { return this.config.BLOCKCHAIN_MODE; }
+  get blockchainConfirmationsRequired(): number { return this.config.BLOCKCHAIN_CONFIRMATIONS_REQUIRED; }
+  get defaultNftRecipient(): string { return this.config.DEFAULT_NFT_RECIPIENT || ''; }
 
   // Encryption
   get aesKey(): string { return this.config.AES_KEY; }

@@ -1,27 +1,166 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import VerificationPanel from "../../components/ui/VerificationPanel";
-import { ASSETS, EVIDENCE_LIST, CERTIFICATIONS, BLOCKCHAIN_TXS } from "../../data/mockData";
+import { verificationService } from "../../services/verification";
+import { assetService } from "../../services/assets";
+import { evidenceService } from "../../services/evidence";
+import { certificationService } from "../../services/certifications";
+import { blockchainService } from "../../services/blockchain";
+
+type CheckResult = 'VALID' | 'INVALID' | 'MISMATCH' | 'MISSING' | 'UNVERIFIED' | 'NOT_APPLICABLE' | 'BLOCKCHAIN_UNAVAILABLE';
 
 export default function VerificationCenterPage() {
-  const [query, setQuery] = useState("");
-  const [result, setResult] = useState<{ asset: typeof ASSETS[0] | null; ran: boolean }>({ asset: null, ran: false });
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("id") || "");
+  const [result, setResult] = useState<{
+    asset: any;
+    ran: boolean;
+    backendVerif?: any;
+    evidence: any[];
+    cert: any;
+    txs: any[];
+  }>({ asset: null, ran: false, evidence: [], cert: null, txs: [] });
 
-  function runVerification() {
-    if (!query.trim()) return;
-    const q = query.trim().toUpperCase();
-    const asset = ASSETS.find(
-      (a) => a.id.toUpperCase() === q || a.batchId.toUpperCase() === q
-    );
-    setResult({ asset: asset ?? null, ran: true });
-  }
+  const runVerification = useCallback(async (searchQuery?: string | Event) => {
+    // Explicitly handle both string and potential event object
+    let rawValue: string;
+    if (typeof searchQuery === 'string') {
+      rawValue = searchQuery;
+    } else if (searchQuery && 'target' in searchQuery) {
+      // This is an event, extract the value
+      rawValue = (searchQuery.target as HTMLInputElement).value;
+    } else {
+      rawValue = query;
+    }
 
-  const evidence = result.asset ? EVIDENCE_LIST.filter((e) => e.assetId === result.asset?.id) : [];
-  const cert = result.asset ? CERTIFICATIONS.find((c) => c.id === result.asset?.certId) : null;
-  const txs = result.asset ? BLOCKCHAIN_TXS.filter((t) => t.assetId === result.asset?.id) : [];
+    const q = String(rawValue || "").trim().toUpperCase();
+    if (!q) return;
 
-  const verItems = result.asset
-    ? [
+    let foundAsset: any = null;
+    let backendVerif: any = null;
+    let evidence: any[] = [];
+    let cert: any = null;
+    let txs: any[] = [];
+
+    try {
+      // 1. Try real backend verification API
+      backendVerif = await verificationService.verifyAsset(q);
+    } catch (e) {
+      console.warn("Backend verification API failed:", e);
+    }
+
+    try {
+      // 2. Try real backend asset API
+      const assetRes = await assetService.getAsset(q);
+      if (assetRes) {
+        foundAsset = {
+          ...assetRes,
+          id: assetRes.asset_id || assetRes.id,
+          batchId: assetRes.batch_id,
+          lifecycle: assetRes.lifecycle_state,
+          verification: assetRes.verification_status,
+          certId: assetRes.cert_id,
+          certStatus: assetRes.cert_status,
+          serialNumber: assetRes.serial_number,
+        };
+      }
+    } catch (e) {
+      console.warn("Backend asset API failed:", e);
+    }
+
+    if (foundAsset) {
+      try {
+        evidence = await evidenceService.listEvidence({ assetId: foundAsset.id });
+      } catch (e) {
+        console.warn("Backend evidence API failed:", e);
+      }
+
+      try {
+        if (foundAsset.certId) {
+          cert = await certificationService.getCertification(foundAsset.certId);
+        }
+      } catch (e) {
+        console.warn("Backend certification API failed:", e);
+      }
+
+      try {
+        const txList = await blockchainService.listTransactions({ assetId: foundAsset.id });
+        txs = txList.items || [];
+      } catch (e) {
+        console.warn("Backend blockchain API failed:", e);
+      }
+    }
+
+    if (!foundAsset) {
+      setResult({ asset: null, ran: true, backendVerif, evidence: [], cert: null, txs: [] });
+      return;
+    }
+
+    setResult({ asset: foundAsset, ran: true, backendVerif, evidence, cert, txs });
+  }, [query]);
+
+  useEffect(() => {
+    const idParam = searchParams.get("id");
+    if (idParam) {
+      setQuery(idParam);
+      runVerification(idParam);
+    }
+  }, [searchParams, runVerification]);
+
+  // Build items using real backend checks if available, with graceful fallback
+  let verItems: any[] = [];
+  let overall: any = "UNAVAILABLE";
+
+  if (result.asset) {
+    if (result.backendVerif && result.backendVerif.checks?.length > 0) {
+      const checkMap = new Map<string, any>(result.backendVerif.checks.map((c: any) => [c.domain, c]));
+      const statusToUi = (s: string) => {
+        if (s === 'VALID') return 'VERIFIED';
+        if (s === 'MISMATCH' || s === 'INVALID') return 'FAILED';
+        if (s === 'BLOCKCHAIN_UNAVAILABLE') return 'UNAVAILABLE';
+        return 'PENDING';
+      };
+
+      verItems = [
+        {
+          label: "Identity & Supplier",
+          status: statusToUi(checkMap.get('identity')?.status || 'VALID'),
+          detail: checkMap.get('identity')?.reason || `Supplier: ${result.asset.supplier}`,
+        },
+        {
+          label: "Evidence Integrity",
+          status: statusToUi(checkMap.get('evidence')?.status || 'VALID'),
+          detail: checkMap.get('evidence')?.reason || `${result.evidence.filter((e) => e.integrityVerified).length}/${result.evidence.length} files fingerprint-verified`,
+        },
+        {
+          label: "Lifecycle Sequence",
+          status: statusToUi(checkMap.get('lifecycle')?.status || 'VALID'),
+          detail: checkMap.get('lifecycle')?.reason || `Current: ${result.asset.lifecycle}`,
+        },
+        {
+          label: "Certification",
+          status: statusToUi(checkMap.get('certification')?.status || (result.cert?.status === 'CONFIRMED' ? 'VALID' : 'UNVERIFIED')),
+          detail: checkMap.get('certification')?.reason || (result.cert ? `Token: ${result.cert.tokenId}` : "No certification record"),
+        },
+        {
+          label: "Blockchain Proof",
+          status: statusToUi(checkMap.get('blockchain')?.status || 'BLOCKCHAIN_UNAVAILABLE'),
+          detail: checkMap.get('blockchain')?.reason || (result.txs.length > 0 ? `${result.txs.filter((t) => t.status === 'CONFIRMED').length} confirmed transaction(s)` : "No on-chain records"),
+        },
+        {
+          label: "Audit Trail Integrity",
+          status: checkMap.get('audit') || checkMap.get('audit_trail')
+            ? statusToUi((checkMap.get('audit') || checkMap.get('audit_trail')).status)
+            : ("REVIEW" as const),
+          detail: (checkMap.get('audit') || checkMap.get('audit_trail'))?.reason || "Audit chain verification pending audit event confirmation",
+        },
+      ];
+
+      const backendOverall = result.backendVerif.overall;
+      overall = backendOverall === 'VALID' ? 'VERIFIED' : backendOverall === 'INVALID' || backendOverall === 'MISMATCH' ? 'FAILED' : 'REVIEW';
+    } else {
+      verItems = [
         {
           label: "Identity & Supplier",
           status: "VERIFIED" as const,
@@ -29,8 +168,8 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Evidence Integrity",
-          status: (evidence.length > 0 && evidence.every((e) => e.integrityVerified) ? "VERIFIED" : evidence.some((e) => !e.integrityVerified && e.status === "Complete") ? "FAILED" : "PENDING") as any,
-          detail: `${evidence.filter((e) => e.integrityVerified).length}/${evidence.length} files fingerprint-verified`,
+          status: (result.evidence.length > 0 && result.evidence.every((e) => e.integrityVerified) ? "VERIFIED" : result.evidence.some((e) => !e.integrityVerified && e.status === "Complete") ? "FAILED" : "PENDING") as any,
+          detail: `${result.evidence.filter((e) => e.integrityVerified).length}/${result.evidence.length} files fingerprint-verified`,
         },
         {
           label: "Lifecycle Sequence",
@@ -39,25 +178,30 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Certification",
-          status: (cert?.status === "CONFIRMED" ? "VERIFIED" : cert?.status === "PENDING" ? "PENDING" : "UNAVAILABLE") as any,
-          detail: cert ? `Token: ${cert.tokenId}` : "No certification record",
+          status: (result.cert?.status === "CONFIRMED" ? "VERIFIED" : result.cert?.status === "PENDING" ? "PENDING" : "UNAVAILABLE") as any,
+          detail: result.cert ? `Token: ${result.cert.tokenId}` : "No certification record",
         },
         {
           label: "Blockchain Proof",
-          status: (txs.some((t) => t.status === "CONFIRMED") ? "VERIFIED" : txs.length > 0 ? "PENDING" : "UNAVAILABLE") as any,
-          detail: txs.length > 0 ? `${txs.filter((t) => t.status === "CONFIRMED").length} confirmed transaction(s)` : "No on-chain records",
+          status: "UNAVAILABLE" as const,
+          detail: "Blockchain RPC offline — on-chain verification not available",
         },
         {
           label: "Audit Trail Integrity",
-          status: "VERIFIED" as const,
-          detail: "No modification detected in audit log",
+          status: "REVIEW" as const,
+          detail: "Audit chain verification pending backend log integrity check",
         },
-      ]
-    : [];
+      ];
 
-  const overall = result.asset
-    ? (verItems.some((v) => v.status === "FAILED") ? "FAILED" : verItems.some((v) => v.status === "REVIEW") ? "REVIEW" : verItems.every((v) => v.status === "VERIFIED" || v.status === "UNAVAILABLE") ? "VERIFIED" : "REVIEW")
-    : "UNAVAILABLE";
+      overall = verItems.some((v) => v.status === "FAILED")
+        ? "FAILED"
+        : verItems.some((v) => v.status === "REVIEW")
+        ? "REVIEW"
+        : verItems.every((v) => v.status === "VERIFIED" || v.status === "UNAVAILABLE")
+        ? "VERIFIED"
+        : "REVIEW";
+    }
+  }
 
   return (
     <div className="page-fade">
@@ -84,7 +228,7 @@ export default function VerificationCenterPage() {
               style={{ fontSize: "0.9375rem", padding: "10px 14px" }}
             />
           </div>
-          <button className="btn-primary" onClick={runVerification} style={{ padding: "10px 20px", fontSize: "0.9375rem" }}>
+          <button className="btn-primary" onClick={() => runVerification()} style={{ padding: "10px 20px", fontSize: "0.9375rem" }}>
             Verify →
           </button>
         </div>
@@ -95,7 +239,7 @@ export default function VerificationCenterPage() {
           {["EF-2026-00421", "EF-2026-00423", "EF-BATCH-2026-017"].map((ex) => (
             <button
               key={ex}
-              onClick={() => { setQuery(ex); }}
+              onClick={() => { setQuery(ex); runVerification(ex); }}
               style={{
                 background: "none",
                 border: "1px solid #1e3a60",

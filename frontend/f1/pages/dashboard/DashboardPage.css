@@ -1,0 +1,970 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BEL DEFENCE TRUST — DASHBOARD
+   ChatGPT-Inspired Black / Charcoal / Dark Gray Enterprise Visual Architecture
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Container Layout & Theme Surfaces ────────────────────────────────────── */
+.db-v4-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1720px;
+  margin: 0 auto;
+  padding-bottom: 36px;
+  position: relative;
+  background-color: transparent;
+  color: #f5f5f5;
+  transition: color 0.25s ease;
+}
+
+[data-theme="light"] .db-v4-container {
+  color: #171717;
+}
+
+/* ── Base Card Architecture ───────────────────────────────────────────────── */
+.db-v4-card {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.db-v4-card:hover {
+  transform: translateY(-2px);
+  border-color: #383838;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] .db-v4-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .db-v4-card:hover {
+  border-color: #d4d4d8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Card Headers ─────────────────────────────────────────────────────────── */
+.db-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.db-card-title {
+  font-family: 'Barlow Condensed', 'Inter', -apple-system, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f5f5f5;
+}
+
+.db-card-subtitle {
+  font-size: 0.775rem;
+  color: #737373;
+  margin-top: 2px;
+}
+
+[data-theme="light"] .db-card-title {
+  color: #171717;
+}
+
+[data-theme="light"] .db-card-subtitle {
+  color: #737373;
+}
+
+/* ── 5 KPI Metric Cards Grid ──────────────────────────────────────────────── */
+.db-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1280px) {
+  .db-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .db-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.db-kpi-card {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.db-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: #383838;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] .db-kpi-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .db-kpi-card:hover {
+  border-color: #d4d4d8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.db-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.db-kpi-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #737373;
+}
+
+[data-theme="light"] .db-kpi-label {
+  color: #737373;
+}
+
+.db-kpi-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid #2a2a2a !important;
+  color: #a3a3a3 !important;
+}
+
+[data-theme="light"] .db-kpi-icon-badge {
+  background: #f4f4f5 !important;
+  border-color: #e5e5e5 !important;
+  color: #525252 !important;
+}
+
+.db-kpi-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #f5f5f5;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
+}
+
+[data-theme="light"] .db-kpi-value {
+  color: #171717;
+}
+
+.db-kpi-sub {
+  font-size: 0.72rem;
+  color: #737373;
+  margin-bottom: 8px;
+}
+
+.db-kpi-sparkline {
+  width: 100%;
+  height: 26px;
+  margin-top: 4px;
+}
+
+.db-sparkline-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: dbSparklineDraw 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dbSparklineDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ── Two-Column Layout Grids ──────────────────────────────────────────────── */
+.db-two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1080px) {
+  .db-two-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.db-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+}
+
+@media (max-width: 1080px) {
+  .db-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Trust Integrity Visualization (Minimal Grayscale & Clean Green) ─────── */
+.db-trust-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.db-orbital-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0 20px;
+  position: relative;
+}
+
+.db-orbital-svg-box {
+  position: relative;
+  width: 270px;
+  height: 270px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-orbital-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.db-orbital-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.db-trust-score {
+  font-family: 'Barlow Condensed', 'Inter', -apple-system, sans-serif;
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #f5f5f5;
+  letter-spacing: -0.02em;
+}
+
+[data-theme="light"] .db-trust-score {
+  color: #171717;
+}
+
+.db-trust-score-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #737373;
+  margin-top: 4px;
+}
+
+/* Restrained Grayscale Orbital Rotations */
+.db-orbit-outer {
+  transform-origin: 145px 145px;
+  animation: dbOrbitClockwise 45s linear infinite;
+}
+
+.db-orbit-inner {
+  transform-origin: 145px 145px;
+  animation: dbOrbitCounterClockwise 36s linear infinite;
+}
+
+.db-orbit-traveler {
+  transform-origin: 145px 145px;
+  animation: dbOrbitClockwise 18s linear infinite;
+}
+
+@keyframes dbOrbitClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dbOrbitCounterClockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+/* 4-Item Telemetry Matrix */
+.db-telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #262626;
+}
+
+[data-theme="light"] .db-telemetry-grid {
+  border-top-color: #e5e5e5;
+}
+
+.db-telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.db-telemetry-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.db-telemetry-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #737373;
+  text-transform: uppercase;
+}
+
+.db-telemetry-status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+[data-theme="light"] .db-telemetry-status {
+  color: #171717;
+}
+
+/* ── Asset Activity & Lifecycle Bars ──────────────────────────────────────── */
+.db-activity-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-lifecycle-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.db-lifecycle-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.db-lifecycle-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.db-lifecycle-label {
+  font-weight: 600;
+  color: #e5e5e5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-theme="light"] .db-lifecycle-label {
+  color: #171717;
+}
+
+.db-lifecycle-track {
+  width: 100%;
+  height: 6px;
+  background: #242424;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+[data-theme="light"] .db-lifecycle-track {
+  background: #e5e5e5;
+}
+
+.db-lifecycle-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Live Activity Feed ───────────────────────────────────────────────────── */
+.db-feed-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.db-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1c1c1c;
+  border: 1px solid #262626;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+[data-theme="light"] .db-activity-item {
+  background: #fafafa;
+  border-color: #e5e5e5;
+}
+
+.db-activity-item:hover {
+  transform: translateX(2px);
+  border-color: #383838;
+  background: #202020;
+}
+
+[data-theme="light"] .db-activity-item:hover {
+  border-color: #d4d4d8;
+  background: #f4f4f5;
+}
+
+.db-activity-node {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #737373;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.db-activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.db-activity-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f5f5f5;
+}
+
+[data-theme="light"] .db-activity-title {
+  color: #171717;
+}
+
+.db-activity-meta {
+  font-size: 0.72rem;
+  color: #737373;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* ── BEL Defence Network Minimal Display ─────────────────────────────────── */
+.db-network-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-network-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.db-network-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.db-network-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #262626;
+}
+
+[data-theme="light"] .db-network-stats {
+  border-top-color: #e5e5e5;
+}
+
+.db-network-stat-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-network-stat-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+[data-theme="light"] .db-network-stat-val {
+  color: #171717;
+}
+
+.db-network-stat-lbl {
+  font-size: 0.6875rem;
+  color: #737373;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.db-network-mesh-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ── Recent Certifications Table ─────────────────────────────────────────── */
+.db-recent-certs-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-recent-certs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.db-recent-certs-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #737373;
+  border-bottom: 1px solid #262626;
+}
+
+[data-theme="light"] .db-recent-certs-table th {
+  border-bottom-color: #e5e5e5;
+}
+
+.db-recent-cert-row {
+  border-bottom: 1px solid #222222;
+  transition: background 0.15s ease;
+}
+
+[data-theme="light"] .db-recent-cert-row {
+  border-bottom-color: #f1f5f9;
+}
+
+.db-recent-cert-row:hover {
+  background: #1f1f1f;
+}
+
+[data-theme="light"] .db-recent-cert-row:hover {
+  background: #f4f4f5;
+}
+
+.db-recent-cert-row td {
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  color: #f5f5f5;
+}
+
+[data-theme="light"] .db-recent-cert-row td {
+  color: #171717;
+}
+
+/* ── Defence Trust Banner ─────────────────────────────────────────────────── */
+.db-trust-banner {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+[data-theme="light"] .db-trust-banner {
+  background: #ffffff;
+  border-color: #e5e5e5;
+}
+
+.db-banner-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f5f5f5;
+  margin-bottom: 6px;
+}
+
+[data-theme="light"] .db-banner-title {
+  color: #171717;
+}
+
+.db-banner-desc {
+  font-size: 0.8rem;
+  color: #737373;
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+
+/* ── ChatGPT Button System ────────────────────────────────────────────────── */
+.db-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  color: #111111;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.db-btn-primary:hover {
+  background: #e5e5e5;
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .db-btn-primary {
+  background: #171717;
+  color: #ffffff;
+}
+
+[data-theme="light"] .db-btn-primary:hover {
+  background: #262626;
+}
+
+.db-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #f5f5f5;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #303030;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.db-btn-secondary:hover {
+  background: #242424;
+  border-color: #383838;
+}
+
+[data-theme="light"] .db-btn-secondary {
+  color: #171717;
+  border-color: #d4d4d8;
+}
+
+[data-theme="light"] .db-btn-secondary:hover {
+  background: #f4f4f5;
+  border-color: #a1a1aa;
+}
+
+/* ── Footer Subtle BEL Branding ───────────────────────────────────────────── */
+.db-footer-branding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 0;
+  margin-top: 10px;
+  color: #737373;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.db-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a3a3a3;
+  font-weight: 600;
+}
+
+[data-theme="light"] .db-footer-left {
+  color: #525252;
+}
+
+.db-footer-divider {
+  color: #404040;
+}
+
+.db-footer-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: #737373;
+}
+
+/* ── Modal Overlay & Box ──────────────────────────────────────────────────── */
+.db-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: dbFadeIn 0.2s ease-out;
+}
+
+.db-modal-box {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 88vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  animation: dbModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .db-modal-box {
+  background: #ffffff;
+  border-color: #e5e5e5;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes dbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dbModalPop {
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Defence Promotional / Trust Banner ───────────────────────────────────── */
+.db-promo-banner {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] .db-promo-banner {
+  background: #ffffff;
+  border-color: #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.db-promo-graphic {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 240px;
+  height: 140px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+[data-theme="light"] .db-promo-graphic {
+  opacity: 0.08;
+}
+
+/* ── Scoped ChatGPT Button System for Dashboard ───────────────────────────── */
+.db-v4-container .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f5f5f5 !important;
+  color: #111111 !important;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.db-v4-container .btn-primary:hover {
+  background: #e5e5e5 !important;
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .db-v4-container .btn-primary {
+  background: #171717 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .db-v4-container .btn-primary:hover {
+  background: #262626 !important;
+}
+
+.db-v4-container .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent !important;
+  color: #f5f5f5 !important;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #303030 !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.db-v4-container .btn-secondary:hover {
+  background: #242424 !important;
+  border-color: #404040 !important;
+}
+
+[data-theme="light"] .db-v4-container .btn-secondary {
+  color: #171717 !important;
+  border-color: #d4d4d8 !important;
+}
+
+[data-theme="light"] .db-v4-container .btn-secondary:hover {
+  background: #f4f4f5 !important;
+  border-color: #a1a1aa !important;
+}
+
+/* ── Interactive Overview Video / Architecture Modal Backdrop ─────────────── */
+.db-overview-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: dbFadeIn 0.2s ease-out;
+}
+
+.db-overview-modal-card {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 620px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  animation: dbModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .db-overview-modal-card {
+  background: #ffffff;
+  border-color: #e5e5e5;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Reduced Motion Support ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .db-v4-card,
+  .db-kpi-card,
+  .db-activity-item,
+  .db-orbit-outer,
+  .db-orbit-inner,
+  .db-orbit-traveler,
+  .db-sparkline-path {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -2,71 +2,112 @@ import { useState, useEffect } from "react";
 import PageHeader from "../../components/ui/PageHeader";
 import AuditTimeline from "../../components/ui/AuditTimeline";
 import { auditService, AuditEventResponse } from "../../services/audit";
-import { dashboardService } from "../../services/dashboard";
+import { supplyChainService, SupplyChainEventResponse } from "../../services/supply-chain";
+import "./SystemActivityPage.css";
 
 export default function AuditPage() {
   const [filter, setFilter] = useState("ALL");
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
-  
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const res = await auditService.listAuditEvents({ page_size: 100 });
-        setTotal(res.total);
-        // Map backend response to UI format
-        const mapped = res.items.map((e: AuditEventResponse) => ({
-          id: e.id,
-          timestamp: e.timestamp,
-          actor: e.actor_did,
-          role: e.actor_role,
-          action: e.action,
-          resource: `${e.resource_type}: ${e.resource_id}`,
-          result: e.result,
-          details: e.details,
-          txHash: e.blockchain_tx_hash
-        }));
-        setEvents(mapped);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Fetch both audit events and supply chain events to provide comprehensive system activity
+      const [auditRes, scRes] = await Promise.allSettled([
+        auditService.listAuditEvents({ page_size: 100 }),
+        supplyChainService.listEvents({ page_size: 50 }),
+      ]);
+
+      const items: any[] = [];
+
+      if (auditRes.status === "fulfilled" && auditRes.value?.items) {
+        setTotal(auditRes.value.total || auditRes.value.items.length);
+        auditRes.value.items.forEach((e: AuditEventResponse) => {
+          items.push({
+            id: e.id,
+            timestamp: e.timestamp,
+            actor: e.actor_did,
+            role: e.actor_role,
+            action: e.action,
+            resource: `${e.resource_type}: ${e.resource_id}`,
+            result: e.result,
+            details: e.details,
+            txHash: e.blockchain_tx_hash,
+            category: "AUDIT",
+          });
+        });
       }
-    };
+
+      if (scRes.status === "fulfilled" && scRes.value?.items) {
+        scRes.value.items.forEach((e: SupplyChainEventResponse) => {
+          items.push({
+            id: `sc-${e.id}`,
+            timestamp: e.created_at,
+            actor: e.actor || "SUPPLY_CHAIN",
+            role: "SYSTEM",
+            action: e.event_type || "SUPPLY_CHAIN_UPDATE",
+            resource: `${e.entity_type}: ${e.entity_id}`,
+            result: "SUCCESS",
+            details: e.description,
+            txHash: null,
+            category: "SUPPLY_CHAIN",
+          });
+        });
+      }
+
+      // Sort chronological descending
+      items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setEvents(items);
+    } catch (err: any) {
+      console.error("System Activity load error:", err);
+      setError(err.message || "Failed to load system activity records");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEvents();
   }, []);
 
-  const filtered = filter === "ALL" ? events : events.filter((e) => e.result === filter);
+  const filtered = filter === "ALL"
+    ? events
+    : filter === "SUPPLY_CHAIN"
+    ? events.filter((e) => e.category === "SUPPLY_CHAIN")
+    : filter === "AUDIT"
+    ? events.filter((e) => e.category === "AUDIT")
+    : events.filter((e) => e.result === filter);
 
   return (
-    <div className="page-fade">
+    <div className="system-activity-page-root">
       <PageHeader
-        title="Audit Logs"
-        subtitle="Chronological record of all platform actions for investigation and compliance"
-        breadcrumbs={[{ label: "Dashboard", to: "/app/dashboard" }, { label: "Audit Logs" }]}
+        title="System Activity"
+        subtitle="Chronological record of platform actions, security events, and supply-chain updates"
+        breadcrumbs={[{ label: "Dashboard", to: "/app/dashboard" }, { label: "System Activity" }]}
+        actions={
+          <button className="btn-ghost" onClick={fetchEvents}>
+            ↻ Refresh
+          </button>
+        }
       />
 
-      <div
-        style={{
-          padding: "12px 16px",
-          background: "rgba(96,165,250,0.06)",
-          border: "1px solid rgba(96,165,250,0.15)",
-          borderRadius: "5px",
-          marginBottom: 20,
-          fontSize: "0.8125rem",
-          color: "#64748b",
-          lineHeight: 1.5,
-        }}
-      >
-        <strong style={{ color: "#60a5fa" }}>ⓘ Tamper-evident audit log: </strong>
-        All audit events are cryptographically linked to blockchain records. Any attempt to modify or delete historical events is detectable.
+      <div className="sysact-notice-box">
+        <span style={{ fontSize: "1rem" }}>ⓘ</span>
+        <div>
+          <span className="sysact-notice-strong">Tamper-evident system activity log: </span>
+          All system activity events are cryptographically linked to blockchain records. Any attempt to modify or delete historical events is detectable.
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+      <div className="sysact-filter-tabs">
         {[
-          { key: "ALL", label: "All Events" },
+          { key: "ALL", label: "All Activity" },
+          { key: "SUPPLY_CHAIN", label: "Supply Chain" },
+          { key: "AUDIT", label: "Audit Records" },
           { key: "SUCCESS", label: "Success" },
           { key: "WARNING", label: "Warning" },
           { key: "FAILED", label: "Failed" },
@@ -74,17 +115,7 @@ export default function AuditPage() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            style={{
-              padding: "6px 14px",
-              background: filter === f.key ? "rgba(37,99,235,0.2)" : "transparent",
-              border: `1px solid ${filter === f.key ? "#2563eb" : "#1e3a60"}`,
-              borderRadius: "4px",
-              color: filter === f.key ? "#e2e8f0" : "#64748b",
-              fontSize: "0.8125rem",
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}
+            className={`sysact-filter-tab ${filter === f.key ? "active" : ""}`}
           >
             {f.label}
           </button>
@@ -92,18 +123,26 @@ export default function AuditPage() {
       </div>
 
       {loading ? (
-        <div className="panel" style={{ padding: 40, textAlign: "center", color: "#475569" }}>Loading audit events...</div>
+        <div className="panel" style={{ padding: 40, textAlign: "center", color: "#737373", background: "#181818", border: "1px solid #2a2a2a", borderRadius: "12px" }}>
+          Loading system activity events...
+        </div>
+      ) : error ? (
+        <div className="panel" style={{ padding: 40, textAlign: "center", background: "#181818", border: "1px solid #2a2a2a", borderRadius: "12px" }}>
+          <div style={{ color: "#ef4444", marginBottom: 12 }}>{error}</div>
+          <button className="btn-secondary" onClick={fetchEvents}>Retry</button>
+        </div>
       ) : filtered.length === 0 ? (
-        <div className="panel" style={{ padding: 40, textAlign: "center" }}>
-          <div style={{ color: "#475569" }}>No audit events match this filter</div>
+        <div className="panel" style={{ padding: 40, textAlign: "center", background: "#181818", border: "1px solid #2a2a2a", borderRadius: "12px" }}>
+          <div style={{ color: "#737373" }}>No system activity events match this filter</div>
         </div>
       ) : (
         <AuditTimeline events={filtered} />
       )}
 
-      <div style={{ marginTop: 20, fontSize: "0.75rem", color: "#475569" }}>
-        Showing {filtered.length} of {total} events (Powered by Backend API)
+      <div style={{ marginTop: 20, fontSize: "0.75rem", color: "#737373" }}>
+        Showing {filtered.length} of {events.length || total} system activity records (Powered by Backend API)
       </div>
     </div>
   );
 }
+

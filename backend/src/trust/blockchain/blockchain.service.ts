@@ -38,16 +38,7 @@ export class BlockchainService {
       txs = dbTxs;
       total = dbTotal;
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const fallback = (await import('../../core/common/fallback-data')).FALLBACK_TRANSACTIONS;
-        return {
-          items: fallback,
-          total: fallback.length,
-          page,
-          page_size: pageSize,
-          has_next: false,
-        };
-      }
+      this.logger.error(`Error listing transactions: ${e.message}`);
       throw e;
     }
 
@@ -79,7 +70,6 @@ export class BlockchainService {
       network: info.network,
       chain_id: info.chainId,
       latest_block: blockNumber,
-      rpc_url: info.rpcUrl,
     };
   }
 
@@ -155,42 +145,7 @@ export class BlockchainService {
           : '[PROPOSED PILOT DESIGN] Besu/QBFT node not reachable — proof sourced from DB records only',
       };
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo') {
-        const { FALLBACK_ASSETS, FALLBACK_CERTIFICATIONS, FALLBACK_EVIDENCE } = await import('../../core/common/fallback-data');
-        const asset = FALLBACK_ASSETS.find((a) => a.id === assetId);
-        if (!asset) return { asset_id: assetId, found: false, blockchain_connected: false, proof: null };
-
-        const cert = FALLBACK_CERTIFICATIONS.find((c) => c.assetId === assetId);
-        const evidence = FALLBACK_EVIDENCE.filter((e) => e.assetId === assetId && e.blockchainTx);
-
-        return {
-          asset_id: assetId,
-          found: true,
-          lifecycle_state: asset.lifecycle,
-          blockchain_connected: false,
-          network: 'BEL-TRUST-CHAIN (Synthetic Demo)',
-          proof: {
-            certification: cert ? {
-              cert_id: cert.id,
-              tx_hash: cert.txHash,
-              block_number: cert.blockNumber,
-              confirmations: cert.confirmations,
-              status: cert.status,
-              on_chain_verified: null,
-            } : null,
-            evidence_anchors: evidence.map((e) => ({
-              evidence_id: e.id,
-              filename: e.filename,
-              hash: e.hash,
-              blockchain_tx: e.blockchainTx,
-              integrity_verified: e.integrityVerified,
-            })),
-            anchored_evidence_count: evidence.length,
-            total_evidence_count: FALLBACK_EVIDENCE.filter((e) => e.assetId === assetId).length,
-          },
-          note: '[PROPOSED PILOT DESIGN] Database offline — proof sourced from synthetic fallback data only',
-        };
-      }
+      this.logger.error(`Error getting asset proof: ${e.message}`);
       throw e;
     }
   }

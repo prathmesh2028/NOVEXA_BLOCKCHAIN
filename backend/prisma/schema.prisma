@@ -29,9 +29,9 @@ enum IdentityStatus {
 }
 
 enum AppRole {
-  ADMIN
-  NFT_CREATOR
-  TECHNICIAN
+  SYSTEM_ADMIN
+  PROCUREMENT_SUPPLY_CHAIN_OFFICER
+  QUALITY_INSPECTOR
   AUDITOR
 }
 
@@ -198,12 +198,16 @@ model Asset {
   registeredByName   String?            @map("registered_by_name")
   classification     DataClassification @default(INTERNAL)
   version            Int                @default(1)
+  inspectionDueDate  DateTime?          @map("inspection_due_date")
+  shelfLifeExpiry    DateTime?          @map("shelf_life_expiry")
+  warrantyExpiry     DateTime?          @map("warranty_expiry")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
   batch              Batch              @relation(fields: [batchRefId], references: [id])
   evidence           Evidence[]
   inspections        Inspection[]
+  approvals          Approval[]
   lifecycleEvents    LifecycleEvent[]
   certifications     Certification[]
   technicalRecords   TechnicalRecord[]
@@ -542,3 +546,204 @@ model WalletChallenge {
 
   @@map("wallet_challenges")
 }
+
+// ═══════════════════════════════════════════════════════
+// APPROVAL TRACKING DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStage {
+  QA_REVIEW
+  QC_SIGN_OFF
+  COMMAND_AUTHORIZATION
+  CERTIFICATION_CLEARANCE
+}
+
+model Approval {
+  id               String         @id @default(uuid())
+  approvalId       String         @unique @map("approval_id") // Display ID e.g. "APR-2026-001"
+  assetId          String         @map("asset_id")
+  entityType       String         @map("entity_type") // ASSET, INSPECTION, CERTIFICATION, LIFECYCLE
+  entityId         String         @map("entity_id")
+  stage            ApprovalStage  @default(QA_REVIEW)
+  status           ApprovalStatus @default(PENDING)
+  requestedById    String         @map("requested_by_id")
+  requestedByName  String?        @map("requested_by_name")
+  requestedByRole  String?        @map("requested_by_role")
+  approverId       String?        @map("approver_id")
+  approverName     String?        @map("approver_name")
+  approverRole     AppRole?       @map("approver_role")
+  comments         String?
+  digitalSignature String?        @map("digital_signature")
+  decidedAt        DateTime?      @map("decided_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@index([status, stage])
+  @@index([assetId])
+  @@map("approvals")
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTIFICATION & ALERT DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum NotificationType {
+  EXPIRY_WARNING
+  APPROVAL_REQUIRED
+  APPROVAL_DECIDED
+  INSPECTION_FAILED
+  CERTIFICATION_MINTED
+  SYSTEM_ALERT
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Notification {
+  id            String               @id @default(uuid())
+  recipientId   String?              @map("recipient_id")
+  recipientRole AppRole?             @map("recipient_role")
+  title         String
+  message       String
+  type          NotificationType     @default(SYSTEM_ALERT)
+  severity      NotificationSeverity @default(INFO)
+  isRead        Boolean              @default(false) @map("is_read")
+  link          String?
+  metadata      Json?
+  createdAt     DateTime             @default(now()) @map("created_at")
+  readAt        DateTime?            @map("read_at")
+
+  @@index([recipientId, isRead])
+  @@index([recipientRole, isRead])
+  @@map("notifications")
+}
+
+// ═══════════════════════════════════════════════════════
+// SUPPLY CHAIN DOMAIN
+// ═══════════════════════════════════════════════════════
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ShipmentStatus {
+  PREPARING
+  DISPATCHED
+  IN_TRANSIT
+  RECEIVED
+  REJECTED
+}
+
+enum CustodyStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Supplier {
+  id             String         @id @default(uuid())
+  supplierId     String         @unique @map("supplier_id")
+  name           String
+  contactInfo    Json?          @map("contact_info")
+  status         SupplierStatus @default(ACTIVE)
+  registrationAt DateTime       @default(now()) @map("registration_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  facilities     Facility[]
+  lots           Lot[]
+
+  @@map("suppliers")
+}
+
+model Facility {
+  id             String   @id @default(uuid())
+  facilityId     String   @unique @map("facility_id")
+  supplierId     String   @map("supplier_id")
+  name           String
+  location       String?
+  type           String   // e.g. "Manufacturing", "Testing", "Warehouse"
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+  dispatchedShipments Shipment[] @relation("DispatchFacility")
+  receivedShipments   Shipment[] @relation("ReceiveFacility")
+
+  @@map("facilities")
+}
+
+model Lot {
+  id             String   @id @default(uuid())
+  lotId          String   @unique @map("lot_id")
+  supplierId     String   @map("supplier_id")
+  materialType   String   @map("material_type")
+  quantity       Int
+  manufacturedAt DateTime? @map("manufactured_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+
+  @@map("lots")
+}
+
+model Shipment {
+  id               String         @id @default(uuid())
+  shipmentId       String         @unique @map("shipment_id")
+  dispatchFacilityId String?      @map("dispatch_facility_id")
+  receiveFacilityId  String?      @map("receive_facility_id")
+  status           ShipmentStatus @default(PREPARING)
+  dispatchedAt     DateTime?      @map("dispatched_at")
+  receivedAt       DateTime?      @map("received_at")
+  trackingNumber   String?        @map("tracking_number")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  dispatchFacility Facility?      @relation("DispatchFacility", fields: [dispatchFacilityId], references: [id])
+  receiveFacility  Facility?      @relation("ReceiveFacility", fields: [receiveFacilityId], references: [id])
+  custodyTransfers CustodyTransfer[]
+
+  @@map("shipments")
+}
+
+model CustodyTransfer {
+  id              String        @id @default(uuid())
+  shipmentId      String        @map("shipment_id")
+  fromActorId     String?       @map("from_actor_id") // Sender user ID
+  toActorId       String?       @map("to_actor_id")   // Receiver user ID
+  status          CustodyStatus @default(PENDING)
+  transferredAt   DateTime?     @map("transferred_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  shipment        Shipment      @relation(fields: [shipmentId], references: [id])
+
+  @@map("custody_transfers")
+}
+
+model SupplyChainEvent {
+  id              String   @id @default(uuid())
+  entityType      String   @map("entity_type") // SUPPLIER, FACILITY, LOT, SHIPMENT
+  entityId        String   @map("entity_id")
+  eventType       String   @map("event_type")
+  payload         Json?
+  actorId         String?  @map("actor_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@map("supply_chain_events")
+}
+
