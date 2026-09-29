@@ -38,7 +38,7 @@ export class ApiError extends Error {
 
 async function executeFetch(baseUrl: string, endpoint: string, options: RequestInit = {}): Promise<Response> {
   const url = `${baseUrl}${endpoint}`;
-  const token = (typeof window !== 'undefined' ? localStorage.getItem('kavach_token') : null) || 'demo-token';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('kavach_token') : null;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

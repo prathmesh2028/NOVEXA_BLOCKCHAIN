@@ -8,6 +8,8 @@ import { evidenceService } from "../../services/evidence";
 import { certificationService } from "../../services/certifications";
 import { blockchainService } from "../../services/blockchain";
 
+type CheckResult = 'VALID' | 'INVALID' | 'MISMATCH' | 'MISSING' | 'UNVERIFIED' | 'NOT_APPLICABLE' | 'BLOCKCHAIN_UNAVAILABLE';
+
 export default function VerificationCenterPage() {
   const [searchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("id") || "");
@@ -20,8 +22,19 @@ export default function VerificationCenterPage() {
     txs: any[];
   }>({ asset: null, ran: false, evidence: [], cert: null, txs: [] });
 
-  const runVerification = useCallback(async (searchQuery?: string) => {
-    const q = (searchQuery || query).trim().toUpperCase();
+  const runVerification = useCallback(async (searchQuery?: string | Event) => {
+    // Explicitly handle both string and potential event object
+    let rawValue: string;
+    if (typeof searchQuery === 'string') {
+      rawValue = searchQuery;
+    } else if (searchQuery && 'target' in searchQuery) {
+      // This is an event, extract the value
+      rawValue = (searchQuery.target as HTMLInputElement).value;
+    } else {
+      rawValue = query;
+    }
+
+    const q = String(rawValue || "").trim().toUpperCase();
     if (!q) return;
 
     let foundAsset: any = null;
@@ -102,7 +115,12 @@ export default function VerificationCenterPage() {
   if (result.asset) {
     if (result.backendVerif && result.backendVerif.checks?.length > 0) {
       const checkMap = new Map<string, any>(result.backendVerif.checks.map((c: any) => [c.domain, c]));
-      const statusToUi = (s: string) => (s === 'VALID' ? 'VERIFIED' : s === 'MISMATCH' || s === 'INVALID' ? 'FAILED' : 'PENDING');
+      const statusToUi = (s: string) => {
+        if (s === 'VALID') return 'VERIFIED';
+        if (s === 'MISMATCH' || s === 'INVALID') return 'FAILED';
+        if (s === 'BLOCKCHAIN_UNAVAILABLE') return 'UNAVAILABLE';
+        return 'PENDING';
+      };
 
       verItems = [
         {
@@ -127,7 +145,7 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Blockchain Proof",
-          status: statusToUi(checkMap.get('blockchain')?.status || (result.txs.some((t) => t.status === 'CONFIRMED') ? 'VALID' : 'UNVERIFIED')),
+          status: statusToUi(checkMap.get('blockchain')?.status || 'BLOCKCHAIN_UNAVAILABLE'),
           detail: checkMap.get('blockchain')?.reason || (result.txs.length > 0 ? `${result.txs.filter((t) => t.status === 'CONFIRMED').length} confirmed transaction(s)` : "No on-chain records"),
         },
         {
@@ -165,8 +183,8 @@ export default function VerificationCenterPage() {
         },
         {
           label: "Blockchain Proof",
-          status: (result.txs.some((t) => t.status === "CONFIRMED") ? "VERIFIED" : result.txs.length > 0 ? "PENDING" : "UNAVAILABLE") as any,
-          detail: result.txs.length > 0 ? `${result.txs.filter((t) => t.status === "CONFIRMED").length} confirmed transaction(s)` : "No on-chain records",
+          status: "UNAVAILABLE" as const,
+          detail: "Blockchain RPC offline — on-chain verification not available",
         },
         {
           label: "Audit Trail Integrity",
@@ -210,7 +228,7 @@ export default function VerificationCenterPage() {
               style={{ fontSize: "0.9375rem", padding: "10px 14px" }}
             />
           </div>
-          <button className="btn-primary" onClick={runVerification} style={{ padding: "10px 20px", fontSize: "0.9375rem" }}>
+          <button className="btn-primary" onClick={() => runVerification()} style={{ padding: "10px 20px", fontSize: "0.9375rem" }}>
             Verify →
           </button>
         </div>
@@ -221,7 +239,7 @@ export default function VerificationCenterPage() {
           {["EF-2026-00421", "EF-2026-00423", "EF-BATCH-2026-017"].map((ex) => (
             <button
               key={ex}
-              onClick={() => { setQuery(ex); }}
+              onClick={() => { setQuery(ex); runVerification(ex); }}
               style={{
                 background: "none",
                 border: "1px solid #1e3a60",

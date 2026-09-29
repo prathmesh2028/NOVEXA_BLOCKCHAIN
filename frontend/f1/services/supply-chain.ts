@@ -39,7 +39,7 @@ export interface FacilityResponse {
 export interface LotResponse {
   id: string;
   lot_id: string;
-  facility_id: string;
+  supplier_id: string;
   batch_id: string | null;
   description: string | null;
   quantity: number | null;
@@ -49,26 +49,22 @@ export interface LotResponse {
   status: 'CREATED' | 'IN_TRANSIT' | 'RECEIVED' | 'CONSUMED';
   created_at: string;
   updated_at: string;
-  facility?: FacilityResponse;
+  supplier?: SupplierResponse;
 }
 
 export interface ShipmentResponse {
   id: string;
   shipment_id: string;
-  lot_id: string;
-  origin_facility_id: string;
-  destination_facility_id: string;
-  carrier: string | null;
+  dispatch_facility_id: string;
+  receive_facility_id: string;
   tracking_number: string | null;
   dispatched_at: string | null;
-  estimated_arrival: string | null;
   received_at: string | null;
-  status: 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
+  status: 'PREPARING' | 'DISPATCHED' | 'IN_TRANSIT' | 'RECEIVED' | 'REJECTED';
   created_at: string;
   updated_at: string;
-  lot?: LotResponse;
-  origin_facility?: FacilityResponse;
-  destination_facility?: FacilityResponse;
+  dispatchFacility?: FacilityResponse;
+  receiveFacility?: FacilityResponse;
 }
 
 export interface CustodyTransferResponse {
@@ -205,7 +201,7 @@ export const supplyChainService = {
 
   createLot: async (data: {
     lotId: string;
-    facilityId: string;
+    supplierId: string;
     batchId?: string;
     description?: string;
     quantity?: number;
@@ -241,26 +237,19 @@ export const supplyChainService = {
 
   createShipment: async (data: {
     shipmentId: string;
-    lotId: string;
-    originFacilityId: string;
-    destinationFacilityId: string;
-    carrier?: string;
+    dispatchFacilityId: string;
+    receiveFacilityId: string;
     trackingNumber?: string;
-    estimatedArrival?: string;
   }) => {
     return api.post<ShipmentResponse>('/supply-chain/shipments', data);
   },
 
-  dispatchShipment: async (id: string, data: { carrier?: string; trackingNumber?: string }) => {
-    return api.post<ShipmentResponse>(`/supply-chain/shipments/${id}/dispatch`, data);
+  dispatchShipment: async (id: string) => {
+    return api.patch<ShipmentResponse>(`/supply-chain/shipments/${id}/dispatch`, {});
   },
 
-  receiveShipment: async (id: string, data: { receivedBy?: string; notes?: string }) => {
-    return api.post<ShipmentResponse>(`/supply-chain/shipments/${id}/receive`, data);
-  },
-
-  cancelShipment: async (id: string, reason: string) => {
-    return api.post<ShipmentResponse>(`/supply-chain/shipments/${id}/cancel`, { reason });
+  receiveShipment: async (id: string) => {
+    return api.patch<ShipmentResponse>(`/supply-chain/shipments/${id}/receive`, {});
   },
 
   // ── Custody Transfers ───────────────────────────────────────────────────
@@ -279,7 +268,7 @@ export const supplyChainService = {
 
   initiateCustodyTransfer: async (data: {
     shipmentId: string;
-    fromCustodian: string;
+    fromCustodian?: string;
     toCustodian: string;
     transferReason?: string;
   }) => {
@@ -287,11 +276,11 @@ export const supplyChainService = {
   },
 
   acceptCustodyTransfer: async (id: string) => {
-    return api.post<CustodyTransferResponse>(`/supply-chain/custody-transfers/${id}/accept`, {});
+    return api.patch<CustodyTransferResponse>(`/supply-chain/custody-transfers/${id}/accept`, {});
   },
 
   rejectCustodyTransfer: async (id: string, reason: string) => {
-    return api.post<CustodyTransferResponse>(`/supply-chain/custody-transfers/${id}/reject`, { reason });
+    return api.patch<CustodyTransferResponse>(`/supply-chain/custody-transfers/${id}/reject`, { reason });
   },
 
   // ── Events ──────────────────────────────────────────────────────────────

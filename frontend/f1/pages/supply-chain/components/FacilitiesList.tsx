@@ -9,19 +9,19 @@ const overlay: React.CSSProperties = {
   zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
 };
 const modal: React.CSSProperties = {
-  background: "#08131f", border: "1px solid #1e3a60", borderRadius: 12,
+  background: "var(--card, #171717)", border: "1px solid var(--border, #2a2a2a)", borderRadius: 12,
   width: "100%", maxWidth: 520, maxHeight: "88vh",
   display: "flex", flexDirection: "column", overflow: "hidden",
   boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)",
 };
 const inp: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", background: "#040b14",
-  border: "1px solid #1e3a60", borderRadius: 6,
-  color: "#f8fafc", fontSize: "0.8125rem", outline: "none", boxSizing: "border-box",
+  width: "100%", padding: "9px 12px", background: "var(--input-bg, #171717)",
+  border: "1px solid var(--input-border, #303030)", borderRadius: 6,
+  color: "var(--foreground, #f5f5f5)", fontSize: "0.8125rem", outline: "none", boxSizing: "border-box",
 };
 const lbl: React.CSSProperties = {
   display: "block", fontSize: "0.72rem", fontWeight: 700,
-  color: "#94a3b8", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em",
+  color: "var(--muted, #a3a3a3)", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.07em",
 };
 
 export default function FacilitiesList() {
@@ -53,7 +53,7 @@ export default function FacilitiesList() {
       const d = await supplyChainService.listSuppliers();
       const list: SupplierResponse[] = (d as any).items || (d as any) || [];
       setSuppliers(list);
-      if (list.length) setSupplierId(list[0].id);
+      if (list.length) setSupplierId(list[0].id); // Use database ID
     } catch (e) { console.error(e); }
   };
 
@@ -92,12 +92,23 @@ export default function FacilitiesList() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-        <input type="text" className="internal-search-input" placeholder="Filter by name, ID, location…"
-          value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 360 }} />
-        <button className="btn-primary" onClick={openModal}>+ Add Facility</button>
+        <div className="sc-search-wrapper">
+          <span className="sc-search-icon">🔍</span>
+          <input
+            type="text"
+            className="sc-search-input"
+            placeholder="Filter by name, ID, location…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button className="sc-action-btn" onClick={openModal}>
+          <span style={{ fontSize: "1rem", lineHeight: 1 }}>+</span>
+          <span>Add Facility</span>
+        </button>
       </div>
 
-      <div className="internal-table-container">
+      <div className="sc-table-wrapper internal-table-container">
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
@@ -111,12 +122,21 @@ export default function FacilitiesList() {
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading facilities…</td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No facilities found. Click <strong>+ Add Facility</strong> to register one.</td></tr>
-            ) : filtered.map(f => (
-              <tr key={f.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+            ) : filtered.map((f, idx) => (
+              <tr
+                key={f.id}
+                className="interactive-row sc-table-row"
+                style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
+              >
                 <td style={{ padding: "12px 14px" }}><span style={{ color: "#06b6d4", fontWeight: 600 }}>{f.facility_id || (f as any).facilityId || f.id}</span></td>
                 <td style={{ padding: "12px 14px", fontWeight: 600 }}>{f.name}</td>
                 <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{f.supplier?.name || "—"}</td>
-                <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{f.location || "Secure Site"}</td>
+                <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>
+                  <span className="sc-facility-radar-tag">
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#06b6d4" }} />
+                    {f.location || "Secure Site"}
+                  </span>
+                </td>
                 <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{f.type || "Manufacturing"}</td>
                 <td style={{ padding: "12px 14px" }}><StatusBadge status={(f as any).status || "OPERATIONAL"} size="sm" /></td>
               </tr>
@@ -126,10 +146,10 @@ export default function FacilitiesList() {
       </div>
 
       {showModal && createPortal(
-        <div style={overlay} onClick={() => !isSubmitting && setShowModal(false)}>
-          <div style={modal} onClick={e => e.stopPropagation()}>
+        <div className="sc-modal-overlay" onClick={() => !isSubmitting && setShowModal(false)}>
+          <div className="sc-modal-box" onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid #1e3a60", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0a1727" }}>
+            <div className="sc-modal-header" style={{ padding: "18px 24px", borderBottom: "1px solid #1e3a60", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0a1727" }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#f8fafc" }}>Register New Facility</h3>
                 <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#64748b" }}>Associate a production or testing facility with a registered supplier.</p>
@@ -156,7 +176,7 @@ export default function FacilitiesList() {
                   <label style={lbl}>Managing Supplier <span style={{ color: "#ef4444" }}>*</span></label>
                   <select style={{ ...inp, cursor: "pointer" }} value={supplierId} onChange={e => setSupplierId(e.target.value)} required>
                     <option value="">— Select supplier —</option>
-                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.supplier_id || (s as any).supplierId || s.id})</option>)}
+                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.supplier_id || (s as any).supplierId})</option>)}
                   </select>
                   {suppliers.length === 0 && <p style={{ margin: "4px 0 0", fontSize: "0.73rem", color: "#f59e0b" }}>⚠ Add a supplier first.</p>}
                 </div>
@@ -177,7 +197,7 @@ export default function FacilitiesList() {
               </form>
             </div>
             {/* Footer */}
-            <div style={{ padding: "14px 24px", borderTop: "1px solid #1e3a60", background: "#0a1727", flexShrink: 0, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <div className="sc-modal-footer" style={{ padding: "14px 24px", borderTop: "1px solid #1e3a60", background: "#0a1727", flexShrink: 0, display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting}
                 style={{ padding: "8px 18px", borderRadius: 6, border: "1px solid #1e3a60", background: "transparent", color: "#94a3b8", cursor: "pointer", fontSize: "0.875rem" }}>Cancel</button>
               <button type="submit" form="add-facility-form" className="btn-primary" disabled={isSubmitting || suppliers.length === 0}

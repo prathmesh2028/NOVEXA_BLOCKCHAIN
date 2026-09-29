@@ -99,83 +99,83 @@ export class CertificationsService {
     certificateImage?: string;
   }) {
     try {
-      return await this.prisma.$transaction(async (tx) => {
-        const asset = await tx.asset.findFirst({
-          where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
-        });
-        if (!asset) throw new BadRequestException(`Asset ${data.assetId} not found`);
-
-        // Precondition: eligible lifecycle state
-        if (asset.lifecycleState !== 'ACCEPTED_FOR_ASSEMBLY') {
-          throw new BadRequestException(
-            `Asset must be in ACCEPTED_FOR_ASSEMBLY state. Current: ${asset.lifecycleState}`,
-          );
-        }
-
-        // Precondition: not already certified
-        if (asset.certStatus === 'CONFIRMED' || asset.certStatus === 'PENDING') {
-          throw new ConflictException('Asset already has a certification');
-        }
-
-        // Generate display IDs
-        const certId = `CERT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
-        const mintRequestId = uuidv4();
-
-        // Create certification
-        const cert = await tx.certification.create({
-          data: {
-            certId,
-            assetId: asset.id,
-            batchRefId: asset.batchRefId,
-            status: 'PENDING',
-            issuedById: data.issuedById,
-            issuedByName: data.issuedByName,
-            issuedByDid: data.issuedByDid,
-            network: 'BEL-TRUST-CHAIN',
-            mintRequestId,
-          },
-          include: { batch: true },
-        });
-
-        // Update asset cert status
-        await tx.asset.update({
-          where: { id: asset.id },
-          data: { certStatus: 'PENDING', certId: cert.certId },
-        });
-
-        // Create outbox event for async mint
-        await tx.outboxEvent.create({
-          data: {
-            eventType: 'PASSPORT_MINT_REQUESTED',
-            payload: {
-              certificationId: cert.id,
-              certId: cert.certId,
-              assetId: asset.assetId,
-              batchId: asset.batchRefId,
-            },
-            idempotencyKey: `mint:${cert.id}`,
-          },
-        });
-
-        // Audit via canonical AuditService
-        await this.auditService.recordEvent(
-          {
-            eventType: 'CERTIFICATION_CREATED',
-            actorId: data.issuedById,
-            actorDid: data.issuedByDid,
-            actorRole: data.issuedByRole || 'UNKNOWN',
-            action: 'Certification minting initiated',
-            resourceType: 'Certification',
-            resourceId: cert.id,
-            result: 'SUCCESS',
-            details: `Certification ${certId} created for asset ${asset.assetId}`,
-          },
-          tx,
-        );
-
-        this.logger.log(`Certification ${certId} created for asset ${asset.assetId}`);
-        return this.mapCert(cert);
+      // NOTE: Sequential individual writes — PgBouncer incompatible with Prisma interactive transactions.
+      const asset = await this.prisma.asset.findFirst({
+        where: { OR: [{ id: data.assetId }, { assetId: data.assetId }] },
       });
+      if (!asset) throw new BadRequestException(`Asset ${data.assetId} not found`);
+
+      // Precondition: eligible lifecycle state
+      if (asset.lifecycleState !== 'ACCEPTED_FOR_ASSEMBLY') {
+        throw new BadRequestException(
+          `Asset must be in ACCEPTED_FOR_ASSEMBLY state. Current: ${asset.lifecycleState}`,
+        );
+      }
+
+      // Precondition: not already certified
+      if (asset.certStatus === 'CONFIRMED' || asset.certStatus === 'PENDING') {
+        throw new ConflictException('Asset already has a certification');
+      }
+
+      // Generate display IDs
+      const certId = `CERT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
+      const mintRequestId = uuidv4();
+
+      // Create certification
+      const cert = await this.prisma.certification.create({
+        data: {
+          certId,
+          assetId: asset.id,
+          batchRefId: asset.batchRefId,
+          status: 'PENDING',
+          issuedById: data.issuedById,
+          issuedByName: data.issuedByName,
+          issuedByDid: data.issuedByDid,
+          network: 'BEL-TRUST-CHAIN',
+          mintRequestId,
+        },
+        include: { batch: true },
+      });
+
+      // Update asset cert status
+      await this.prisma.asset.update({
+        where: { id: asset.id },
+        data: { certStatus: 'PENDING', certId: cert.certId },
+      });
+
+      // Create outbox event for async mint
+      await this.prisma.outboxEvent.create({
+        data: {
+          eventType: 'PASSPORT_MINT_REQUESTED',
+          payload: {
+            certificationId: cert.id,
+            certId: cert.certId,
+            assetId: asset.assetId,
+            batchId: asset.batchRefId,
+          },
+          idempotencyKey: `mint:${cert.id}`,
+        },
+      });
+
+      // Best-effort audit
+      try {
+        await this.auditService.recordEvent({
+          eventType: 'CERTIFICATION_CREATED',
+          actorId: data.issuedById,
+          actorDid: data.issuedByDid,
+          actorRole: data.issuedByRole || 'UNKNOWN',
+          action: 'Certification minting initiated',
+          resourceType: 'Certification',
+          resourceId: cert.id,
+          result: 'SUCCESS',
+          details: `Certification ${certId} created for asset ${asset.assetId}`,
+        });
+      } catch (auditErr: any) {
+        this.logger.warn(`Audit write failed (non-fatal): ${auditErr.message}`);
+      }
+
+      this.logger.log(`Certification ${certId} created for asset ${asset.assetId}`);
+      return this.mapCert(cert);
     } catch (e: any) {
       if (e instanceof BadRequestException || e instanceof ConflictException) throw e;
       throw e;

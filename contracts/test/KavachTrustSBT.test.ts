@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import "@nomicfoundation/hardhat-toolbox";
 import { KavachTrustSBT } from "../typechain-types";
 
 describe("KavachTrustSBT", function () {
@@ -34,7 +35,7 @@ describe("KavachTrustSBT", function () {
 
   it("Should prevent transferring a minted certification (Soulbound)", async function () {
     await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash");
-    
+
     await expect(
       sbt.connect(user).transferFrom(user.address, otherAccount.address, 1)
     ).to.be.revertedWith("KavachTrust: Certifications are non-transferable Soulbound Tokens");
@@ -76,7 +77,7 @@ describe("KavachTrustSBT", function () {
       await expect(
         sbt.connect(user).revokeCertification(1)
       ).to.be.revertedWithCustomError(sbt, "OwnableUnauthorizedAccount")
-       .withArgs(user.address);
+        .withArgs(user.address);
     });
 
     it("Should revert if revoking a non-existent certification", async function () {

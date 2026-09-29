@@ -14,10 +14,10 @@ export default function InspectionsPage() {
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [recordError, setRecordError] = useState<string | null>(null);
   const [recordForm, setRecordForm] = useState({
-    asset_id: "",
+    assetId: "",
     result: "PASS",
     notes: "",
-    evidence_ids: [] as string[],
+    evidenceIds: [] as string[],
   });
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function InspectionsPage() {
     try {
       await api.post("/inspections/record", recordForm);
       setShowRecordModal(false);
-      setRecordForm({ asset_id: "", result: "PASS", notes: "", evidence_ids: [] });
+      setRecordForm({ assetId: "", result: "PASS", notes: "", evidenceIds: [] });
       fetchInspections();
     } catch (err: any) {
       setRecordError(err.message || "Failed to record inspection");
@@ -53,8 +53,8 @@ export default function InspectionsPage() {
   const filteredInspections = inspections.filter((ins) => {
     const matchesSearch =
       !searchTerm ||
-      (ins.asset_id && ins.asset_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (ins.inspector_did && ins.inspector_did.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ins.assetId && ins.assetId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ins.inspectorDid && ins.inspectorDid.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (ins.notes && ins.notes.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesResult = resultFilter === "ALL" || ins.result === resultFilter;
     return matchesSearch && matchesResult;
@@ -204,12 +204,12 @@ export default function InspectionsPage() {
                 {filteredInspections.map((inspection: any) => (
                   <tr key={inspection.id} className="interactive-row" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                     <td style={{ padding: "14px 16px" }}>
-                      <Link to={`/app/assets/${inspection.asset_id}`} className="meta-id" style={{ color: "#3b82f6", fontWeight: 700, textDecoration: "none" }}>
-                        {inspection.asset_id}
+                      <Link to={`/app/assets/${inspection.assetId}`} className="meta-id" style={{ color: "#3b82f6", fontWeight: 700, textDecoration: "none" }}>
+                        {inspection.assetId}
                       </Link>
                     </td>
                     <td style={{ padding: "14px 16px", fontSize: "0.8125rem", color: "var(--muted)" }}>
-                      {inspection.inspector_did || "DID:NOVEXA-INSPECTOR-01"}
+                      {inspection.inspectorDid || "DID:NOVEXA-INSPECTOR-01"}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <StatusBadge status={inspection.result} size="sm" />
@@ -219,14 +219,14 @@ export default function InspectionsPage() {
                     </td>
                     <td style={{ padding: "14px 16px", textAlign: "center" }}>
                       <span style={{ padding: "2px 8px", background: "rgba(37,99,235,0.08)", borderRadius: "10px", fontSize: "0.75rem", color: "#3b82f6", fontWeight: 600 }}>
-                        {inspection.evidence_ids?.length || 0} files
+                        {inspection.evidenceIds?.length || 0} files
                       </span>
                     </td>
                     <td style={{ padding: "14px 16px", fontSize: "0.75rem", color: "var(--muted)", whiteSpace: "nowrap" }}>
-                      {formatDateTime(inspection.created_at)}
+                      {formatDateTime(inspection.createdAt)}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
-                      <Link to={`/app/assets/${inspection.asset_id}`} className="btn-secondary" style={{ fontSize: "0.75rem", padding: "4px 10px" }}>
+                      <Link to={`/app/assets/${inspection.assetId}`} className="btn-secondary" style={{ fontSize: "0.75rem", padding: "4px 10px" }}>
                         View Asset
                       </Link>
                     </td>
@@ -286,8 +286,8 @@ export default function InspectionsPage() {
                   type="text"
                   className="internal-search-input"
                   style={{ width: "100%" }}
-                  value={recordForm.asset_id}
-                  onChange={(e) => setRecordForm({ ...recordForm, asset_id: e.target.value })}
+                  value={recordForm.assetId}
+                  onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
                   placeholder="e.g. EF-2026-00421 or UUID"
                   required
                 />

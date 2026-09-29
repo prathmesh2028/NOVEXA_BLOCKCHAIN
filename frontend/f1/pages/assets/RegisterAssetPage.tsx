@@ -138,10 +138,6 @@ export default function RegisterAssetPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
-              background: "rgba(59, 130, 246, 0.15)",
-              border: "1px solid rgba(59, 130, 246, 0.35)",
-              color: "#60a5fa",
-              fontWeight: 600,
             }}
           >
             <span>⚡</span> Quick Fill Random Dummy Asset
@@ -156,18 +152,16 @@ export default function RegisterAssetPage() {
           maxWidth: 820,
           margin: "0 auto 20px auto",
           padding: "16px 20px",
-          background: "linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%)",
-          border: "1px solid rgba(59, 130, 246, 0.25)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "1rem" }}>📋</span>
-            <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#e2e8f0", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <span style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--foreground)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Quality Inspector Dummy Asset Presets
             </span>
           </div>
-          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+          <span style={{ fontSize: "0.75rem", color: "var(--subtle-text)" }}>
             Click any template to auto-populate the registration form:
           </span>
         </div>
@@ -190,10 +184,9 @@ export default function RegisterAssetPage() {
                   alignItems: "center",
                   gap: 6,
                   transition: "all 0.2s ease",
-                  background: isSelected ? "rgba(59, 130, 246, 0.25)" : "rgba(15, 23, 42, 0.8)",
-                  border: isSelected ? "1px solid #3b82f6" : "1px solid #1e3a60",
-                  color: isSelected ? "#ffffff" : "#cbd5e1",
-                  boxShadow: isSelected ? "0 0 10px rgba(59, 130, 246, 0.3)" : "none",
+                  background: isSelected ? "var(--hover-bg, #242424)" : "transparent",
+                  border: isSelected ? "1px solid var(--foreground, #f5f5f5)" : "1px solid var(--border, #2a2a2a)",
+                  color: isSelected ? "var(--foreground, #ffffff)" : "var(--muted, #a3a3a3)",
                 }}
               >
                 <span
@@ -201,7 +194,7 @@ export default function RegisterAssetPage() {
                     width: 6,
                     height: 6,
                     borderRadius: "50%",
-                    background: isSelected ? "#60a5fa" : "#64748b",
+                    background: isSelected ? "#22c55e" : "var(--subtle-text, #737373)",
                   }}
                 />
                 {preset.name}
@@ -211,17 +204,17 @@ export default function RegisterAssetPage() {
         </div>
       </div>
 
-      <div className="panel" style={{ maxWidth: 820, margin: "0 auto" }}>
+      <div className="panel" style={{ maxWidth: 820, margin: "0 auto", padding: 24 }}>
         <form onSubmit={handleSubmit}>
           {error && (
             <div
               style={{
                 padding: 12,
-                background: "#7f1d1d",
-                border: "1px solid #991b1b",
+                background: "rgba(239, 68, 68, 0.12)",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
                 borderRadius: 6,
                 marginBottom: 20,
-                color: "#fca5a5",
+                color: "#ef4444",
                 fontSize: "0.875rem",
               }}
             >
@@ -231,7 +224,7 @@ export default function RegisterAssetPage() {
 
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", margin: 0 }}>
+              <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--foreground)", margin: 0 }}>
                 Basic Asset Identification
               </h3>
               {form.assetId && (
@@ -248,7 +241,7 @@ export default function RegisterAssetPage() {
                     display: "block",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#cbd5e1",
+                    color: "var(--muted)",
                     marginBottom: 6,
                   }}
                 >
@@ -256,18 +249,12 @@ export default function RegisterAssetPage() {
                 </label>
                 <input
                   type="text"
+                  className="input-field"
                   value={form.assetId}
                   onChange={(e) => setForm({ ...form, assetId: e.target.value })}
                   placeholder="e.g., EF-2026-00421"
                   required
                   style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#0a1628",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 6,
-                    color: "#e2e8f0",
-                    fontSize: "0.875rem",
                     fontFamily: "monospace",
                   }}
                 />
@@ -279,7 +266,7 @@ export default function RegisterAssetPage() {
                     display: "block",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#cbd5e1",
+                    color: "var(--muted)",
                     marginBottom: 6,
                   }}
                 >
@@ -287,18 +274,12 @@ export default function RegisterAssetPage() {
                 </label>
                 <input
                   type="text"
+                  className="input-field"
                   value={form.batchId}
                   onChange={(e) => setForm({ ...form, batchId: e.target.value })}
                   placeholder="e.g., EF-BATCH-2026-017"
                   required
                   style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#0a1628",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 6,
-                    color: "#e2e8f0",
-                    fontSize: "0.875rem",
                     fontFamily: "monospace",
                   }}
                 />
@@ -312,7 +293,7 @@ export default function RegisterAssetPage() {
                     display: "block",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#cbd5e1",
+                    color: "var(--muted)",
                     marginBottom: 6,
                   }}
                 >
@@ -320,19 +301,11 @@ export default function RegisterAssetPage() {
                 </label>
                 <input
                   type="text"
+                  className="input-field"
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value })}
                   placeholder="e.g., Electronic Fuze"
                   required
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#0a1628",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 6,
-                    color: "#e2e8f0",
-                    fontSize: "0.875rem",
-                  }}
                 />
               </div>
 
@@ -342,7 +315,7 @@ export default function RegisterAssetPage() {
                     display: "block",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#cbd5e1",
+                    color: "var(--muted)",
                     marginBottom: 6,
                   }}
                 >
@@ -350,19 +323,11 @@ export default function RegisterAssetPage() {
                 </label>
                 <input
                   type="text"
+                  className="input-field"
                   value={form.model}
                   onChange={(e) => setForm({ ...form, model: e.target.value })}
                   placeholder="e.g., EF-MK4-SYNTH"
                   required
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#0a1628",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 6,
-                    color: "#e2e8f0",
-                    fontSize: "0.875rem",
-                  }}
                 />
               </div>
             </div>
@@ -374,7 +339,7 @@ export default function RegisterAssetPage() {
                     display: "block",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#cbd5e1",
+                    color: "var(--muted)",
                     marginBottom: 6,
                   }}
                 >
@@ -382,18 +347,12 @@ export default function RegisterAssetPage() {
                 </label>
                 <input
                   type="text"
+                  className="input-field"
                   value={form.serialNumber}
                   onChange={(e) => setForm({ ...form, serialNumber: e.target.value })}
                   placeholder="e.g., SN-EF-00421"
                   required
                   style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#0a1628",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 6,
-                    color: "#e2e8f0",
-                    fontSize: "0.875rem",
                     fontFamily: "monospace",
                   }}
                 />
@@ -405,7 +364,7 @@ export default function RegisterAssetPage() {
                     display: "block",
                     fontSize: "0.8125rem",
                     fontWeight: 600,
-                    color: "#cbd5e1",
+                    color: "var(--muted)",
                     marginBottom: 6,
                   }}
                 >
@@ -413,18 +372,10 @@ export default function RegisterAssetPage() {
                 </label>
                 <input
                   type="text"
+                  className="input-field"
                   value={form.supplier}
                   onChange={(e) => setForm({ ...form, supplier: e.target.value })}
                   placeholder="e.g., BEL Synthetic Procurement Div."
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    background: "#0a1628",
-                    border: "1px solid #1e3a60",
-                    borderRadius: 6,
-                    color: "#e2e8f0",
-                    fontSize: "0.875rem",
-                  }}
                 />
               </div>
             </div>
@@ -435,25 +386,19 @@ export default function RegisterAssetPage() {
                   display: "block",
                   fontSize: "0.8125rem",
                   fontWeight: 600,
-                  color: "#cbd5e1",
+                  color: "var(--muted)",
                   marginBottom: 6,
                 }}
               >
                 Technical Description & Lifecycle Notes
               </label>
               <textarea
+                className="input-field"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Technical specifications, environmental tolerances, or custody notes..."
                 rows={3}
                 style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  background: "#0a1628",
-                  border: "1px solid #1e3a60",
-                  borderRadius: 6,
-                  color: "#e2e8f0",
-                  fontSize: "0.875rem",
                   resize: "vertical",
                 }}
               />
@@ -466,7 +411,7 @@ export default function RegisterAssetPage() {
               justifyContent: "space-between",
               alignItems: "center",
               paddingTop: 20,
-              borderTop: "1px solid #152b4a",
+              borderTop: "1px solid var(--border)",
             }}
           >
             <button

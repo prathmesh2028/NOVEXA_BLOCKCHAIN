@@ -166,16 +166,16 @@ export default function HistoryPage() {
       <div
         style={{
           padding: "12px 16px",
-          background: "rgba(96,165,250,0.06)",
-          border: "1px solid rgba(96,165,250,0.15)",
-          borderRadius: "5px",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          borderRadius: "8px",
           marginBottom: 16,
           fontSize: "0.8125rem",
-          color: "#94a3b8",
+          color: "var(--muted)",
           lineHeight: 1.5,
         }}
       >
-        <strong style={{ color: "#60a5fa" }}>Historical Event Ledger: </strong>
+        <strong style={{ color: "var(--foreground)" }}>Historical Event Ledger: </strong>
         Tamper-resistant timeline combining cryptographic certifications, blockchain transactions, supply chain checkpoints, and platform audit records.
       </div>
 
@@ -194,10 +194,10 @@ export default function HistoryPage() {
               onClick={() => setFilter(f.key)}
               style={{
                 padding: "6px 14px",
-                background: filter === f.key ? "rgba(37,99,235,0.2)" : "transparent",
-                border: `1px solid ${filter === f.key ? "#2563eb" : "#1e3a60"}`,
-                borderRadius: "4px",
-                color: filter === f.key ? "#e2e8f0" : "#64748b",
+                background: filter === f.key ? "var(--hover-bg, #242424)" : "transparent",
+                border: `1px solid ${filter === f.key ? "var(--foreground, #f5f5f5)" : "var(--border, #2a2a2a)"}`,
+                borderRadius: "6px",
+                color: filter === f.key ? "var(--foreground, #f5f5f5)" : "var(--muted, #737373)",
                 fontSize: "0.8125rem",
                 fontWeight: 500,
                 cursor: "pointer",
@@ -212,8 +212,8 @@ export default function HistoryPage() {
         <div style={{ minWidth: 260 }}>
           <input
             type="text"
-            className="input"
-            style={{ width: "100%", padding: "6px 12px", fontSize: "0.8125rem", background: "#08131f", border: "1px solid #1e3a60", borderRadius: 4, color: "#e2e8f0" }}
+            className="input-field"
+            style={{ width: "100%", fontSize: "0.8125rem" }}
             placeholder="Search history by keyword, hash, or DID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

@@ -63,8 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return JSON.parse(stored);
       } catch (e) {}
     }
-    // Default active session in demo environment
-    return DEFAULT_DEMO_USER;
+    return null; // No default user - must authenticate
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,27 +76,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      let token = localStorage.getItem('kavach_token');
-      if (!token) {
-        try {
-          const res = await authService.login('demo', 'demo');
-          token = res.access_token;
-        } catch {
-          // offline demo fallback
-        }
-      }
-
+      const token = localStorage.getItem('kavach_token');
+      
       if (token) {
         try {
           const userData = await authService.getMe();
           setUser(userData);
           localStorage.setItem('kavach_user', JSON.stringify(userData));
         } catch (err) {
-          console.warn('Session verification fallback, retaining demo user', err);
-          if (!user) {
-            setUser(DEFAULT_DEMO_USER);
-            localStorage.setItem('kavach_user', JSON.stringify(DEFAULT_DEMO_USER));
-          }
+          console.warn('Session verification failed, clearing invalid session', err);
+          localStorage.removeItem('kavach_token');
+          localStorage.removeItem('kavach_user');
+          setUser(null);
         }
       }
     };

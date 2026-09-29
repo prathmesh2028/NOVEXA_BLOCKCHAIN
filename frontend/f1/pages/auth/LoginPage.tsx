@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
+import BelIconMark from "../../components/ui/BelIconMark";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 import "./LoginPage.css";
 
 // Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
@@ -111,16 +113,19 @@ export default function LoginPage() {
       {/* ─── TOP BAR: BRANDING & KAVACH ACCESS ─── */}
       <header className="cmd-topbar">
         <Link to="/" className="cmd-brand-group">
-          <div className="cmd-brand-icon">BEL</div>
+          <div className="cmd-brand-icon">
+            <BelIconMark size={22} />
+          </div>
           <div className="cmd-brand-text">
             <span className="cmd-brand-title">BEL</span>
             <span className="cmd-brand-subtitle">DEFENCE TRUST</span>
           </div>
         </Link>
 
-        <div className="cmd-top-telemetry">
+        <div className="cmd-top-telemetry" style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div className="cmd-telemetry-line" />
           <span>KAVACH TRUST PLATFORM • SECURE ACCESS</span>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -183,6 +188,20 @@ export default function LoginPage() {
               <div className="cmd-feature-info">
                 <span className="cmd-feature-title">Mission Critical</span>
                 <span className="cmd-feature-sub">Built for defence ecosystem</span>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="cmd-feature-item">
+              <div className="cmd-feature-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div className="cmd-feature-info">
+                <span className="cmd-feature-title">Secure Communication</span>
+                <span className="cmd-feature-sub">Encrypted network</span>
               </div>
             </div>
           </div>
@@ -272,10 +291,10 @@ export default function LoginPage() {
                       fill="#ffffff"
                       fontFamily="Barlow Condensed, sans-serif"
                       fontWeight="900"
-                      fontSize="34"
-                      letterSpacing="1.5"
+                      fontSize="28"
+                      letterSpacing="1.2"
                     >
-                      NX
+                      BEL
                     </text>
                   </svg>
                 </div>
@@ -290,19 +309,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Secure Network Node Badge (Preserved) */}
-          <div className="cmd-node-badge node-comm">
-            <div className="cmd-node-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-            </div>
-            <div className="cmd-node-text-group">
-              <span className="cmd-node-title">SECURE COMMUNICATION</span>
-              <span className="cmd-node-sub">ENCRYPTED NETWORK</span>
-            </div>
-          </div>
         </div>
 
         {/* ─── RIGHT: STABLE LOGIN CONSOLE ─── */}
@@ -316,7 +322,9 @@ export default function LoginPage() {
 
             {/* Console Lockup */}
             <div className="console-header-lockup">
-              <div className="console-nx-mini">BEL</div>
+              <div className="console-nx-mini">
+                <BelIconMark size={16} />
+              </div>
               <div className="console-header-text">
                 <span className="console-header-title">BEL DEFENCE TRUST</span>
                 <span className="console-header-sub">KAVACH TRUST PLATFORM • SECURE ACCESS</span>

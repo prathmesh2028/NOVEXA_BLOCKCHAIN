@@ -52,7 +52,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setChainId(currentChainId);
         await syncWalletState(currentAddress);
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Suppress viem URL validation errors for localhost development
+      if (err.message && err.message.includes('TLD')) {
+        console.warn('Wallet connection check skipped (TLD validation error in development)');
+        return;
+      }
       console.error('Failed to check wallet connection', err);
     }
   };
@@ -97,13 +102,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const client = createWalletClient({ transport: custom(window.ethereum) });
       const [newAddress] = await client.requestAddresses();
       setAddress(newAddress);
-      
+
       const newChainId = await client.getChainId();
       setChainId(newChainId);
 
       // Fetch challenge
       const challenge = await walletApi.getChallenge(newAddress);
-      
+
       // Sign message
       const signature = await client.signMessage({
         account: newAddress as `0x${string}`,
@@ -115,6 +120,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWalletBinding(binding);
 
     } catch (err: any) {
+      // Suppress viem URL validation errors for localhost development
+      if (err.message && err.message.includes('TLD')) {
+        console.warn('Wallet connection skipped (TLD validation error in development)');
+        setError('Wallet connection not available in development environment');
+        return;
+      }
       console.error('Failed to connect wallet', err);
       if (err.code === 4001) {
         setError('User rejected the request');

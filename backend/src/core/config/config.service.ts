@@ -10,9 +10,11 @@ export class ConfigService {
   }
 
   get nodeEnv(): string { return this.config.NODE_ENV; }
+  get appEnv(): string { return this.config.APP_ENV; }
   get isDevelopment(): boolean { return this.config.NODE_ENV === 'development' || this.config.NODE_ENV === 'demo'; }
   get isProduction(): boolean { return this.config.NODE_ENV === 'production'; }
   get isTest(): boolean { return this.config.NODE_ENV === 'test'; }
+  get isDemoMode(): boolean { return this.config.APP_ENV === 'demo' || this.config.NODE_ENV === 'demo'; }
   get port(): number { return this.config.PORT; }
   get apiPrefix(): string { return this.config.API_PREFIX; }
   get logLevel(): string { return this.config.LOG_LEVEL; }

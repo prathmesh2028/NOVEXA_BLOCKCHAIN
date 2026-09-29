@@ -19,11 +19,12 @@ export default function StatCard({ label, value, sub, accent = "#e2e8f0", icon, 
         display: "flex",
         flexDirection: "column",
         gap: "10px",
-        background: "#0c1828",
-        border: "1px solid #172d4c",
-        borderRadius: "7px",
+        background: "var(--card, #171717)",
+        border: "1px solid var(--border, #2A2A2A)",
+        borderRadius: "12px",
         position: "relative",
         overflow: "hidden",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.2)",
         transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
@@ -49,9 +50,10 @@ export default function StatCard({ label, value, sub, accent = "#e2e8f0", icon, 
           style={{
             margin: 0,
             fontSize: "0.6875rem",
-            color: "#64748b",
+            color: "var(--muted, #737373)",
             letterSpacing: "0.08em",
             fontWeight: 600,
+            textTransform: "uppercase",
           }}
         >
           {label}
@@ -61,14 +63,14 @@ export default function StatCard({ label, value, sub, accent = "#e2e8f0", icon, 
             style={{
               width: 26,
               height: 26,
-              borderRadius: "5px",
-              background: isCustomAccent ? `${accent}15` : "rgba(30, 58, 96, 0.4)",
-              border: `1px solid ${isCustomAccent ? `${accent}30` : "#1e3a60"}`,
+              borderRadius: "6px",
+              background: isCustomAccent ? `${accent}15` : "rgba(255, 255, 255, 0.05)",
+              border: `1px solid ${isCustomAccent ? `${accent}30` : "var(--border, #2A2A2A)"}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "0.875rem",
-              color: isCustomAccent ? accent : "#94a3b8",
+              color: isCustomAccent ? accent : "var(--muted-foreground, #A3A3A3)",
               flexShrink: 0,
             }}
           >
@@ -81,11 +83,11 @@ export default function StatCard({ label, value, sub, accent = "#e2e8f0", icon, 
       <div
         className="font-display"
         style={{
-          fontSize: "2.125rem",
+          fontSize: "2rem",
           fontWeight: 700,
-          color: accent,
+          color: "var(--foreground, #F5F5F5)",
           lineHeight: 1.05,
-          letterSpacing: "0.02em",
+          letterSpacing: "0.01em",
         }}
       >
         {value}

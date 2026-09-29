@@ -596,7 +596,7 @@
   position: relative;
   z-index: 30;
   width: 440px;
-  margin-right: 12px;
+  margin-right: -16px;
   pointer-events: auto;
   animation: consoleEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -1209,8 +1209,10 @@
     max-width: 100%;
   }
   .cmd-features-list {
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
   }
   .cmd-scene-center {
     position: relative;
@@ -1294,4 +1296,247 @@
   .earth-texture-rotating {
     animation: none !important;
   }
+}
+
+/* ============================================================
+   LIGHT THEME OVERRIDES — BEL DEFENCE TRUST LOGIN
+   ============================================================ */
+[data-theme="light"] .login-page,
+.theme-light .login-page {
+  background-color: #F7F7F8;
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-space-gradient,
+.theme-light .cmd-space-gradient {
+  background: radial-gradient(circle at 50% 30%, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
+}
+
+[data-theme="light"] .cmd-cyan-nebula-glow,
+.theme-light .cmd-cyan-nebula-glow {
+  opacity: 0.15;
+}
+
+[data-theme="light"] .cmd-ocean-gradient,
+.theme-light .cmd-ocean-gradient {
+  opacity: 0.08;
+}
+
+[data-theme="light"] .cmd-grid-overlay,
+.theme-light .cmd-grid-overlay {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+[data-theme="light"] .cmd-topbar,
+.theme-light .cmd-topbar {
+  border-bottom-color: #DADADA;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+}
+
+[data-theme="light"] .cmd-brand-title,
+.theme-light .cmd-brand-title {
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-brand-subtitle,
+.theme-light .cmd-brand-subtitle {
+  color: #2563eb;
+}
+
+[data-theme="light"] .cmd-top-telemetry,
+.theme-light .cmd-top-telemetry {
+  color: #4A4A4A;
+}
+
+[data-theme="light"] .cmd-headline-secure,
+.theme-light .cmd-headline-secure {
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-headline-defence,
+.theme-light .cmd-headline-defence {
+  color: #2563eb;
+}
+
+[data-theme="light"] .cmd-headline-sub,
+.theme-light .cmd-headline-sub {
+  color: #4A4A4A;
+}
+
+[data-theme="light"] .cmd-headline-desc,
+.theme-light .cmd-headline-desc {
+  color: #707070;
+}
+
+[data-theme="light"] .cmd-feature-item,
+.theme-light .cmd-feature-item {
+  background: #FFFFFF;
+  border-color: #DADADA;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .cmd-feature-icon-box,
+.theme-light .cmd-feature-icon-box {
+  background: #F1F1F2;
+  border-color: #DADADA;
+  color: #2563eb;
+}
+
+[data-theme="light"] .cmd-feature-title,
+.theme-light .cmd-feature-title {
+  color: #171717;
+  font-weight: 700;
+}
+
+[data-theme="light"] .cmd-feature-sub,
+.theme-light .cmd-feature-sub {
+  color: #707070;
+}
+
+[data-theme="light"] .cmd-console-card,
+.theme-light .cmd-console-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #DADADA;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .console-header-title,
+.theme-light .console-header-title {
+  color: #171717;
+}
+
+[data-theme="light"] .console-header-sub,
+.theme-light .console-header-sub {
+  color: #2563eb;
+}
+
+[data-theme="light"] .cmd-card-title,
+.theme-light .cmd-card-title {
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-card-instructions,
+.theme-light .cmd-card-instructions {
+  color: #4A4A4A;
+}
+
+[data-theme="light"] .cmd-demo-section-label,
+.theme-light .cmd-demo-section-label {
+  color: #4A4A4A;
+  font-weight: 700;
+}
+
+[data-theme="light"] .cmd-demo-card,
+.theme-light .cmd-demo-card {
+  background: #F1F1F2;
+  border-color: #DADADA;
+}
+
+[data-theme="light"] .cmd-demo-card:hover,
+.theme-light .cmd-demo-card:hover {
+  background: #EAEAEA;
+  border-color: #CFCFCF;
+}
+
+[data-theme="light"] .cmd-demo-card.active,
+.theme-light .cmd-demo-card.active {
+  background: #FFFFFF;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb, 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="light"] .cmd-demo-name,
+.theme-light .cmd-demo-name {
+  color: #171717;
+  font-weight: 700;
+}
+
+[data-theme="light"] .cmd-demo-email,
+.theme-light .cmd-demo-email {
+  color: #707070;
+}
+
+[data-theme="light"] .cmd-input-label,
+.theme-light .cmd-input-label {
+  color: #4A4A4A;
+  font-weight: 700;
+}
+
+[data-theme="light"] .cmd-input-box,
+.theme-light .cmd-input-box {
+  background: #FFFFFF;
+  border-color: #DADADA;
+}
+
+[data-theme="light"] .cmd-input-box:focus-within,
+.theme-light .cmd-input-box:focus-within {
+  background: #FFFFFF;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="light"] .cmd-text-input,
+.theme-light .cmd-text-input {
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-text-input::placeholder,
+.theme-light .cmd-text-input::placeholder {
+  color: #9A9A9A;
+}
+
+[data-theme="light"] .cmd-signin-btn,
+.theme-light .cmd-signin-btn {
+  background: #171717;
+  color: #FFFFFF;
+  border: 1px solid #171717;
+}
+
+[data-theme="light"] .cmd-signin-btn:hover:not(:disabled),
+.theme-light .cmd-signin-btn:hover:not(:disabled) {
+  background: #262626;
+  border-color: #262626;
+}
+
+[data-theme="light"] .cmd-node-badge,
+.theme-light .cmd-node-badge {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: #DADADA;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .cmd-node-title,
+.theme-light .cmd-node-title {
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-node-sub,
+.theme-light .cmd-node-sub {
+  color: #2563eb;
+}
+
+[data-theme="light"] .cmd-footer-bar,
+.theme-light .cmd-footer-bar {
+  background: rgba(255, 255, 255, 0.85);
+  border-top-color: #DADADA;
+  color: #707070;
+}
+
+[data-theme="light"] .cmd-pipeline-node,
+.theme-light .cmd-pipeline-node {
+  background: #FFFFFF;
+  border-color: #DADADA;
+}
+
+[data-theme="light"] .cmd-pipeline-node-title,
+.theme-light .cmd-pipeline-node-title {
+  color: #171717;
+}
+
+[data-theme="light"] .cmd-pipeline-node-sub,
+.theme-light .cmd-pipeline-node-sub {
+  color: #707070;
 }
