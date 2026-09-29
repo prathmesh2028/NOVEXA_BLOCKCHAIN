@@ -25,9 +25,9 @@ test.describe('KavachTrust E2E Flow', () => {
 
     // Auditor role - create if needed or use existing
     const auditorRes = await request.post('http://localhost:8000/api/v1/auth/login', {
-      data: { email: 'admin@kavachtrust.dev', password: 'admin123' }
+      data: { email: 'auditor@kavachtrust.dev', password: 'auditor123' }
     });
-    if (auditorRes.ok()) auditorToken = (await auditorRes.json()).access_token; // Using admin for auditor tests as fallback
+    if (auditorRes.ok()) auditorToken = (await auditorRes.json()).access_token;
   });
 
   test('AUTH: Reject invalid credentials', async ({ request }) => {
