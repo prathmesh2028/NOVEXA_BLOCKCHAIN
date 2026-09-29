@@ -60,9 +60,12 @@ services:
       --rpc-http-host=0.0.0.0
       --rpc-http-cors-origins=*
       --genesis-file=/besu/genesis.json
+      --node-private-key-file=/besu/key.priv
+      --sync-min-peers=0
     volumes:
       - besudata:/besu/data
       - ./besu/genesis.json:/besu/genesis.json
+      - ./besu/key.priv:/besu/key.priv
 
 volumes:
   pgdata:

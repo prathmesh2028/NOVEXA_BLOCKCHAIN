@@ -1,0 +1,16 @@
+{
+  "genesis": {
+    "chainId": 31337,
+    "consensus": "qbft",
+    "qbft": {
+      "epochlength": 30000,
+      "blockperiodseconds": 2,
+      "requesttimeoutseconds": 10
+    }
+  },
+  "blockchain": {
+    "nodes": {
+      "count": 4
+    }
+  }
+}

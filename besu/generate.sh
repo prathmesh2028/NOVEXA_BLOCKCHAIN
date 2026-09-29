@@ -1,0 +1,3 @@
+#!/bin/sh
+echo '{"genesis":{"config":{"chainId":31337,"berlinBlock":0,"qbft":{"epochlength":30000,"blockperiodseconds":2,"requesttimeoutseconds":10}},"nonce":"0x0","timestamp":"0x0","gasLimit":"0x47b760","difficulty":"0x1","mixHash":"0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365","coinbase":"0x0000000000000000000000000000000000000000","alloc":{}}},"blockchain":{"nodes":{"generate":true,"count":4}}}' > /config/qbft-config.json
+besu operator generate-blockchain-config --config-file=/config/qbft-config.json --to=/config/nodes

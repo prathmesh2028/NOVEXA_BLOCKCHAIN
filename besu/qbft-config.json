@@ -5,30 +5,17 @@
       "berlinBlock": 0,
       "qbft": {
         "epochlength": 30000,
-        "blockperiodseconds": 5,
+        "blockperiodseconds": 2,
         "requesttimeoutseconds": 10
       }
     },
     "nonce": "0x0",
     "timestamp": "0x0",
-    "gasLimit": "0x47b7600",
+    "gasLimit": "0x47b760",
     "difficulty": "0x1",
     "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
     "coinbase": "0x0000000000000000000000000000000000000000",
-    "alloc": {
-      "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266": {
-        "balance": "0x1000000000000000000000000000000000000"
-      },
-      "0x70997970C51812dc3A010C7d01b50e0d17dc79C8": {
-        "balance": "0x1000000000000000000000000000000000000"
-      },
-      "0x3C44CdDdB6A900Fa2b585dd299e03d12FA4293BC": {
-        "balance": "0x1000000000000000000000000000000000000"
-      },
-      "0x90F79bf6EB2C4f83636539cf35A9A00A9E9c0f78": {
-        "balance": "0x1000000000000000000000000000000000000"
-      }
-    }
+    "alloc": {}
   },
   "blockchain": {
     "nodes": {
