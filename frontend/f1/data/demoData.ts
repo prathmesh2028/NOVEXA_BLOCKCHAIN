@@ -48,6 +48,21 @@ export const DEMO_ASSETS: DemoRecord[] = [
     }
   },
   {
+    id: 'd0a417f3-1da6-413b-a5df-6e88dff000c1',
+    label: 'E2E-TEST-1790701936707 (Test Component - RECEIVED, INSPECTABLE)',
+    type: 'asset',
+    data: {
+      asset_id: 'E2E-TEST-1790701936707',
+      batch_id: 'E2E-BATCH-001',
+      type: 'Test Component',
+      model: 'E2E-TEST-MODEL',
+      serial_number: 'SN-E2E-1790701936707',
+      lifecycle_state: 'RECEIVED',
+      verification_status: 'PENDING',
+      supplier: 'E2E Test Supplier',
+    }
+  },
+  {
     id: '59be7f8f-9188-4919-9958-99117c4d5ecd',
     label: 'EF-2026-00421 (Electronic Fuze - FULL LIFECYCLE)',
     type: 'asset',

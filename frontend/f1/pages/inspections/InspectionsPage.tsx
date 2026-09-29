@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { api } from "../../services/api";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
+import { inspectionService } from "../../services/inspections";
 import { formatDateTime } from "../../data/utils";
+import { DemoRecord } from "../../data/demoData";
 import "./InspectionsPage.css";
 
 const DEMO_INSPECTION_DATA = {
-  assetId: "EF-2026-001",
+  assetId: "TIR-2026-003076",
   result: "PASS",
   notes:
     "Visual inspection completed. Assembly integrity verified. Connector pins inspected and found within acceptable limits. Calibration status confirmed. No critical defects observed.",
@@ -38,7 +40,7 @@ export default function InspectionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<any>("/inspections");
+      const data = await inspectionService.listInspections();
       setInspections(data.items || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch inspections");
@@ -65,11 +67,22 @@ export default function InspectionsPage() {
     }, 2500);
   };
 
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setRecordForm(prev => ({ ...prev, assetId: record.data.asset_id }));
+    }
+  };
+
   const handleRecordInspection = async (e: React.FormEvent) => {
     e.preventDefault();
     setRecordError(null);
     try {
-      await api.post("/inspections/record", recordForm);
+      await inspectionService.recordInspection({
+        asset_id: recordForm.assetId,
+        result: recordForm.result as 'PASS' | 'FAIL' | 'CONDITIONAL',
+        notes: recordForm.notes,
+        evidence_ids: recordForm.evidenceIds,
+      });
       setShowRecordModal(false);
       setRecordForm({ assetId: "", result: "PASS", notes: "", evidenceIds: [] });
       fetchInspections();
@@ -328,15 +341,18 @@ export default function InspectionsPage() {
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Target Asset ID *
                 </label>
-                <input
-                  type="text"
-                  className="internal-search-input"
-                  style={{ width: "100%" }}
-                  value={recordForm.assetId}
-                  onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
-                  placeholder="e.g. EF-2026-00421 or UUID"
-                  required
-                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="text"
+                    className="internal-search-input"
+                    style={{ flex: 1 }}
+                    value={recordForm.assetId}
+                    onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
+                    placeholder="e.g., TIR-2026-003076 or UUID"
+                    required
+                  />
+                  <DemoDataDropdown type="asset" onSelect={handleDemoDataSelect} />
+                </div>
               </div>
 
               <div>
