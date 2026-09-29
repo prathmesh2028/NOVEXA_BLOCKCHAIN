@@ -38,23 +38,18 @@ export class OutboxService {
   async claimPendingEvents(workerId: string, limit: number = 10) {
     const now = new Date();
 
-    let events: any[] = [];
-    try {
-      events = await this.prisma.outboxEvent.findMany({
-        where: {
-          status: { in: ['PENDING', 'FAILED'] },
-          OR: [
-            { nextAttemptAt: null },
-            { nextAttemptAt: { lte: now } },
-          ],
-          attemptCount: { lt: 5 }, // max attempts
-        },
-        orderBy: { createdAt: 'asc' },
-        take: limit,
-      });
-    } catch (e: any) {
-      return [];
-    }
+    const events = await this.prisma.outboxEvent.findMany({
+      where: {
+        status: { in: ['PENDING', 'FAILED'] },
+        OR: [
+          { nextAttemptAt: null },
+          { nextAttemptAt: { lte: now } },
+        ],
+        attemptCount: { lt: 5 }, // max attempts
+      },
+      orderBy: { createdAt: 'asc' },
+      take: limit,
+    });
 
     // Claim them
     const claimed = [];
