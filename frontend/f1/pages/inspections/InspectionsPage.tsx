@@ -4,6 +4,15 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
 import { formatDateTime } from "../../data/utils";
+import "./InspectionsPage.css";
+
+const DEMO_INSPECTION_DATA = {
+  assetId: "EF-2026-001",
+  result: "PASS",
+  notes:
+    "Visual inspection completed. Assembly integrity verified. Connector pins inspected and found within acceptable limits. Calibration status confirmed. No critical defects observed.",
+  evidenceIds: [] as string[],
+};
 
 export default function InspectionsPage() {
   const [inspections, setInspections] = useState<any[]>([]);
@@ -13,6 +22,7 @@ export default function InspectionsPage() {
   const [resultFilter, setResultFilter] = useState("ALL");
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [recordError, setRecordError] = useState<string | null>(null);
+  const [demoLoaded, setDemoLoaded] = useState(false);
   const [recordForm, setRecordForm] = useState({
     assetId: "",
     result: "PASS",
@@ -35,6 +45,24 @@ export default function InspectionsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLoadDemoData = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setRecordForm({
+      assetId: DEMO_INSPECTION_DATA.assetId,
+      result: DEMO_INSPECTION_DATA.result,
+      notes: DEMO_INSPECTION_DATA.notes,
+      evidenceIds: [],
+    });
+    setRecordError(null);
+    setDemoLoaded(true);
+    setTimeout(() => {
+      setDemoLoaded(false);
+    }, 2500);
   };
 
   const handleRecordInspection = async (e: React.FormEvent) => {
@@ -278,6 +306,24 @@ export default function InspectionsPage() {
                 </div>
               )}
 
+              {/* DEMO DATA QUICK FILL BAR */}
+              <div className="insp-demo-bar">
+                <div className="insp-demo-bar-info">
+                  <span className="insp-demo-badge">SIH DEMO</span>
+                  <span className="insp-demo-text">Pre-fill realistic QA inspection report</span>
+                </div>
+                <button
+                  type="button"
+                  id="insp-load-demo-btn"
+                  className={`insp-load-demo-btn ${demoLoaded ? "insp-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Automatically fill inspection form with realistic demo values"
+                >
+                  <span className="insp-demo-icon">{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "DEMO DATA LOADED" : "LOAD DEMO DATA"}</span>
+                </button>
+              </div>
+
               <div>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Target Asset ID *
@@ -323,13 +369,26 @@ export default function InspectionsPage() {
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
-                <button type="button" className="btn-secondary" onClick={() => setShowRecordModal(false)}>
-                  Cancel
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 10, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+                <button
+                  type="button"
+                  id="insp-load-demo-footer-btn"
+                  className={`insp-load-demo-footer-btn ${demoLoaded ? "insp-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Pre-fill form with synthetic inspection parameters"
+                >
+                  <span>{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "Demo Data Applied" : "USE DUMMY DATA"}</span>
                 </button>
-                <button type="submit" className="btn-primary">
-                  Record Inspection
-                </button>
+
+                <div style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
+                  <button type="button" className="btn-secondary" onClick={() => setShowRecordModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Record Inspection
+                  </button>
+                </div>
               </div>
             </form>
           </div>
