@@ -30,9 +30,18 @@ export interface RecordInspectionDto {
   evidence_ids?: string[];
 }
 
+export interface DecideInspectionDto {
+  decision: 'ACCEPT' | 'REJECT';
+  reason?: string;
+}
+
 export const inspectionService = {
   async recordInspection(data: RecordInspectionDto): Promise<Inspection> {
     return api.post<Inspection>('/inspections/record', data);
+  },
+
+  async decideInspection(inspectionId: string, data: DecideInspectionDto): Promise<any> {
+    return api.patch<any>(`/inspections/${inspectionId}/decide`, data);
   },
 
   async listInspections(assetId?: string): Promise<InspectionListResponse> {
