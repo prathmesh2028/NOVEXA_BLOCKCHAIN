@@ -778,3 +778,90 @@
   color: #171717;
   font-weight: 700;
 }
+
+/* ── 8. INVITE NEW USER MODAL (VIEWPORT-FIXED PORTAL) ────────────────────── */
+.users-invite-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  animation: usersInviteOverlayFadeIn 0.2s ease-out;
+}
+
+.users-invite-modal-dialog {
+  position: fixed;
+  left: 50%;
+  top: clamp(32px, 8vh, 72px);
+  transform: translateX(-50%);
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - clamp(48px, 12vh, 96px));
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 12px;
+  z-index: 1000000;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  animation: usersInviteModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.users-invite-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-subtle, #152b4a);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.users-invite-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-theme="light"] .users-invite-modal-dialog,
+.theme-light .users-invite-modal-dialog {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .users-invite-modal-header,
+.theme-light .users-invite-modal-header {
+  border-bottom-color: #e2e8f0;
+}
+
+@keyframes usersInviteOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes usersInviteModalIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
