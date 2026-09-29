@@ -49,19 +49,40 @@ export default function FacilitiesList() {
   }, [role, user]);
 
   const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
-  const handleApprove = (id: string) => {
-    setApprovalStatus((prev) => ({
-      ...prev,
-      [id]: prev[id] === "approved" ? ("" as any) : "approved",
-    }));
+  const handleApprove = async (id: string) => {
+    setApprovingId(id);
+    try {
+      await supplyChainService.updateFacility(id, { status: 'OPERATIONAL' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [id]: "approved",
+      }));
+      fetchFacilities(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to approve facility:', err);
+      alert('Failed to approve facility: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
   };
 
-  const handleDisapprove = (id: string) => {
-    setApprovalStatus((prev) => ({
-      ...prev,
-      [id]: prev[id] === "disapproved" ? ("" as any) : "disapproved",
-    }));
+  const handleDisapprove = async (id: string) => {
+    setApprovingId(id);
+    try {
+      await supplyChainService.updateFacility(id, { status: 'MAINTENANCE' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [id]: "disapproved",
+      }));
+      fetchFacilities(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to disapprove facility:', err);
+      alert('Failed to disapprove facility: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
   };
 
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);

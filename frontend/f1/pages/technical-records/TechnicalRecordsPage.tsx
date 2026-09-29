@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { formatDateTime } from "../../data/utils";
 import { technicalRecordsService, TechnicalRecordResponse } from "../../services/technical-records";
+import { DemoRecord } from "../../data/demoData";
 import "./TechnicalRecordsPage.css";
 
 const DEMO_TECHNICAL_RECORD = {
-  asset_id: "EF-2026-001",
+  asset_id: "EF-2026-00422",
   record_type: "MAINTENANCE",
   classification: "INTERNAL",
   dataFields: [
@@ -88,6 +90,12 @@ export default function TechnicalRecordsPage() {
     setTimeout(() => {
       setDemoLoaded(false);
     }, 2500);
+  };
+
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setCreateForm(prev => ({ ...prev, asset_id: record.data.asset_id }));
+    }
   };
 
   const handleCreate = async () => {

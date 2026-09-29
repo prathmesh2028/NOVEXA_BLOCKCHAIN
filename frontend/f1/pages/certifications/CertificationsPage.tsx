@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatCard from "../../components/ui/StatCard";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { formatDate } from "../../data/utils";
 import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
@@ -14,6 +15,7 @@ import {
 } from "./certificationData";
 import { useAuth } from "../../context/AuthContext";
 import CertificateImageUpload, { PRESET_CERTIFICATE_SEALS } from "../../components/certifications/CertificateImageUpload";
+import { DemoRecord } from "../../data/demoData";
 import "./CertificationsPage.css";
 
 
@@ -65,8 +67,9 @@ export default function CertificationsPage() {
       e.preventDefault();
       e.stopPropagation();
     }
-    setAssetIdInput("EF-2026-001");
-    setBatchIdInput("FUZE-BATCH-2026-001");
+    // Use real persisted asset ID from demo data
+    setAssetIdInput("EF-2026-00422");
+    setBatchIdInput("EF-BATCH-2026-017");
     if (PRESET_CERTIFICATE_SEALS && PRESET_CERTIFICATE_SEALS.length > 0) {
       const demoSeal = PRESET_CERTIFICATE_SEALS[0];
       setCertificateImage(demoSeal.dataUrl);
@@ -77,6 +80,16 @@ export default function CertificationsPage() {
     setTimeout(() => {
       setModalDemoLoaded(false);
     }, 2500);
+  };
+
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setAssetIdInput(record.data.asset_id);
+      setBatchIdInput(record.data.batch_id || '');
+    } else if (record.type === 'certification') {
+      // If selecting a certification, navigate to its detail page
+      window.location.href = `/app/certifications/${record.data.cert_id}`;
+    }
   };
 
   const [createStatus, setCreateStatus] = useState<{
@@ -828,43 +841,47 @@ export default function CertificationsPage() {
 
           <div
             className="cert-search-wrap"
+            style={{ display: "flex", gap: 8 }}
           >
-            <span
-              className="cert-search-icon"
-            >
-              🔍
-            </span>
-
-            <input
-              type="text"
-              placeholder="Search by Certificate ID, Asset Name, Asset ID, Authority..."
-              value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
-              className="cert-search-input"
-            />
-
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "transparent",
-                  border: "none",
-                  color: "#94a3b8",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  padding: "4px",
-                }}
-                title="Clear search"
+            <div style={{ position: "relative", flex: 1 }}>
+              <span
+                className="cert-search-icon"
               >
-                ✕
-              </button>
-            )}
+                🔍
+              </span>
+
+              <input
+                type="text"
+                placeholder="Search by Certificate ID, Asset Name, Asset ID, Authority..."
+                value={search}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+                className="cert-search-input"
+              />
+
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "transparent",
+                    border: "none",
+                    color: "#94a3b8",
+                    cursor: "pointer",
+                    fontSize: "0.875rem",
+                    padding: "4px",
+                  }}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <DemoDataDropdown type="certification" onSelect={handleDemoDataSelect} />
           </div>
 
           {/* FILTERS */}
