@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatDateTime } from "../../data/utils";
@@ -55,6 +56,33 @@ export default function EvidencePage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [demoLoaded, setDemoLoaded] = useState(false);
+
+  const handleLoadDemoData = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setUploadAssetId("EF-2026-001");
+    setUploadType("QA Approval");
+    const demoBlob = new Blob(
+      [
+        "[DEMO DEFENCE EVIDENCE]\nAsset ID: EF-2026-001\nType: QA Approval\nStandard: MIL-STD-810H\nStatus: VERIFIED\nHash Anchor: BEL-TRUST-CHAIN\nTimestamp: " +
+          new Date().toISOString(),
+      ],
+      { type: "application/pdf" }
+    );
+    const demoFile = new File([demoBlob], "QA_Certificate_EF-2026-001.pdf", {
+      type: "application/pdf",
+      lastModified: Date.now(),
+    });
+    setUploadFile(demoFile);
+    setUploadStatus(null);
+    setDemoLoaded(true);
+    setTimeout(() => {
+      setDemoLoaded(false);
+    }, 2500);
+  };
 
   const fetchEvidence = async () => {
     setIsRefreshing(true);
@@ -73,6 +101,63 @@ export default function EvidencePage() {
   useEffect(() => {
     fetchEvidence();
   }, []);
+
+  /* Viewport scroll lock for Upload Evidence modal */
+  useEffect(() => {
+    if (!showUploadModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showUploadModal]);
+
+  /* Close modal on Escape key */
+  useEffect(() => {
+    if (!showUploadModal) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowUploadModal(false);
+        setUploadStatus(null);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showUploadModal]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -586,9 +671,15 @@ export default function EvidencePage() {
         </div>
       </section>
 
-      {/* ── 7. Upload Evidence Modal ─────────────────────────────────────── */}
-      {showUploadModal && (
-        <div className="ev-modal-backdrop" onClick={() => setShowUploadModal(false)}>
+      {/* ── 7. Upload Evidence Modal (Viewport-Fixed Portal) ─────────────────── */}
+      {showUploadModal && typeof document !== "undefined" && createPortal(
+        <div
+          className="ev-modal-backdrop"
+          onClick={() => {
+            setShowUploadModal(false);
+            setUploadStatus(null);
+          }}
+        >
           <div
             className="ev-modal-chassis"
             onClick={(e) => e.stopPropagation()}
@@ -598,6 +689,7 @@ export default function EvidencePage() {
           >
             <div className="ev-modal-header">
               <h3 id="modal-evidence-title" className="ev-modal-title">
+                <span style={{ color: "var(--ev-accent-blue)", fontSize: "1.1rem" }}>🛡</span>
                 Upload Defence Evidence
               </h3>
               <button
@@ -608,12 +700,13 @@ export default function EvidencePage() {
                   setUploadStatus(null);
                 }}
                 aria-label="Close modal"
+                title="Close modal"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleUpload} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <form onSubmit={handleUpload} className="ev-modal-body">
               {uploadStatus && (
                 <div
                   style={{
@@ -630,6 +723,24 @@ export default function EvidencePage() {
                 </div>
               )}
 
+              {/* DEMO DATA QUICK FILL BAR */}
+              <div className="ev-demo-bar">
+                <div className="ev-demo-bar-info">
+                  <span className="ev-demo-badge">SIH DEMO</span>
+                  <span className="ev-demo-text">Pre-fill realistic defence evidence report</span>
+                </div>
+                <button
+                  type="button"
+                  id="ev-load-demo-btn"
+                  className={`ev-load-demo-btn ${demoLoaded ? "ev-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Automatically fill evidence form with realistic demo values"
+                >
+                  <span className="ev-demo-icon">{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "DEMO DATA LOADED" : "LOAD DEMO DATA"}</span>
+                </button>
+              </div>
+
               <div>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--ev-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Target Asset ID *
@@ -640,7 +751,7 @@ export default function EvidencePage() {
                   style={{ height: 42, paddingLeft: 14 }}
                   value={uploadAssetId}
                   onChange={(e) => setUploadAssetId(e.target.value)}
-                  placeholder="e.g. EF-2026-00421"
+                  placeholder="e.g. EF-2026-001"
                   required
                 />
               </div>
@@ -667,36 +778,58 @@ export default function EvidencePage() {
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--ev-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Document File (SHA-256 Hashed) *
                 </label>
+                {uploadFile && (
+                  <div className="ev-file-preview-pill">
+                    <span className="ev-file-icon">📄</span>
+                    <span className="ev-file-name">{uploadFile.name}</span>
+                    <span className="ev-file-size">({(uploadFile.size / 1024).toFixed(1)} KB)</span>
+                    <span className="ev-demo-badge" style={{ marginLeft: "auto" }}>Demo Ready</span>
+                  </div>
+                )}
                 <input
                   type="file"
-                  style={{ width: "100%", padding: "10px 0", color: "var(--ev-text-body)", fontSize: "0.8125rem" }}
+                  style={{ width: "100%", padding: "8px 0", color: "var(--ev-text-body)", fontSize: "0.8125rem" }}
                   onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  required
+                  required={!uploadFile}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
+              <div className="ev-modal-footer">
                 <button
                   type="button"
-                  className="ev-btn-refresh"
-                  onClick={() => {
-                    setShowUploadModal(false);
-                    setUploadStatus(null);
-                  }}
+                  id="ev-load-demo-footer-btn"
+                  className={`ev-load-demo-footer-btn ${demoLoaded ? "ev-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Pre-fill form with synthetic demo values"
                 >
-                  Cancel
+                  <span>{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "Demo Data Applied" : "USE DUMMY DATA"}</span>
                 </button>
-                <button
-                  type="submit"
-                  className="ev-btn-upload"
-                  disabled={isUploading}
-                >
-                  {isUploading ? "Uploading & Hashing..." : "Upload Evidence"}
-                </button>
+
+                <div style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
+                  <button
+                    type="button"
+                    className="ev-btn-refresh"
+                    onClick={() => {
+                      setShowUploadModal(false);
+                      setUploadStatus(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="ev-btn-upload"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? "Uploading & Hashing..." : "Upload Evidence"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
