@@ -122,6 +122,8 @@ Historical forensic reports and previous implementation snapshots are kept under
 
 Never commit private keys, JWT secrets, production database credentials, or MinIO credentials. Use separate credentials for local development and deployment. Review and rotate all default development secrets before exposing any service beyond localhost.
 
+
 ## License
 
 This repository currently declares the backend and contract packages as private/unlicensed. Add the project license and contribution policy before publishing it as an open-source package.
+
