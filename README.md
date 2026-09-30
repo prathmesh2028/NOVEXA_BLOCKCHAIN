@@ -1,4 +1,4 @@
-# KavachTrust
+ # KavachTrust
 
 KavachTrust is a defense-asset traceability platform for registering assets, collecting technical evidence, recording inspections, managing lifecycle state, and producing tamper-evident verification proofs. This repository contains the web application, NestJS API, PostgreSQL data model, object-storage integration, and EVM smart-contract layer.
 
