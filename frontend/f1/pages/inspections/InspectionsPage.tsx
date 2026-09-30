@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { api } from "../../services/api";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
+import { inspectionService } from "../../services/inspections";
 import { formatDateTime } from "../../data/utils";
+import { DemoRecord } from "../../data/demoData";
 import "./InspectionsPage.css";
 
 const DEMO_INSPECTION_DATA = {
-  assetId: "EF-2026-001",
+  assetId: "TIR-2026-003076",
   result: "PASS",
   notes:
     "Visual inspection completed. Assembly integrity verified. Connector pins inspected and found within acceptable limits. Calibration status confirmed. No critical defects observed.",
@@ -29,6 +31,7 @@ export default function InspectionsPage() {
     notes: "",
     evidenceIds: [] as string[],
   });
+  const [deciding, setDeciding] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInspections();
@@ -38,7 +41,7 @@ export default function InspectionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<any>("/inspections");
+      const data = await inspectionService.listInspections();
       setInspections(data.items || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch inspections");
@@ -65,16 +68,39 @@ export default function InspectionsPage() {
     }, 2500);
   };
 
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setRecordForm(prev => ({ ...prev, assetId: record.data.asset_id }));
+    }
+  };
+
   const handleRecordInspection = async (e: React.FormEvent) => {
     e.preventDefault();
     setRecordError(null);
     try {
-      await api.post("/inspections/record", recordForm);
+      await inspectionService.recordInspection({
+        asset_id: recordForm.assetId,
+        result: recordForm.result as 'PASS' | 'FAIL' | 'CONDITIONAL',
+        notes: recordForm.notes,
+        evidence_ids: recordForm.evidenceIds,
+      });
       setShowRecordModal(false);
       setRecordForm({ assetId: "", result: "PASS", notes: "", evidenceIds: [] });
       fetchInspections();
     } catch (err: any) {
       setRecordError(err.message || "Failed to record inspection");
+    }
+  };
+
+  const handleDecideInspection = async (inspectionId: string, decision: 'ACCEPT' | 'REJECT') => {
+    setDeciding(inspectionId);
+    try {
+      await inspectionService.decideInspection(inspectionId, { decision });
+      fetchInspections();
+    } catch (err: any) {
+      setError(err.message || `Failed to ${decision.toLowerCase()} inspection`);
+    } finally {
+      setDeciding(null);
     }
   };
 
@@ -209,7 +235,7 @@ export default function InspectionsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-                  {["Target Asset", "Inspector DID", "Result Status", "Inspection Notes", "Evidence", "Timestamp", "Action"].map((h) => (
+                  {["Target Asset", "Inspector DID", "Result Status", "Inspection Notes", "Evidence", "Timestamp", "Decision", "Action"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -252,6 +278,34 @@ export default function InspectionsPage() {
                     </td>
                     <td style={{ padding: "14px 16px", fontSize: "0.75rem", color: "var(--muted)", whiteSpace: "nowrap" }}>
                       {formatDateTime(inspection.createdAt)}
+                    </td>
+                    <td style={{ padding: "14px 16px" }}>
+                      {(inspection.asset?.lifecycleState === 'RECEIVED' || inspection.asset?.lifecycleState === 'INSPECTION_RECORDED') && (
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button
+                            className="btn-primary"
+                            style={{ fontSize: "0.7rem", padding: "2px 8px", minWidth: 50 }}
+                            onClick={() => handleDecideInspection(inspection.id, 'ACCEPT')}
+                            disabled={deciding === inspection.id}
+                          >
+                            {deciding === inspection.id ? '...' : 'ACCEPT'}
+                          </button>
+                          <button
+                            className="btn-secondary"
+                            style={{ fontSize: "0.7rem", padding: "2px 8px", minWidth: 50, background: "#ef4444", borderColor: "#dc2626" }}
+                            onClick={() => handleDecideInspection(inspection.id, 'REJECT')}
+                            disabled={deciding === inspection.id}
+                          >
+                            {deciding === inspection.id ? '...' : 'REJECT'}
+                          </button>
+                        </div>
+                      )}
+                      {inspection.asset?.lifecycleState === 'ACCEPTED_FOR_ASSEMBLY' && (
+                        <StatusBadge status="ACCEPTED" size="sm" />
+                      )}
+                      {inspection.asset?.lifecycleState === 'REJECTED_QUARANTINED' && (
+                        <StatusBadge status="REJECTED" size="sm" />
+                      )}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <Link to={`/app/assets/${inspection.assetId}`} className="btn-secondary" style={{ fontSize: "0.75rem", padding: "4px 10px" }}>
@@ -328,15 +382,18 @@ export default function InspectionsPage() {
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Target Asset ID *
                 </label>
-                <input
-                  type="text"
-                  className="internal-search-input"
-                  style={{ width: "100%" }}
-                  value={recordForm.assetId}
-                  onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
-                  placeholder="e.g. EF-2026-00421 or UUID"
-                  required
-                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="text"
+                    className="internal-search-input"
+                    style={{ flex: 1 }}
+                    value={recordForm.assetId}
+                    onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
+                    placeholder="e.g., TIR-2026-003076 or UUID"
+                    required
+                  />
+                  <DemoDataDropdown type="asset" onSelect={handleDemoDataSelect} />
+                </div>
               </div>
 
               <div>

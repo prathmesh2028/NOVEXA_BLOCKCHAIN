@@ -51,19 +51,41 @@ export default function SuppliersList() {
   }, [role, user]);
 
   const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
-  const handleApprove = (id: string) => {
-    setApprovalStatus((prev) => ({
-      ...prev,
-      [id]: prev[id] === "approved" ? ("" as any) : "approved",
-    }));
+  const handleApprove = async (id: string) => {
+    setApprovingId(id);
+    try {
+      // For suppliers, we update their status directly via the supply chain API
+      await supplyChainService.updateSupplier(id, { status: 'ACTIVE' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [id]: "approved",
+      }));
+      fetchSuppliers(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to approve supplier:', err);
+      alert('Failed to approve supplier: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
   };
 
-  const handleDisapprove = (id: string) => {
-    setApprovalStatus((prev) => ({
-      ...prev,
-      [id]: prev[id] === "disapproved" ? ("" as any) : "disapproved",
-    }));
+  const handleDisapprove = async (id: string) => {
+    setApprovingId(id);
+    try {
+      await supplyChainService.updateSupplier(id, { status: 'SUSPENDED' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [id]: "disapproved",
+      }));
+      fetchSuppliers(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to disapprove supplier:', err);
+      alert('Failed to disapprove supplier: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
   };
 
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([]);

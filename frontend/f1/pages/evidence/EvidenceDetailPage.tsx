@@ -4,10 +4,12 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { formatDateTime } from "../../data/utils";
 import { evidenceService } from "../../services/evidence";
+import { assetService } from "../../services/assets";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [backendEvidence, setBackendEvidence] = useState<any>(null);
+  const [asset, setAsset] = useState<any>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -15,6 +17,14 @@ export default function EvidenceDetailPage() {
       .then(res => setBackendEvidence(res))
       .catch(err => console.warn("Could not fetch evidence from backend:", err));
   }, [id]);
+
+  useEffect(() => {
+    if (backendEvidence?.assetId) {
+      assetService.getAsset(backendEvidence.assetId)
+        .then(res => setAsset(res))
+        .catch(err => console.warn("Could not fetch asset:", err));
+    }
+  }, [backendEvidence?.assetId]);
 
   const evidence = backendEvidence ? {
     id: backendEvidence.evidence_id || backendEvidence.id,
@@ -29,6 +39,15 @@ export default function EvidenceDetailPage() {
     integrityVerified: backendEvidence.integrity_verified ?? true,
     blockchainTx: backendEvidence.blockchain_tx,
     createdAt: backendEvidence.created_at,
+    uploadedBy: backendEvidence.uploaded_by || 'System',
+    uploadedByRole: backendEvidence.uploaded_by_role || 'SYSTEM',
+    uploadedAt: backendEvidence.created_at,
+  } : null;
+
+  const linkedAsset = asset ? {
+    id: asset.asset_id || asset.id,
+    type: asset.type,
+    batchId: asset.batch_id,
   } : null;
 
   if (!evidence) {
@@ -145,15 +164,15 @@ export default function EvidenceDetailPage() {
           </div>
 
           {/* Asset context */}
-          {asset && (
+          {linkedAsset && (
             <div className="panel" style={{ padding: 20 }}>
               <div className="section-label" style={{ marginBottom: 12 }}>LINKED ASSET</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div className="meta-id" style={{ color: "#60a5fa", marginBottom: 4 }}>{asset.id}</div>
-                  <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{asset.type} · {asset.batchId}</div>
+                  <div className="meta-id" style={{ color: "#60a5fa", marginBottom: 4 }}>{linkedAsset.id}</div>
+                  <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{linkedAsset.type} · {linkedAsset.batchId}</div>
                 </div>
-                <Link to={`/app/assets/${asset.id}`} className="btn-secondary" style={{ fontSize: "0.75rem" }}>
+                <Link to={`/app/assets/${linkedAsset.id}`} className="btn-secondary" style={{ fontSize: "0.75rem" }}>
                   View Asset →
                 </Link>
               </div>

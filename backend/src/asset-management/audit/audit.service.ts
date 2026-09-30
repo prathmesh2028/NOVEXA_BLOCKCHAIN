@@ -133,10 +133,6 @@ export class AuditService {
       events = dbEvents;
       total = dbTotal;
     } catch (e: any) {
-      if (process.env.APP_ENV === 'demo' || process.env.NODE_ENV === 'demo' || process.env.NODE_ENV === 'development') {
-        this.logger.warn(`Prisma listEvents failed: ${e.message}. Returning empty list for demo.`);
-        return { items: [], total: 0, page, page_size: pageSize, has_next: false };
-      }
       throw e;
     }
 

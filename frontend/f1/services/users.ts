@@ -34,5 +34,9 @@ export const usersService = {
 
   inviteUser: async (data: { email: string; name: string; role: string }) => {
     return api.post<UserResponse>('/users', data);
+  },
+
+  updateUser: async (id: string, data: { status?: string; roles?: string[] }) => {
+    return api.patch<UserResponse>(`/users/${id}`, data);
   }
 };

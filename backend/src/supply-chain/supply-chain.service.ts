@@ -30,16 +30,11 @@ export class SupplyChainService {
 
   // SUPPLIERS
   async getSuppliers() {
-    try {
-      const list = await this.prisma.supplier.findMany({
-        include: { facilities: true },
-        orderBy: { createdAt: 'desc' },
-      });
-      return list.map((s) => this.formatSupplier(s));
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty suppliers list: ${err.message}`);
-      return [];
-    }
+    const list = await this.prisma.supplier.findMany({
+      include: { facilities: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return list.map((s) => this.formatSupplier(s));
   }
 
   async getSupplier(id: string) {
@@ -95,12 +90,7 @@ export class SupplyChainService {
 
   // FACILITIES
   async getFacilities() {
-    try {
-      return await this.prisma.facility.findMany({ include: { supplier: true } });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty facilities list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.facility.findMany({ include: { supplier: true } });
   }
 
   async createFacility(data: any, userId: string) {
@@ -151,12 +141,7 @@ export class SupplyChainService {
 
   // LOTS
   async getLots() {
-    try {
-      return await this.prisma.lot.findMany({ include: { supplier: true } });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty lots list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.lot.findMany({ include: { supplier: true } });
   }
 
   async createLot(data: any, userId: string) {
@@ -234,12 +219,7 @@ export class SupplyChainService {
 
   // SHIPMENTS
   async getShipments() {
-    try {
-      return await this.prisma.shipment.findMany({ include: { dispatchFacility: true, receiveFacility: true } });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty shipments list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.shipment.findMany({ include: { dispatchFacility: true, receiveFacility: true } });
   }
 
   async createShipment(data: any, userId: string) {
@@ -341,15 +321,10 @@ export class SupplyChainService {
 
   // CUSTODY TRANSFERS
   async getCustodyTransfers() {
-    try {
-      return await this.prisma.custodyTransfer.findMany({
-        include: { shipment: true },
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty custody transfers list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.custodyTransfer.findMany({
+      include: { shipment: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async createCustodyTransfer(data: any, userId: string) {
@@ -435,19 +410,14 @@ export class SupplyChainService {
 
   // SUPPLY CHAIN EVENTS
   async getSupplyChainEvents(params: { entityType?: string; entityId?: string } = {}) {
-    try {
-      const where: any = {};
-      if (params.entityType) where.entityType = params.entityType;
-      if (params.entityId) where.entityId = params.entityId;
+    const where: any = {};
+    if (params.entityType) where.entityType = params.entityType;
+    if (params.entityId) where.entityId = params.entityId;
 
-      return await this.prisma.supplyChainEvent.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty events list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.supplyChainEvent.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async createSupplyChainEvent(data: any, userId: string) {
