@@ -256,21 +256,43 @@ export default function UsersPage() {
     );
   }, [role, user]);
 
-  /* Track frontend-only approval state per user without modifying backend */
+  /* Track approval state using real backend approval service */
   const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
-  const handleApprove = (userId: string) => {
-    setApprovalStatus((prev) => ({
-      ...prev,
-      [userId]: "approved",
-    }));
+  const handleApprove = async (userId: string) => {
+    setApprovingId(userId);
+    try {
+      // Use the real approval service to approve the user
+      await usersService.updateUser(userId, { status: 'ACTIVE' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [userId]: "approved",
+      }));
+      fetchUsers(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to approve user:', err);
+      alert('Failed to approve user: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
   };
 
-  const handleDisapprove = (userId: string) => {
-    setApprovalStatus((prev) => ({
-      ...prev,
-      [userId]: "disapproved",
-    }));
+  const handleDisapprove = async (userId: string) => {
+    setApprovingId(userId);
+    try {
+      await usersService.updateUser(userId, { status: 'SUSPENDED' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [userId]: "disapproved",
+      }));
+      fetchUsers(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to disapprove user:', err);
+      alert('Failed to disapprove user: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
   };
 
   const [users, setUsers] = useState<UserResponse[]>([]);
