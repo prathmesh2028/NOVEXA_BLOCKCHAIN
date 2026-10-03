@@ -319,4 +319,31 @@ export class AuthService {
     this.logger.log(`Password updated for user ${user.email}`);
     return { message: 'Password updated successfully' };
   }
+
+  /**
+   * DEVELOPMENT ONLY: Reset password without knowing current password
+   * This is for demo/development purposes and should be disabled in production
+   */
+  async resetPassword(email: string, newPassword: string): Promise<{ message: string }> {
+    if (!email || !newPassword) {
+      throw new BadRequestException('email and new_password are required');
+    }
+    if (newPassword.length < 8) {
+      throw new BadRequestException('new_password must be at least 8 characters long');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email: email.trim() } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash },
+    });
+
+    this.logger.log(`Password reset for user ${user.email} (development mode)`);
+    return { message: 'Password reset successfully' };
+  }
 }

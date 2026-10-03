@@ -6,15 +6,18 @@ import { certificationService, CertificationResponse } from "../../services/cert
 import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import CertificateQR from "../../components/ui/CertificateQR";
 import { DemoRecord } from "../../data/demoData";
+import { useAuth } from "../../context/AuthContext";
 
 export default function CertificationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const [cert, setCert] = useState<CertificationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPermissionError, setIsPermissionError] = useState(false);
 
   const handleDemoDataSelect = (record: DemoRecord) => {
     if (record.type === 'certification') {
@@ -26,11 +29,17 @@ export default function CertificationDetailPage() {
     if (!id) return;
     setLoading(true);
     setError(null);
+    setIsPermissionError(false);
     certificationService.getCertification(id)
       .then(setCert)
       .catch((err) => {
         console.error("Failed to load certification:", err);
-        setError(err.message || "Failed to load certification");
+        const errorMessage = err.message || "Failed to load certification";
+        setError(errorMessage);
+        // Detect permission errors
+        if (errorMessage.includes("Insufficient permissions") || errorMessage.includes("403") || errorMessage.includes("Forbidden")) {
+          setIsPermissionError(true);
+        }
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -64,17 +73,17 @@ export default function CertificationDetailPage() {
               width: 64,
               height: 64,
               borderRadius: "50%",
-              background: "rgba(239, 68, 68, 0.12)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
+              background: isPermissionError ? "rgba(245, 158, 11, 0.12)" : "rgba(239, 68, 68, 0.12)",
+              border: isPermissionError ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid rgba(239, 68, 68, 0.3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "2rem",
-              color: "#ef4444",
+              color: isPermissionError ? "#f59e0b" : "#ef4444",
               margin: "0 auto 20px",
             }}
           >
-            ✕
+            {isPermissionError ? "⚠" : "✕"}
           </div>
           <h2
             className="font-display"
@@ -86,7 +95,7 @@ export default function CertificationDetailPage() {
               letterSpacing: "0.02em",
             }}
           >
-            ERROR LOADING CERTIFICATION
+            {isPermissionError ? "SESSION EXPIRED" : "ERROR LOADING CERTIFICATION"}
           </h2>
           <p
             style={{
@@ -96,15 +105,32 @@ export default function CertificationDetailPage() {
               lineHeight: 1.6,
             }}
           >
-            {error}
+            {isPermissionError 
+              ? "Your session has expired or you don't have permission to access this certification. Please login again to continue."
+              : error}
           </p>
-          <Link
-            to="/app/certifications"
-            className="btn-primary"
-            style={{ padding: "10px 20px", textDecoration: "none" }}
-          >
-            Back to Certifications
-          </Link>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            {isPermissionError ? (
+              <button
+                onClick={() => {
+                  logout();
+                  navigate("/login");
+                }}
+                className="btn-primary"
+                style={{ padding: "10px 20px", border: "none", cursor: "pointer" }}
+              >
+                Re-login
+              </button>
+            ) : (
+              <Link
+                to="/app/certifications"
+                className="btn-primary"
+                style={{ padding: "10px 20px", textDecoration: "none" }}
+              >
+                Back to Certifications
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     );
