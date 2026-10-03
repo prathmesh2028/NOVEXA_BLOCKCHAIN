@@ -11,6 +11,17 @@ export function ConnectWalletButton({ expectedChainId, variant = 'blue' }: Props
 
   const isUnsupportedNetwork = expectedChainId && chainId && expectedChainId !== chainId;
 
+  // Suppress wallet extension errors from being displayed
+  const displayError = error && !(
+    error.includes('Broadcast channel') ||
+    error.includes('channel secret') ||
+    error.includes('UnknownRpcError') ||
+    error.includes('BinanceInjectedProvider') ||
+    error.includes('ProvidersManager') ||
+    error.includes('viem') ||
+    error.includes('Wallet connection not available in development')
+  ) ? error : null;
+
   if (address) {
     return (
       <div className="flex items-center space-x-3 px-3 py-1 rounded-lg border border-[var(--border,#303030)] bg-[var(--panel,#181818)]">
@@ -67,7 +78,7 @@ export function ConnectWalletButton({ expectedChainId, variant = 'blue' }: Props
         </svg>
         <span>{isConnecting ? 'Connecting...' : 'Connect MetaMask'}</span>
       </button>
-      {error && <span className="text-xs text-red-500 mt-1">{error}</span>}
+      {displayError && <span className="text-xs text-red-500 mt-1">{displayError}</span>}
     </div>
   );
 }

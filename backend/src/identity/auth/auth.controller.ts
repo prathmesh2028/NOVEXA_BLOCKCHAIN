@@ -50,4 +50,15 @@ export class AuthController {
     const userId = (req as any).user.sub;
     return this.authService.changePassword(userId, body.current_password, body.new_password);
   }
+
+  /**
+   * POST /auth/reset-password (DEVELOPMENT ONLY)
+   * Allows resetting a user's password without knowing the current password.
+   * This is for demo/development purposes only and should be disabled in production.
+   */
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(@Body() body: { email: string; new_password: string }) {
+    return this.authService.resetPassword(body.email, body.new_password);
+  }
 }

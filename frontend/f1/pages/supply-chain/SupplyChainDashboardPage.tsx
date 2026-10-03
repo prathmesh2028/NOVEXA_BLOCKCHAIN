@@ -45,8 +45,16 @@ export default function SupplyChainDashboardPage() {
   const [activeTab, setActiveTab] = useState("suppliers");
   const [counts, setCounts] = useState({ suppliers: 0, facilities: 0, lots: 0, shipments: 0 });
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [isDemoActive, setIsDemoActive] = useState(false);
+
+  const demoCounts = { suppliers: 8, facilities: 5, lots: 12, shipments: 6 };
 
   useEffect(() => {
+    if (isDemoActive) {
+      setCounts(demoCounts);
+      return;
+    }
+
     Promise.allSettled([
       supplyChainService.listSuppliers(),
       supplyChainService.listFacilities(),
@@ -60,7 +68,7 @@ export default function SupplyChainDashboardPage() {
         shipments: shpRes.status === "fulfilled" ? (shpRes.value.items?.length ?? 0) : 0,
       });
     });
-  }, []);
+  }, [isDemoActive]);
 
   /* Subtle mouse parallax for decorative background elements only (2px) */
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -106,6 +114,11 @@ export default function SupplyChainDashboardPage() {
         <div className="sc-telemetry-badge">
           <span className="sc-beacon-dot" />
           <span>BEL DEFENCE SUPPLY CHAIN TELEMETRY • LIVE LEDGER ANCHORED</span>
+          {isDemoActive && (
+            <span style={{ marginLeft: 12, padding: "4px 8px", background: "rgba(37,99,235,0.15)", borderRadius: 4, fontSize: "0.7rem", fontWeight: 600, color: "#3b82f6" }}>
+              DEMO MODE
+            </span>
+          )}
         </div>
         <PageHeader
           title="Supply Chain Command"
@@ -114,6 +127,24 @@ export default function SupplyChainDashboardPage() {
             { label: "Dashboard", to: "/app/dashboard" },
             { label: "Supply Chain" },
           ]}
+          action={
+            <button
+              onClick={() => setIsDemoActive(!isDemoActive)}
+              style={{
+                padding: "6px 12px",
+                background: isDemoActive ? "rgba(239,68,68,0.15)" : "rgba(37,99,235,0.15)",
+                border: isDemoActive ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(37,99,235,0.3)",
+                borderRadius: 6,
+                color: isDemoActive ? "#ef4444" : "#3b82f6",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {isDemoActive ? "✕ Reset Demo" : "⚡ Load Demo"}
+            </button>
+          }
         />
       </div>
 
