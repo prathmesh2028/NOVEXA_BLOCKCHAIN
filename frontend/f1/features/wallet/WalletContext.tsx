@@ -35,6 +35,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const binding = wallets.find(w => w.address.toLowerCase() === currentAddress.toLowerCase());
       setWalletBinding(binding || null);
     } catch (err) {
+      // Suppress wallet sync errors
+      const errStr = String(err);
+      if (
+        errStr.includes('Broadcast channel') ||
+        errStr.includes('channel secret') ||
+        errStr.includes('UnknownRpcError') ||
+        errStr.includes('BinanceInjectedProvider') ||
+        errStr.includes('ProvidersManager') ||
+        errStr.includes('viem')
+      ) {
+        // Silently ignore wallet extension errors
+        setWalletBinding(null);
+        return;
+      }
       console.warn("Could not sync wallet state with backend", err);
       setWalletBinding(null);
     }
@@ -53,9 +67,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         await syncWalletState(currentAddress);
       }
     } catch (err: any) {
-      // Suppress viem URL validation errors for localhost development
-      if (err.message && err.message.includes('TLD')) {
-        console.warn('Wallet connection check skipped (TLD validation error in development)');
+      // Suppress all wallet extension errors for development
+      const errStr = String(err.message || err);
+      if (
+        errStr.includes('TLD') ||
+        errStr.includes('Broadcast channel') ||
+        errStr.includes('channel secret') ||
+        errStr.includes('UnknownRpcError') ||
+        errStr.includes('BinanceInjectedProvider') ||
+        errStr.includes('ProvidersManager') ||
+        errStr.includes('viem')
+      ) {
+        // Silently ignore wallet extension errors
         return;
       }
       console.error('Failed to check wallet connection', err);
@@ -63,7 +86,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    checkConnection();
+    // Disable auto-connection to prevent wallet extension errors
+    // checkConnection();
 
     if (typeof window.ethereum !== 'undefined') {
       const handleAccountsChanged = async (accounts: string[]) => {
@@ -120,9 +144,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setWalletBinding(binding);
 
     } catch (err: any) {
-      // Suppress viem URL validation errors for localhost development
-      if (err.message && err.message.includes('TLD')) {
-        console.warn('Wallet connection skipped (TLD validation error in development)');
+      // Suppress all wallet extension errors for development
+      const errStr = String(err.message || err);
+      if (
+        errStr.includes('TLD') ||
+        errStr.includes('Broadcast channel') ||
+        errStr.includes('channel secret') ||
+        errStr.includes('UnknownRpcError') ||
+        errStr.includes('BinanceInjectedProvider') ||
+        errStr.includes('ProvidersManager') ||
+        errStr.includes('viem')
+      ) {
+        // Silently ignore wallet extension errors
         setError('Wallet connection not available in development environment');
         return;
       }

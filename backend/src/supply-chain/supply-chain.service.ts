@@ -30,11 +30,16 @@ export class SupplyChainService {
 
   // SUPPLIERS
   async getSuppliers() {
-    const list = await this.prisma.supplier.findMany({
-      include: { facilities: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    return list.map((s) => this.formatSupplier(s));
+    try {
+      const list = await this.prisma.supplier.findMany({
+        include: { facilities: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      return list.map((s) => this.formatSupplier(s));
+    } catch (error: any) {
+      this.logger.error('Failed to fetch suppliers:', error.message);
+      return [];
+    }
   }
 
   async getSupplier(id: string) {
@@ -88,9 +93,46 @@ export class SupplyChainService {
     return this.formatSupplier(supplier);
   }
 
+  async updateSupplier(id: string, data: any, userId: string) {
+    const supplier = await this.prisma.supplier.findFirst({
+      where: { OR: [{ id }, { supplierId: id }] },
+    });
+    if (!supplier) throw new NotFoundException('Supplier not found');
+
+    const updated = await this.prisma.supplier.update({
+      where: { id: supplier.id },
+      data: {
+        ...(data.name && { name: data.name.trim() }),
+        ...(data.status && { status: data.status }),
+        ...(data.contactInfo && { contactInfo: data.contactInfo }),
+      },
+      include: { facilities: true },
+    });
+
+    const actorId = userId && userId !== 'system' ? userId : undefined;
+    try {
+      await this.audit.recordEvent({
+        eventType: 'SUPPLIER_UPDATED',
+        action: 'Updated supplier status',
+        resourceType: 'Supplier',
+        resourceId: updated.id,
+        actorId,
+        details: `Updated supplier ${updated.name} (${updated.supplierId}) to status ${data.status || 'updated'}`,
+      });
+    } catch (auditErr: any) {
+      this.logger.warn(`Failed to record audit event for supplier ${updated.id}: ${auditErr?.message || auditErr}`);
+    }
+    return this.formatSupplier(updated);
+  }
+
   // FACILITIES
   async getFacilities() {
-    return await this.prisma.facility.findMany({ include: { supplier: true } });
+    try {
+      return await this.prisma.facility.findMany({ include: { supplier: true } });
+    } catch (error: any) {
+      this.logger.error('Failed to fetch facilities:', error.message);
+      return [];
+    }
   }
 
   async createFacility(data: any, userId: string) {
@@ -141,7 +183,12 @@ export class SupplyChainService {
 
   // LOTS
   async getLots() {
-    return await this.prisma.lot.findMany({ include: { supplier: true } });
+    try {
+      return await this.prisma.lot.findMany({ include: { supplier: true } });
+    } catch (error: any) {
+      this.logger.error('Failed to fetch lots:', error.message);
+      return [];
+    }
   }
 
   async createLot(data: any, userId: string) {

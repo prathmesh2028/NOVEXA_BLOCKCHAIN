@@ -763,6 +763,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  min-width: 0;
 }
 
 .cmd-demo-card:hover {
@@ -782,12 +783,18 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 3px;
+  gap: 6px;
 }
 
 .cmd-demo-name {
   font-size: 0.76rem;
   font-weight: 600;
   color: #f1f5f9;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cmd-demo-role-pill {
@@ -798,6 +805,11 @@
   border-radius: 3px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  flex-shrink: 0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pill-admin {

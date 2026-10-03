@@ -11,7 +11,7 @@ p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/blockchain*, GET
 p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/verification*, GET
 p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/dashboard*, GET
 p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/search*, GET
-p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/suppliers, (GET)|(POST)
+p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/suppliers, (GET)|(POST)|(PATCH)
 p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/facilities, (GET)|(POST)
 p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/lots, (GET)|(POST)
 p, PROCUREMENT_SUPPLY_CHAIN_OFFICER, /api/v1/supply-chain/shipments, (GET)|(POST)|(PATCH)
@@ -25,7 +25,8 @@ p, QUALITY_INSPECTOR, /api/v1/assets*, (GET)|(POST)|(PUT)
 p, QUALITY_INSPECTOR, /api/v1/batches*, GET
 p, QUALITY_INSPECTOR, /api/v1/evidence*, (GET)|(POST)
 p, QUALITY_INSPECTOR, /api/v1/physical-bindings*, (GET)|(POST)|(PATCH)|(DELETE)
-p, QUALITY_INSPECTOR, /api/v1/inspections*, (GET)|(POST)|(PUT)
+p, QUALITY_INSPECTOR, /api/v1/inspections, GET
+p, QUALITY_INSPECTOR, /api/v1/inspections*, (GET)|(POST)|(PUT)|(PATCH)
 p, QUALITY_INSPECTOR, /api/v1/lifecycle*, (GET)|(POST)
 p, QUALITY_INSPECTOR, /api/v1/technical-records*, (GET)|(POST)|(PUT)
 p, QUALITY_INSPECTOR, /api/v1/approvals*, (GET)|(POST)
@@ -44,6 +45,7 @@ p, QUALITY_INSPECTOR, /api/v1/certifications, (GET)|(POST)
 p, QUALITY_INSPECTOR, /api/v1/certifications/queue, GET
 p, QUALITY_INSPECTOR, /api/v1/assets/eligible, GET
 p, QUALITY_INSPECTOR, /api/v1/audit*, GET
+p, QUALITY_INSPECTOR, /*, GET
 p, AUDITOR, /*, GET
 p, AUDITOR, /api/v1/notifications*, (GET)|(POST)|(PATCH)
 p, AUDITOR, /api/v1/verification*, (GET)|(POST)
