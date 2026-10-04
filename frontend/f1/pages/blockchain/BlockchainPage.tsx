@@ -26,10 +26,8 @@ export default function BlockchainPage() {
     setLoading(true);
     setError(null);
     try {
-      const [listRes, summaryRes] = await Promise.all([
-        blockchainService.listTransactions({ page_size: 100 }),
-        dashboardService.getSummary()
-      ]);
+      // Load transactions first (critical for blockchain page)
+      const listRes = await blockchainService.listTransactions({ page_size: 100 });
       setTxs(listRes.items || []);
       setTotal(listRes.total || (listRes.items ? listRes.items.length : 0));
 
@@ -49,6 +47,14 @@ export default function BlockchainPage() {
           latestBlock: "Not Available",
           status: "No Data"
         });
+      }
+
+      // Try to load dashboard summary (non-critical for blockchain page)
+      try {
+        await dashboardService.getSummary();
+      } catch (summaryErr) {
+        console.warn("Dashboard summary failed (non-critical for blockchain page):", summaryErr);
+        // Continue without dashboard data
       }
     } catch (err: any) {
       console.error(err);
@@ -108,7 +114,7 @@ export default function BlockchainPage() {
       {/* Network info */}
       <div className="bc-network-panel">
         <div className="bc-network-header">
-          <span style={{ color: "#22c55e", fontSize: "0.75rem" }}>●</span>
+          <span style={{ color: networkInfo.status === "Connected" ? "#22c55e" : "#f59e0b", fontSize: "0.75rem" }}>●</span>
           <span className="font-display bc-network-title">
             {networkInfo.network}
           </span>
@@ -314,7 +320,7 @@ export default function BlockchainPage() {
       )}
 
       <div style={{ marginTop: 16, fontSize: "0.75rem", color: "#737373", lineHeight: 1.6 }}>
-        BEL-TRUST-CHAIN is a synthetic demonstration blockchain. Transactions shown are for prototype purposes only and do not represent real on-chain activity.
+        Blockchain data is retrieved from the live BEL-TRUST-CHAIN network via the backend API.
       </div>
     </div>
   );
