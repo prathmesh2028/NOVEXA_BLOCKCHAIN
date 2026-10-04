@@ -322,7 +322,7 @@ export default function CertificationDetailPage() {
           <CertificateQR
             certId={cert.cert_id}
             assetId={cert.asset_id}
-            contractAddress={cert.contract_address}
+            contractAddress={cert.contract_address || undefined}
             size={160}
             showLabel={true}
           />

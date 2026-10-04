@@ -45,7 +45,7 @@ export const inspectionService = {
   },
 
   async listInspections(assetId?: string): Promise<InspectionListResponse> {
-    const params = assetId ? { asset_id: assetId } : {};
-    return api.get<InspectionListResponse>('/inspections', params);
+    const params = assetId ? `?asset_id=${assetId}` : '';
+    return api.get<InspectionListResponse>(`/inspections${params}`);
   },
 };

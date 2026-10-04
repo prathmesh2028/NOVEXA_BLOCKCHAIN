@@ -9,23 +9,23 @@ test.describe('KavachTrust E2E Flow', () => {
   test.beforeAll(async ({ request }) => {
     // Use real database-backed test users
     const systemAdminRes = await request.post('http://localhost:8000/api/v1/auth/login', {
-      data: { email: 'admin@kavachtrust.dev', password: 'admin123' }
+      data: { email: 'a.mehta@bel-defence.in', password: 'password' }
     });
     if (systemAdminRes.ok()) systemAdminToken = (await systemAdminRes.json()).access_token;
 
     const qualityInspectorRes = await request.post('http://localhost:8000/api/v1/auth/login', {
-      data: { email: 'inspector@kavachtrust.dev', password: 'inspector123' }
+      data: { email: 'r.kumar@bel-defence.in', password: 'password123' }
     });
     if (qualityInspectorRes.ok()) qualityInspectorToken = (await qualityInspectorRes.json()).access_token;
 
     const procurementOfficerRes = await request.post('http://localhost:8000/api/v1/auth/login', {
-      data: { email: 'procurement@kavachtrust.dev', password: 'procurement123' }
+      data: { email: 'p.sharma@bel-defence.in', password: 'password' }
     });
     if (procurementOfficerRes.ok()) procurementOfficerToken = (await procurementOfficerRes.json()).access_token;
 
-    // Auditor role - create if needed or use existing
+    // Auditor role - use real database user
     const auditorRes = await request.post('http://localhost:8000/api/v1/auth/login', {
-      data: { email: 'auditor@kavachtrust.dev', password: 'auditor123' }
+      data: { email: 'd.nair@bel-defence.in', password: 'password123' }
     });
     if (auditorRes.ok()) auditorToken = (await auditorRes.json()).access_token;
   });

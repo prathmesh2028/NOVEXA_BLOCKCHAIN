@@ -65,7 +65,13 @@ export const approvalService = {
     page?: number;
     page_size?: number;
   }): Promise<ApprovalListResponse> {
-    return api.get<ApprovalListResponse>('/approvals', params);
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.append('status', params.status);
+    if (params?.stage) searchParams.append('stage', params.stage);
+    if (params?.asset_id) searchParams.append('asset_id', params.asset_id);
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.page_size) searchParams.append('page_size', params.page_size.toString());
+    return api.get<ApprovalListResponse>(`/approvals?${searchParams.toString()}`);
   },
 
   async getApproval(id: string): Promise<Approval> {

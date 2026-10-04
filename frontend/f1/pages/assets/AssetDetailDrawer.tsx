@@ -51,6 +51,9 @@ export default function AssetDetailDrawer({ asset, onClose, loading = false }: A
     );
   }
 
+  // Guard against null asset (should not happen if loading is false)
+  if (!asset) return null;
+
   const handleCopyId = () => {
     navigator.clipboard.writeText(asset.id);
     setCopied(true);

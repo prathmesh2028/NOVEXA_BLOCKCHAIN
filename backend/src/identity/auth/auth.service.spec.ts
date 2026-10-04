@@ -52,6 +52,7 @@ describe('AuthService (Authentication & Password Management)', () => {
       jwtExpiry: '24h',
       jwtIssuer: 'kavachtrust',
       jwtAudience: 'kavachtrust-api',
+      isDemoMode: true,
     };
 
     service = new AuthService(mockPrisma, mockConfig);
@@ -67,6 +68,13 @@ describe('AuthService (Authentication & Password Management)', () => {
     it('rejects invalid password', async () => {
       await expect(
         service.login('admin@kavachtrust.gov.in', 'wrongpassword')
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    // SECURITY: Empty password must NEVER authenticate anyone, even in demo mode
+    it('rejects empty password even in demo mode', async () => {
+      await expect(
+        service.login('admin@kavachtrust.gov.in', '')
       ).rejects.toThrow(UnauthorizedException);
     });
 

@@ -1,6 +1,9 @@
 import { createContext, useContext, ReactNode } from "react";
 import type { Role } from "./AuthContext";
 
+// Re-export Role for use in other components
+export type { Role };
+
 interface RoleContextValue {
   getRoleLabel: (role: Role) => string;
   getRoleColor: (role: Role) => string;

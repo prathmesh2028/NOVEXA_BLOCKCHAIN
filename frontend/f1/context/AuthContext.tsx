@@ -85,9 +85,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           localStorage.setItem('kavach_user', JSON.stringify(userData));
         } catch (err) {
           console.warn('Session verification failed, clearing invalid session', err);
-          localStorage.removeItem('kavach_token');
-          localStorage.removeItem('kavach_user');
-          setUser(null);
+          // SECURITY: Check if token is still valid before deciding to logout
+          // Decode JWT to check expiration without network call
+          try {
+            const tokenParts = token.split('.');
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]));
+              const now = Date.now() / 1000;
+              // If token is not expired, preserve session during temporary network/DB failures
+              if (payload.exp && payload.exp > now) {
+                const cachedUser = localStorage.getItem('kavach_user');
+                if (cachedUser) {
+                  try {
+                    const parsed = JSON.parse(cachedUser);
+                    setUser(parsed);
+                    console.log('Using cached user data due to /me failure (token still valid)');
+                    return; // Don't logout - preserve session
+                  } catch (e) {
+                    // Parse failed, proceed to logout
+                  }
+                }
+              }
+            }
+            // Token is expired or invalid, clear session
+            localStorage.removeItem('kavach_token');
+            localStorage.removeItem('kavach_user');
+            setUser(null);
+          } catch (e) {
+            // Token is invalid, clear session
+            localStorage.removeItem('kavach_token');
+            localStorage.removeItem('kavach_user');
+            setUser(null);
+          }
         }
       }
     };

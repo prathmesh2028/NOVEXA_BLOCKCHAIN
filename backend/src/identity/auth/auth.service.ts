@@ -169,14 +169,13 @@ export class AuthService {
       }
     }
 
-    // DEMO MODE: Permit standard passwords
+    // DEMO MODE: Permit standard passwords (NEVER empty password)
     if (this.config.isDemoMode && !isPasswordValid) {
       if (
         password === 'password' ||
         password === 'admin' ||
         password === 'demo' ||
-        password === '123456' ||
-        !password
+        password === '123456'
       ) {
         isPasswordValid = true;
       }

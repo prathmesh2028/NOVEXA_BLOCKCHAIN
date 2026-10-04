@@ -15,6 +15,12 @@ export default function BlockchainPage() {
   const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedTx, setSelectedTx] = useState<BlockchainTransactionResponse | null>(null);
+  const [networkInfo, setNetworkInfo] = useState({
+    contractAddress: "Loading...",
+    network: "Loading...",
+    latestBlock: "Loading...",
+    status: "Loading..."
+  });
 
   const fetchData = async () => {
     setLoading(true);
@@ -26,9 +32,33 @@ export default function BlockchainPage() {
       ]);
       setTxs(listRes.items || []);
       setTotal(listRes.total || (listRes.items ? listRes.items.length : 0));
+
+      // Derive network info from first transaction if available
+      if (listRes.items && listRes.items.length > 0) {
+        const firstTx = listRes.items[0];
+        setNetworkInfo({
+          contractAddress: firstTx.contract_address || "Not Available",
+          network: firstTx.network || "BEL-TRUST-CHAIN",
+          latestBlock: firstTx.block_number ? firstTx.block_number.toLocaleString() : "Not Available",
+          status: "Connected"
+        });
+      } else {
+        setNetworkInfo({
+          contractAddress: "No Transactions",
+          network: "BEL-TRUST-CHAIN",
+          latestBlock: "Not Available",
+          status: "No Data"
+        });
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to load blockchain transactions");
+      setNetworkInfo({
+        contractAddress: "Error",
+        network: "Error",
+        latestBlock: "Error",
+        status: "Failed"
+      });
     } finally {
       setLoading(false);
     }
@@ -80,18 +110,18 @@ export default function BlockchainPage() {
         <div className="bc-network-header">
           <span style={{ color: "#22c55e", fontSize: "0.75rem" }}>●</span>
           <span className="font-display bc-network-title">
-            BEL-TRUST-CHAIN
+            {networkInfo.network}
           </span>
           <span className="bc-network-badge">
-            SYNTHETIC DEMO NETWORK
+            {networkInfo.status === "Connected" ? "LIVE NETWORK" : networkInfo.status}
           </span>
         </div>
         <div className="bc-network-grid">
           {[
-            { label: "Contract Address", value: "0x742d35Cc6634C0532925a3b8D4e9Cc7C0SYNTH", mono: true },
-            { label: "Consensus", value: "Proof-of-Authority (Demo)" },
-            { label: "Latest Block", value: "19,842,317" },
-            { label: "Network Status", value: "Synced ✓" },
+            { label: "Contract Address", value: networkInfo.contractAddress, mono: true },
+            { label: "Network", value: networkInfo.network },
+            { label: "Latest Block", value: networkInfo.latestBlock },
+            { label: "Network Status", value: networkInfo.status === "Connected" ? "Synced ✓" : networkInfo.status },
           ].map((f) => (
             <div key={f.label} className="bc-network-item">
               <div className="label">{f.label}</div>

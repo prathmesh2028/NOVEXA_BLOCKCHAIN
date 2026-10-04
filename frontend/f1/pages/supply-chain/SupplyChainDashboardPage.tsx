@@ -127,7 +127,7 @@ export default function SupplyChainDashboardPage() {
             { label: "Dashboard", to: "/app/dashboard" },
             { label: "Supply Chain" },
           ]}
-          action={
+          actions={
             <button
               onClick={() => setIsDemoActive(!isDemoActive)}
               style={{

@@ -40,7 +40,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     role: "QUALITY_INSPECTOR",
     rolePillClass: "pill-tech",
     email: "r.kumar@bel-defence.in",
-    password: "password",
+    password: "password123",
   },
   {
     id: "auditor",
@@ -48,7 +48,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     role: "AUDITOR",
     rolePillClass: "pill-auditor",
     email: "d.nair@bel-defence.in",
-    password: "password",
+    password: "password123",
   },
 ];
 
