@@ -45,8 +45,11 @@ const envSchema = z.object({
   MINIO_ACCESS_KEY: z.string().min(1),
   MINIO_SECRET_KEY: z.string().min(1),
   MINIO_BUCKET: z.string().default('kavachtrust-evidence'),
-  BLOCKCHAIN_RPC_URL: z.string().default('http://localhost:8545'),
-  BLOCKCHAIN_CHAIN_ID: z.coerce.number().default(31337),
+  BLOCKCHAIN_RPC_URL: z.string().transform(v => v || 'http://localhost:8545').default('http://localhost:8545'),
+  BLOCKCHAIN_CHAIN_ID: z.preprocess(
+    (v) => (v === '' || v === undefined || v === null ? 31337 : Number(v)),
+    z.number().default(31337),
+  ),
   BLOCKCHAIN_PRIVATE_KEY: z.string().min(1),
   CONTRACT_ADDRESS: z.string().default(''),
   BLOCKCHAIN_NETWORK_NAME: z.string().default('BEL-TRUST-CHAIN'),

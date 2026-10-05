@@ -31,8 +31,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
   });
 
-  // Global prefix
-  app.setGlobalPrefix(config.apiPrefix);
+  // Global prefix — root path excluded so Render health-check (GET /) returns 200
+  app.setGlobalPrefix(config.apiPrefix, { exclude: ['/'] });
 
   // Global Validation Pipe
   app.useGlobalPipes(
