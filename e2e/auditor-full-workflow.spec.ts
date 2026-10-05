@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:8444';
+const BASE_URL = 'http://localhost:8443';
 
 test.describe('AUDITOR - FULL WORKFLOW', () => {
   test.use({ storageState: '.auth/auditor-storage.json' });

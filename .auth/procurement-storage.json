@@ -1,0 +1,33 @@
+{
+  "cookies": [
+    {
+      "name": "kavach_token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiOWI3MjY1OC1jYzJmLTQwODEtODk5My1mNTMzNmY1ODdhMzYiLCJlbWFpbCI6InAuc2hhcm1hQGJlbC1kZWZlbmNlLmluIiwicm9sZXMiOlsiUFJPQ1VSRU1FTlRfU1VQUExZX0NIQUlOX09GRklDRVIiXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDIiLCJpYXQiOjE3OTExNjA4MDAsImV4cCI6MTc5MTI0NzIwMCwiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.iLtz-d_NoA_lr-_XwCWOtvBRbcDCU7GTOMnPa0-GahE",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:8443",
+      "localStorage": [
+        {
+          "name": "kavach_user",
+          "value": "{\"id\":\"usr-002\",\"email\":\"p.sharma@bel-defence.in\",\"name\":\"Priya Sharma\",\"roles\":[\"PROCUREMENT_SUPPLY_CHAIN_OFFICER\"]}"
+        },
+        {
+          "name": "kavach_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiOWI3MjY1OC1jYzJmLTQwODEtODk5My1mNTMzNmY1ODdhMzYiLCJlbWFpbCI6InAuc2hhcm1hQGJlbC1kZWZlbmNlLmluIiwicm9sZXMiOlsiUFJPQ1VSRU1FTlRfU1VQUExZX0NIQUlOX09GRklDRVIiXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDIiLCJpYXQiOjE3OTExNjA4MDAsImV4cCI6MTc5MTI0NzIwMCwiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.iLtz-d_NoA_lr-_XwCWOtvBRbcDCU7GTOMnPa0-GahE"
+        },
+        {
+          "name": "novexa-theme",
+          "value": "dark"
+        }
+      ]
+    }
+  ]
+}

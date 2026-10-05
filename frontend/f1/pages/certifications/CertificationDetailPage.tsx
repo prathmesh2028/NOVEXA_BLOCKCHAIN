@@ -316,7 +316,7 @@ export default function CertificationDetailPage() {
 
       <div className="panel" style={{ padding: "24px", marginBottom: "20px" }}>
         <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#e2e8f0", marginBottom: "16px" }}>
-          Certificate Verification QR
+          Digital Verification Locator
         </h3>
         <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
           <CertificateQR
@@ -328,7 +328,7 @@ export default function CertificationDetailPage() {
           />
         </div>
         <div style={{ textAlign: "center", fontSize: "0.75rem", color: "#64748b", marginTop: "8px" }}>
-          Scan this QR code to verify this certificate on the BEL-TRUST-CHAIN blockchain
+          Scan this locator code to retrieve digital provenance records from the verification system.
         </div>
       </div>
 

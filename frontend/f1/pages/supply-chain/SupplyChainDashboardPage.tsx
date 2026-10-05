@@ -239,15 +239,15 @@ export default function SupplyChainDashboardPage() {
           <div className="sc-pipeline-title-group">
             <div className="sc-pipeline-title">
               <span>DEFENCE CUSTODY PIPELINE</span>
-              <span style={{ fontSize: "0.65rem", opacity: 0.8 }}>• REAL-TIME PHYSICAL & DIGITAL TRACEABILITY</span>
+              <span style={{ fontSize: "0.65rem", opacity: 0.8 }}>• PILOT TRACKING SYSTEM</span>
             </div>
             <div className="sc-pipeline-desc">
-              Immutable physical-to-digital chain of custody from tier-1 supplier intake to operational deployment
+              Digital ledger recording declared custody transfers from supplier intake to operational deployment
             </div>
           </div>
           <div className="sc-pipeline-telemetry-status">
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
-            <span>100% CUSTODY ANCHORED</span>
+            <span>CRYPTOGRAPHICALLY ANCHORED RECORDS</span>
           </div>
         </div>
 

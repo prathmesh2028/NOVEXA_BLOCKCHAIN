@@ -44,13 +44,20 @@ export class InspectionsService {
           },
         });
 
+        // Advance lifecycle state to INSPECTION_RECORDED so the ACCEPT/REJECT buttons
+        // appear in the UI (condition: RECEIVED || INSPECTION_RECORDED)
+        await tx.asset.update({
+          where: { id: asset.id },
+          data: { lifecycleState: 'INSPECTION_RECORDED', updatedAt: new Date() },
+        });
+
         // Audit via canonical AuditService
         await this.auditService.recordEvent(
           {
             eventType: 'INSPECTION_RECORDED',
             actorId: data.inspectorId,
             actorDid: data.inspectorDid,
-            action: `Inspection recorded: ${data.result}`,
+            action: `Inspection recorded: ${data.result} — asset transitioned to INSPECTION_RECORDED`,
             resourceType: 'Asset',
             resourceId: asset.id,
             result: data.result === 'FAIL' ? 'WARNING' : 'SUCCESS',

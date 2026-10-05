@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate, useParams } from "react-router";
 import AppShell from "./components/layout/AppShell";
 import HomePage from "./pages/home/HomePage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -31,6 +31,13 @@ import SupplyChainDashboardPage from "./pages/supply-chain/SupplyChainDashboardP
 import HistoryPage from "./pages/history/HistoryPage";
 
 export const router = createBrowserRouter([
+  {
+    path: "/verify/cert/:id",
+    Component: () => {
+      const { id } = useParams();
+      return <Navigate to={`/app/certifications/${id}`} replace />;
+    }
+  },
   {
     path: "/",
     Component: HomePage,

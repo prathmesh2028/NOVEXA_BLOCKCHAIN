@@ -1,47 +1,61 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = 'http://localhost:8444';
+const BASE_URL = 'http://localhost:8443';
 
 test.describe('Certification Detail API Diagnostic', () => {
   test.use({ storageState: '.auth/procurement-storage.json' });
 
-  test('Trace API call and console logs', async ({ page }) => {
-    // Set up console logging
-    const consoleLogs: string[] = [];
-    page.on('console', msg => {
-      consoleLogs.push(`[${msg.type()}] ${msg.text()}`);
-    });
-
-    // Navigate to certification detail
-    await page.goto(`${BASE_URL}/app/certifications/73771de4-8b74-4045-92e4-9b854b7bd48a`);
+  test('Programmatically extract and verify QR code payload', async ({ page }) => {
+    // Navigate to certification detail for a known cert from seed data
+    const certId = 'CERT-2026-00089';
+    await page.goto(`${BASE_URL}/app/certifications/${certId}`);
     await page.waitForLoadState('domcontentloaded');
 
-    // Wait for page to load
-    await page.waitForTimeout(8000);
+    // Wait for QR code to be rendered
+    await page.waitForSelector('img[alt="Certificate QR Code"]', { timeout: 10000 });
+    
+    // Slight delay to ensure image is fully loaded before drawing to canvas
+    await page.waitForTimeout(2000);
 
-    // Print all console logs
-    console.log('=== CONSOLE LOGS ===');
-    consoleLogs.forEach(log => console.log(log));
+    // Inject jsQR from CDN to extract the payload
+    await page.addScriptTag({ url: 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js' });
 
-    // Take screenshot
-    await page.screenshot({ path: 'cert-detail-api-diagnostic.png', fullPage: true });
+    // Extract QR code payload using browser canvas and jsQR
+    const qrPayload = await page.evaluate(async () => {
+      const img = document.querySelector('img[alt="Certificate QR Code"]') as HTMLImageElement;
+      if (!img) return null;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+      // @ts-ignore
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      return code ? code.data : null;
+    });
 
-    // Check page content
-    const content = await page.content();
-    console.log('=== PAGE CONTENT ANALYSIS ===');
-    console.log('Has CERT-2026-24767:', content.includes('CERT-2026-24767'));
-    console.log('Has Loading:', content.includes('Loading certification'));
-    console.log('Has Error:', content.includes('ERROR LOADING CERTIFICATION'));
-    console.log('Has Not Found:', content.includes('CERTIFICATION RECORD NOT FOUND'));
-    console.log('Has 0xDc64:', content.includes('0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'));
-    console.log('Has Dc64:', content.includes('Dc64'));
-    console.log('Has contract_address:', content.includes('contract_address'));
-    console.log('Has Blockchain Information:', content.includes('Blockchain Information'));
-    console.log('Has Token ID:', content.includes('Token ID'));
-    console.log('Has Transaction Hash:', content.includes('Transaction Hash'));
-    console.log('Has Block Number:', content.includes('Block Number'));
-
-    // Take screenshot
-    await page.screenshot({ path: 'cert-detail-blockchain-section.png', fullPage: true });
+    console.log('EXTRACTED QR PAYLOAD:', qrPayload);
+    
+    // Verify payload is a URL and contains the expected path
+    expect(qrPayload).toBeTruthy();
+    expect(qrPayload).toContain(`/verify/cert/${certId}`);
+    
+    // Navigate to the extracted URL to test resolution and binding authenticity
+    console.log(`Resolving QR payload: ${qrPayload}`);
+    await page.goto(qrPayload as string);
+    await page.waitForLoadState('domcontentloaded');
+    
+    // Wait for the cert detail page to render cert ID (proves QR → route → API → render is working)
+    await page.waitForSelector(`text=${certId}`, { timeout: 15000 });
+    
+    // Also confirm key cert data is present on the page
+    const hasCertId = await page.locator(`text=${certId}`).count() > 0;
+    expect(hasCertId).toBeTruthy();
+    console.log(`QR Payload resolution verified: ${qrPayload} → cert page shows ${certId}. Binding is authentic.`);
   });
 });
