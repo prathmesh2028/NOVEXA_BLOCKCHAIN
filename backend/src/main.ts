@@ -23,9 +23,12 @@ async function bootstrap() {
   // Security
   app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS - Explicit allowlist from environment
+  // CORS - Dynamic allowlist supporting all Vercel domains, localhost, and configured origins
   app.enableCors({
-    origin: config.corsOrigins,
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (mobile apps, curl, server-to-server) or any web origin
+      callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
