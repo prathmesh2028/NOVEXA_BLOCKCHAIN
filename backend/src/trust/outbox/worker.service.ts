@@ -92,7 +92,7 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
    * Recovers transactions that were left hanging due to a worker crash or RPC timeout.
    */
   private async reconcileStrandedTransactions() {
-    this.logger.log('Running reconciliation for stranded transactions...');
+    this.logger.debug('Running reconciliation for stranded transactions...');
     
     // 1. Recover stranded BlockchainTransactions (SUBMITTED but no receipt, or MINED but waiting for confirmations)
     const strandedTxs = await this.prisma.blockchainTransaction.findMany({
@@ -101,6 +101,10 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         updatedAt: { lt: new Date(Date.now() - 30000) } // older than 30s
       }
     });
+
+    if (strandedTxs.length > 0) {
+      this.logger.log(`Found ${strandedTxs.length} stranded transaction(s) to reconcile`);
+    }
 
     for (const tx of strandedTxs) {
       if (tx.txHash) {
