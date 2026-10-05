@@ -1,0 +1,33 @@
+{
+  "cookies": [
+    {
+      "name": "kavach_token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZTg1OTgzMS03Y2M0LTRjNWItODQ0YS1jMDZjMWYyZjIxNTAiLCJlbWFpbCI6InIua3VtYXJAYmVsLWRlZmVuY2UuaW4iLCJyb2xlcyI6WyJRVUFMSVRZX0lOU1BFQ1RPUiJdLCJkaWQiOiJkaWQ6YmVsOmFjdG9yOjAwMyIsImlhdCI6MTc5MTE1NjI1NiwiZXhwIjoxNzkxMjQyNjU2LCJhdWQiOiJrYXZhY2h0cnVzdC1hcGkiLCJpc3MiOiJrYXZhY2h0cnVzdCJ9.5wza-v4Q6wadv5XhtTLeAZgDT3_-lUMoNFhHw526t1o",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:8443",
+      "localStorage": [
+        {
+          "name": "kavach_user",
+          "value": "{\"id\":\"usr-003\",\"email\":\"r.kumar@bel-defence.in\",\"name\":\"Rajesh Kumar\",\"roles\":[\"QUALITY_INSPECTOR\"]}"
+        },
+        {
+          "name": "kavach_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZTg1OTgzMS03Y2M0LTRjNWItODQ0YS1jMDZjMWYyZjIxNTAiLCJlbWFpbCI6InIua3VtYXJAYmVsLWRlZmVuY2UuaW4iLCJyb2xlcyI6WyJRVUFMSVRZX0lOU1BFQ1RPUiJdLCJkaWQiOiJkaWQ6YmVsOmFjdG9yOjAwMyIsImlhdCI6MTc5MTE1NjI1NiwiZXhwIjoxNzkxMjQyNjU2LCJhdWQiOiJrYXZhY2h0cnVzdC1hcGkiLCJpc3MiOiJrYXZhY2h0cnVzdCJ9.5wza-v4Q6wadv5XhtTLeAZgDT3_-lUMoNFhHw526t1o"
+        },
+        {
+          "name": "novexa-theme",
+          "value": "dark"
+        }
+      ]
+    }
+  ]
+}

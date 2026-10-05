@@ -144,7 +144,7 @@ export default function Topbar() {
           transition: "all 0.2s ease",
         }}
       >
-        SYNTHETIC DEMO
+        SYNTHETIC PILOT DATA
       </div>
 
       {/* Connect Wallet */}

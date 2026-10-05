@@ -44,31 +44,34 @@ function useCountUp(target: number, duration = 800, delay = 0): number {
 export default function SupplyChainDashboardPage() {
   const [activeTab, setActiveTab] = useState("suppliers");
   const [counts, setCounts] = useState({ suppliers: 0, facilities: 0, lots: 0, shipments: 0 });
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-  const [isDemoActive, setIsDemoActive] = useState(false);
-
-  const demoCounts = { suppliers: 8, facilities: 5, lots: 12, shipments: 6 };
-
   useEffect(() => {
-    if (isDemoActive) {
-      setCounts(demoCounts);
-      return;
-    }
-
     Promise.allSettled([
-      supplyChainService.listSuppliers(),
-      supplyChainService.listFacilities(),
-      supplyChainService.listLots(),
-      supplyChainService.listShipments(),
+      supplyChainService.listSuppliers({ page_size: 1 }),
+      supplyChainService.listFacilities({ page_size: 1 }),
+      supplyChainService.listLots({ page_size: 1 }),
+      supplyChainService.listShipments({ page_size: 1 }),
     ]).then(([supRes, facRes, lotRes, shpRes]) => {
+      const countRecords = (result: PromiseSettledResult<unknown>) => {
+        if (result.status !== "fulfilled") {
+          console.error("Failed to refresh supply chain summary:", result.reason);
+          return 0;
+        }
+        const response = result.value as { total?: number; items?: unknown[] } | unknown[];
+        return Array.isArray(response)
+          ? response.length
+          : response.total ?? response.items?.length ?? 0;
+      };
+
       setCounts({
-        suppliers: supRes.status === "fulfilled" ? (supRes.value.items?.length ?? 0) : 0,
-        facilities: facRes.status === "fulfilled" ? (facRes.value.items?.length ?? 0) : 0,
-        lots: lotRes.status === "fulfilled" ? (lotRes.value.items?.length ?? 0) : 0,
-        shipments: shpRes.status === "fulfilled" ? (shpRes.value.items?.length ?? 0) : 0,
+        suppliers: countRecords(supRes),
+        facilities: countRecords(facRes),
+        lots: countRecords(lotRes),
+        shipments: countRecords(shpRes),
       });
     });
-  }, [isDemoActive]);
+  }, [refreshVersion]);
 
   /* Subtle mouse parallax for decorative background elements only (2px) */
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -114,11 +117,9 @@ export default function SupplyChainDashboardPage() {
         <div className="sc-telemetry-badge">
           <span className="sc-beacon-dot" />
           <span>BEL DEFENCE SUPPLY CHAIN TELEMETRY • LIVE LEDGER ANCHORED</span>
-          {isDemoActive && (
-            <span style={{ marginLeft: 12, padding: "4px 8px", background: "rgba(37,99,235,0.15)", borderRadius: 4, fontSize: "0.7rem", fontWeight: 600, color: "#3b82f6" }}>
-              DEMO MODE
-            </span>
-          )}
+          <span style={{ marginLeft: 12, padding: "4px 8px", background: "rgba(37,99,235,0.15)", borderRadius: 4, fontSize: "0.7rem", fontWeight: 600, color: "#3b82f6" }}>
+            SYNTHETIC PILOT DATA
+          </span>
         </div>
         <PageHeader
           title="Supply Chain Command"
@@ -127,22 +128,22 @@ export default function SupplyChainDashboardPage() {
             { label: "Dashboard", to: "/app/dashboard" },
             { label: "Supply Chain" },
           ]}
-          action={
+          actions={
             <button
-              onClick={() => setIsDemoActive(!isDemoActive)}
+              onClick={() => setRefreshVersion((version) => version + 1)}
               style={{
                 padding: "6px 12px",
-                background: isDemoActive ? "rgba(239,68,68,0.15)" : "rgba(37,99,235,0.15)",
-                border: isDemoActive ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(37,99,235,0.3)",
+                background: "rgba(37,99,235,0.15)",
+                border: "1px solid rgba(37,99,235,0.3)",
                 borderRadius: 6,
-                color: isDemoActive ? "#ef4444" : "#3b82f6",
+                color: "#3b82f6",
                 fontSize: "0.75rem",
                 fontWeight: 600,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
             >
-              {isDemoActive ? "✕ Reset Demo" : "⚡ Load Demo"}
+              ↻ Refresh
             </button>
           }
         />
@@ -239,15 +240,15 @@ export default function SupplyChainDashboardPage() {
           <div className="sc-pipeline-title-group">
             <div className="sc-pipeline-title">
               <span>DEFENCE CUSTODY PIPELINE</span>
-              <span style={{ fontSize: "0.65rem", opacity: 0.8 }}>• REAL-TIME PHYSICAL & DIGITAL TRACEABILITY</span>
+              <span style={{ fontSize: "0.65rem", opacity: 0.8 }}>• PILOT TRACKING SYSTEM</span>
             </div>
             <div className="sc-pipeline-desc">
-              Immutable physical-to-digital chain of custody from tier-1 supplier intake to operational deployment
+              Digital ledger recording declared custody transfers from supplier intake to operational deployment
             </div>
           </div>
           <div className="sc-pipeline-telemetry-status">
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
-            <span>100% CUSTODY ANCHORED</span>
+            <span>CRYPTOGRAPHICALLY ANCHORED RECORDS</span>
           </div>
         </div>
 
@@ -312,12 +313,11 @@ export default function SupplyChainDashboardPage() {
 
       {/* Tab Panels with switch animation */}
       <div className="internal-card sc-tab-panel-container" key={activeTab} style={{ padding: 24 }}>
-        {activeTab === "suppliers" && <SuppliersList />}
-        {activeTab === "facilities" && <FacilitiesList />}
-        {activeTab === "lots" && <LotsList />}
-        {activeTab === "shipments" && <ShipmentsList />}
+        {activeTab === "suppliers" && <SuppliersList key={refreshVersion} />}
+        {activeTab === "facilities" && <FacilitiesList key={refreshVersion} />}
+        {activeTab === "lots" && <LotsList key={refreshVersion} />}
+        {activeTab === "shipments" && <ShipmentsList key={refreshVersion} />}
       </div>
     </div>
   );
 }
-

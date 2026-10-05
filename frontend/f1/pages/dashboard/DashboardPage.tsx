@@ -357,7 +357,7 @@ function LiveActivityFeed({ auditEvents }: { auditEvents: AuditEventResponse[] }
                   <div className="db-activity-meta">
                     <span className="meta-id">{e.resource_id || e.resource_type || "SYSTEM"}</span>
                     <span>·</span>
-                    <span>{e.actor_name || e.actor_role || e.actor_did}</span>
+                    <span>{e.actor_role || e.actor_did}</span>
                     <span>·</span>
                     <span>{formatDateTime(e.timestamp)}</span>
                   </div>
@@ -853,7 +853,7 @@ export default function DashboardPage() {
             <span className="db-meta-sep">•</span>
             <LiveClock />
             <span className="db-meta-sep">•</span>
-            <span className="db-synthetic-badge">SYNTHETIC DEMO PROTOCOL</span>
+            <span className="db-synthetic-badge">SYNTHETIC PILOT DATA</span>
           </div>
         </div>
 

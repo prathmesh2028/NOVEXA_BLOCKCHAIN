@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-dotenv.config();
+dotenv.config({
+  path: path.resolve(__dirname, '../../../.env'),
+  override: true,
+});
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']).default('development'),
@@ -42,7 +46,7 @@ const envSchema = z.object({
   MINIO_SECRET_KEY: z.string().min(1),
   MINIO_BUCKET: z.string().default('kavachtrust-evidence'),
   BLOCKCHAIN_RPC_URL: z.string().default('http://localhost:8545'),
-  BLOCKCHAIN_CHAIN_ID: z.coerce.number().default(1337),
+  BLOCKCHAIN_CHAIN_ID: z.coerce.number().default(31337),
   BLOCKCHAIN_PRIVATE_KEY: z.string().min(1),
   CONTRACT_ADDRESS: z.string().default(''),
   BLOCKCHAIN_NETWORK_NAME: z.string().default('BEL-TRUST-CHAIN'),
@@ -62,16 +66,31 @@ export type EnvConfig = z.infer<typeof envSchema>;
 let _config: EnvConfig | null = null;
 
 export function getEnvConfig(): EnvConfig {
-  if (!_config) {
-    const result = envSchema.safeParse(process.env);
-    if (!result.success) {
-      console.error('❌ Invalid environment configuration:');
-      console.error(result.error.format());
-      // Always fail closed if environment variables are missing
-      process.exit(1);
-    } else {
-      _config = result.data;
-    }
+  const result = envSchema.safeParse(process.env);
+  if (!result.success) {
+    console.error('❌ Invalid environment configuration:');
+    console.error(result.error.format());
+    // Always fail closed if environment variables are missing
+    process.exit(1);
   }
-  return _config;
+
+  // PRODUCTION SAFETY: Fail if demo mode is enabled in production
+  const isProduction = result.data.NODE_ENV === 'production' || result.data.APP_ENV === 'production';
+  const isDemo = result.data.NODE_ENV === 'demo' || result.data.APP_ENV === 'demo';
+  
+  if (isProduction && isDemo) {
+    console.error('❌ SECURITY ERROR: DEMO MODE IS NOT PERMITTED IN PRODUCTION');
+    console.error('❌ NODE_ENV or APP_ENV is set to "demo" in production environment');
+    console.error('❌ Application startup aborted to prevent security bypass');
+    process.exit(1);
+  }
+
+  // Demo mode warning for non-production
+  if (isDemo && !isProduction) {
+    console.warn('⚠️  KAVACHTRUST DEMO MODE ENABLED');
+    console.warn('⚠️  DEMO AUTHENTICATION IS NOT SUITABLE FOR PRODUCTION');
+    console.warn('⚠️  Use NODE_ENV=production or APP_ENV=production for production deployment');
+  }
+
+  return result.data;
 }

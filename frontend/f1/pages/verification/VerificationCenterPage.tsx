@@ -71,7 +71,7 @@ export default function VerificationCenterPage() {
 
     if (foundAsset) {
       try {
-        const evidenceRes = await evidenceService.listEvidence({ assetId: foundAsset.id });
+        const evidenceRes = await evidenceService.listEvidence({ asset_id: foundAsset.id });
         evidence = evidenceRes.items || [];
       } catch (e) {
         console.warn("Backend evidence API failed:", e);
@@ -87,7 +87,7 @@ export default function VerificationCenterPage() {
       }
 
       try {
-        const txList = await blockchainService.listTransactions({ assetId: foundAsset.id });
+        const txList = await blockchainService.listTransactions({ asset_id: foundAsset.id });
         txs = txList.items || [];
       } catch (e) {
         console.warn("Backend blockchain API failed:", e);

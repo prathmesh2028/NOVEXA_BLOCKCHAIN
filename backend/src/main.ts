@@ -13,6 +13,13 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
+  // Demo mode warning
+  if (config.isDemoMode) {
+    logger.warn('⚠️  KAVACHTRUST DEMO MODE ENABLED');
+    logger.warn('⚠️  DEMO AUTHENTICATION IS NOT SUITABLE FOR PRODUCTION');
+    logger.warn('⚠️  Use NODE_ENV=production or APP_ENV=production for production deployment');
+  }
+
   // Security
   app.use(helmet({ contentSecurityPolicy: false }));
 

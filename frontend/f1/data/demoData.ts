@@ -89,7 +89,7 @@ export const DEMO_ASSETS: DemoRecord[] = [
       serial_number: 'SN-EF-00421',
       lifecycle_state: 'ACCEPTED_FOR_ASSEMBLY',
       verification_status: 'VERIFIED',
-      cert_id: 'CERT-2026-00089',
+      cert_id: null,
       supplier: 'BEL Synthetic Procurement Div.',
     }
   },
@@ -118,17 +118,17 @@ export const DEMO_CERTIFICATIONS: DemoRecord[] = [
   },
   {
     id: '5b6d95a1-4f80-427b-8ddb-70d7bbeede11',
-    label: 'CERT-2026-00089 (CONFIRMED - Synthetic Demo)',
+    label: 'CERT-2026-24767 (CONFIRMED - Synthetic Pilot)',
     type: 'certification',
     data: {
-      cert_id: 'CERT-2026-00089',
-      asset_id: '59be7f8f-9188-4919-9958-99117c4d5ecd',
-      asset_display: 'EF-2026-00421',
-      token_id: 'TKN-00089',
-      contract_address: '0x742d35Cc6634C0532925a3b8D4e9Cc7C0SYNTH',
-      network: 'BEL-TRUST-CHAIN (Synthetic Demo)',
-      tx_hash: '0x8A42b3c5d1e7f2a9...19F2',
-      block_number: 19842317,
+      cert_id: 'CERT-2026-24767',
+      asset_id: '8cdd87e7-b1fe-483e-8c2f-6f33a8f1d30c',
+      asset_display: 'PT-2026-00105',
+      token_id: '1',
+      contract_address: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
+      network: 'BEL-TRUST-CHAIN',
+      tx_hash: '0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3',
+      block_number: 42801,
       status: 'CONFIRMED',
       issued_by: 'Priya Sharma',
     }
@@ -167,7 +167,7 @@ export const DEMO_EVIDENCE: DemoRecord[] = [
       hash: 'e5f2a8c7d3b16e9a',
       integrity_verified: true,
       status: 'Complete',
-      blockchain_tx: '0x1B8Ae9...C3F7',
+      blockchain_tx: null,
     }
   },
 ];

@@ -32,7 +32,7 @@ export default function PublicFooter() {
                 letterSpacing: "0.06em",
               }}
             >
-              SYNTHETIC DEMONSTRATION DATA
+              SYNTHETIC PILOT DATA
             </div>
           </div>
 

@@ -185,8 +185,8 @@ export default function ShipmentsList() {
             ) : filtered.length === 0 ? (
               <tr><td colSpan={isApproverRole ? 7 : 6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No shipments found. Click <strong>+ Dispatch Shipment</strong> to create one.</td></tr>
             ) : filtered.map((s, idx) => {
-              const originName = s.origin_facility?.name || (s as any).dispatchFacility?.name || "Origin Site";
-              const destName = s.destination_facility?.name || (s as any).receiveFacility?.name || "Destination Site";
+              const originName = s.dispatchFacility?.name || (s as any).origin_facility?.name || "Origin Site";
+              const destName = s.receiveFacility?.name || (s as any).destination_facility?.name || "Destination Site";
               return (
                 <tr
                   key={s.id}
@@ -194,7 +194,7 @@ export default function ShipmentsList() {
                   style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
                 >
                   <td style={{ padding: "12px 14px" }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{s.shipment_id || (s as any).shipmentId || s.id}</span></td>
-                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.lot?.lot_id || (s as any).lotId || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>—</td>
                   <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{originName}</td>
                   <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>
                     <div className="sc-shipment-track">

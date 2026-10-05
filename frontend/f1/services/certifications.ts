@@ -45,5 +45,32 @@ export const certificationService = {
 
   revokeCertification: async (id: string, reason?: string) => {
     return api.post<CertificationResponse>(`/certifications/${id}/revoke`, { reason });
-  }
+  },
+
+  getBlockchainProof: async (id: string) => {
+    return api.get<{
+      certification: CertificationResponse;
+      network: { name: string; chain_id: number | null; rpc_url: string; connected: boolean };
+      transaction: { hash: string; block_number: number; status: string } | null;
+      on_chain: {
+        owner: string;
+        expected_owner: string | null;
+        tokenUri: string;
+        locked: boolean;
+        name: string;
+        symbol: string;
+        supportsErc721: boolean;
+        supportsErc5192: boolean;
+        token_id: string;
+        contract_address: string;
+      } | null;
+      consistency: {
+        token_id_matches_db: boolean;
+        transaction_matches_db: boolean;
+        block_matches_db: boolean;
+        owner_verified: boolean;
+        metadata_available: boolean;
+      };
+    }>(`/certifications/${id}/blockchain-proof`);
+  },
 };

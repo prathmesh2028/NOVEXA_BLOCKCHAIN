@@ -59,7 +59,7 @@ export default function FacilitiesList() {
         ...prev,
         [id]: "approved",
       }));
-      fetchFacilities(); // Refresh to show updated status
+      load(); // Refresh to show updated status
     } catch (err: any) {
       console.error('Failed to approve facility:', err);
       alert('Failed to approve facility: ' + (err.message || 'Unknown error'));
@@ -76,7 +76,7 @@ export default function FacilitiesList() {
         ...prev,
         [id]: "disapproved",
       }));
-      fetchFacilities(); // Refresh to show updated status
+      load(); // Refresh to show updated status
     } catch (err: any) {
       console.error('Failed to disapprove facility:', err);
       alert('Failed to disapprove facility: ' + (err.message || 'Unknown error'));

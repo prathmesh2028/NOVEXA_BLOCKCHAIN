@@ -105,6 +105,20 @@ export default function LotsList() {
     setStatus(null); setShowModal(true);
   };
 
+  const loadDemoData = () => {
+    const supplier = suppliers[0];
+    if (!supplier) {
+      setStatus({ type: "error", msg: "No persisted supplier is available for demo data." });
+      return;
+    }
+    setMaterialType("Radar Waveguide Assembly");
+    setQuantity("250");
+    setSupplierId(supplier.id);
+    setBatchRef("BATCH-2026-Q3-001");
+    setMfgDate("2026-09-15");
+    setStatus({ type: "success", msg: `Loaded persisted supplier "${supplier.name}".` });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!materialType.trim()) { setStatus({ type: "error", msg: "Material type is required." }); return; }
@@ -247,6 +261,14 @@ export default function LotsList() {
                 </div>
               )}
               <form id="create-lot-form" onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <button
+                  type="button"
+                  onClick={loadDemoData}
+                  disabled={suppliers.length === 0 || isSubmitting}
+                  style={{ alignSelf: "flex-start", padding: "7px 12px", borderRadius: 6, border: "1px solid #2563eb", background: "rgba(37,99,235,0.12)", color: "#60a5fa", cursor: "pointer", fontSize: "0.78rem" }}
+                >
+                  Load Demo Data
+                </button>
                 <div>
                   <label style={lbl}>Material / Component Type <span style={{ color: "#ef4444" }}>*</span></label>
                   <input style={inp} type="text" required placeholder="e.g. Radar Waveguide Assembly, PCB Rev-3.1" value={materialType} onChange={e => setMaterialType(e.target.value)} />

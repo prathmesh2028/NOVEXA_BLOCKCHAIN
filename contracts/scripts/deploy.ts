@@ -9,6 +9,13 @@ async function main() {
 
   await sbt.waitForDeployment();
   console.log("KavachTrustSBT deployed to:", await sbt.getAddress());
+
+  const metadataBaseUri = process.env.METADATA_BASE_URI;
+  if (metadataBaseUri) {
+    const tx = await sbt.setBaseTokenURI(metadataBaseUri.endsWith("/") ? metadataBaseUri : `${metadataBaseUri}/`);
+    await tx.wait();
+    console.log("Metadata base URI configured:", metadataBaseUri);
+  }
 }
 
 main().catch((error) => {
