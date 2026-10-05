@@ -201,7 +201,7 @@ export default function SearchPage() {
           <div className="section-label" style={{ marginBottom: 4 }}>SEARCHABLE RECORDS</div>
           {[
             { icon: "◈", label: "Asset ID / Batch ID", example: "EF-2026-00421 · EF-BATCH-2026-017" },
-            { icon: "◆", label: "Certification ID / Token ID", example: "CERT-2026-00089 · TKN-00089" },
+            { icon: "◆", label: "Certification ID / Token ID", example: "CERT-2026-24767 · 1" },
             { icon: "⬡", label: "Transaction Hash", example: "0x8A42b3…19F2" },
             { icon: "◉", label: "User DID / Name", example: "did:bel:actor:001 · Priya Sharma" },
           ].map((item) => (

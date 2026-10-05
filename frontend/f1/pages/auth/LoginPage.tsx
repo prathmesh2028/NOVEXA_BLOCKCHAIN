@@ -3,54 +3,11 @@ import { useNavigate, Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import BelIconMark from "../../components/ui/BelIconMark";
 import ThemeToggle from "../../components/ui/ThemeToggle";
+import { DEMO_ACCOUNTS, DemoAccount } from "../../data/demoAccounts";
 import "./LoginPage.css";
 
 // Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
 import earthPanoramicImg from "./assets/earth_panoramic.jpg";
-
-interface DemoAccount {
-  id: string;
-  name: string;
-  role: string;
-  rolePillClass: string;
-  email: string;
-  password: string;
-}
-
-const DEMO_ACCOUNTS: DemoAccount[] = [
-  {
-    id: "admin",
-    name: "Arjun Mehta",
-    role: "SYSTEM_ADMIN",
-    rolePillClass: "pill-admin",
-    email: "a.mehta@bel-defence.in",
-    password: "password",
-  },
-  {
-    id: "creator",
-    name: "Priya Sharma",
-    role: "PROCUREMENT_SUPPLY_CHAIN_OFFICER",
-    rolePillClass: "pill-creator",
-    email: "p.sharma@bel-defence.in",
-    password: "password",
-  },
-  {
-    id: "tech",
-    name: "Rajesh Kumar",
-    role: "QUALITY_INSPECTOR",
-    rolePillClass: "pill-tech",
-    email: "r.kumar@bel-defence.in",
-    password: "password",
-  },
-  {
-    id: "auditor",
-    name: "Deepa Nair",
-    role: "AUDITOR",
-    rolePillClass: "pill-auditor",
-    email: "d.nair@bel-defence.in",
-    password: "password",
-  },
-];
 
 export default function LoginPage() {
   const { login } = useAuth();

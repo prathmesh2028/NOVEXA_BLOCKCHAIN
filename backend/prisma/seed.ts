@@ -141,7 +141,7 @@ async function main() {
       serialNumber: 'SN-EF-00421', supplier: 'BEL Synthetic Procurement Div.',
       lifecycleState: 'ACCEPTED_FOR_ASSEMBLY' as const, verificationStatus: 'VERIFIED' as const,
       evidenceCount: 4, evidenceStatus: 'COMPLETE' as const, certStatus: 'CONFIRMED' as const,
-      certId: 'CERT-2026-00089', registeredByName: 'Rajesh Kumar',
+      certId: 'CERT-2026-24767', registeredByName: 'Rajesh Kumar',
       description: 'Synthetic Electronic Fuze unit, batch demonstrating full lifecycle from declaration to assembly acceptance. Non-classified demonstration record.',
       createdAt: new Date('2026-08-15T09:22:00Z'),
     },
@@ -187,7 +187,9 @@ async function main() {
   for (const a of assetData) {
     const asset = await prisma.asset.upsert({
       where: { assetId: a.assetId },
-      update: {},
+      update: a.assetId === 'PT-2026-00105'
+        ? { certId: 'CERT-2026-24767', certStatus: 'CONFIRMED' }
+        : {},
       create: a,
     });
     assets.push(asset);
@@ -195,30 +197,49 @@ async function main() {
 
   // ── Evidence (matching frontend mockData.ts) ──
   const evidenceData = [
-    { evidenceId: 'EVD-2026-001', assetId: assets[0].id, filename: 'inspection_report_EF00421.pdf', type: 'Inspection Report', mimeType: 'application/pdf', sizeKb: 248, status: 'COMPLETE' as const, hash: 'a3f8c2d1e9b74c2f', event: 'INSPECTION_RECORDED', integrityVerified: true, blockchainTx: '0x8A42b3...19F2', uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-09-05T10:14:00Z') },
+    { evidenceId: 'EVD-2026-001', assetId: assets[0].id, filename: 'inspection_report_EF00421.pdf', type: 'Inspection Report', mimeType: 'application/pdf', sizeKb: 248, status: 'COMPLETE' as const, hash: 'a3f8c2d1e9b74c2f', event: 'INSPECTION_RECORDED', integrityVerified: true, blockchainTx: null, uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-09-05T10:14:00Z') },
     { evidenceId: 'EVD-2026-002', assetId: assets[0].id, filename: 'supplier_declaration_BATCH017.pdf', type: 'Supplier Declaration', mimeType: 'application/pdf', sizeKb: 112, status: 'COMPLETE' as const, hash: 'd7e4a1c3f2b89a1e', event: 'SUPPLIER_DECLARED', integrityVerified: true, blockchainTx: '0x3C77f4...A4D1', uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-08-15T09:30:00Z') },
     { evidenceId: 'EVD-2026-003', assetId: assets[0].id, filename: 'receipt_confirmation_EF00421.jpg', type: 'Receipt Confirmation', mimeType: 'image/jpeg', sizeKb: 890, status: 'COMPLETE' as const, hash: 'b2c9d4e6f1a57f3b', event: 'RECEIVED', integrityVerified: true, uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-08-22T14:45:00Z') },
-    { evidenceId: 'EVD-2026-004', assetId: assets[0].id, filename: 'qa_approval_EF00421.pdf', type: 'QA Approval', mimeType: 'application/pdf', sizeKb: 176, status: 'COMPLETE' as const, hash: 'e5f2a8c7d3b16e9a', event: 'ACCEPTED_FOR_ASSEMBLY', integrityVerified: true, blockchainTx: '0x1B8Ae9...C3F7', uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-09-08T11:20:00Z') },
+    { evidenceId: 'EVD-2026-004', assetId: assets[0].id, filename: 'qa_approval_EF00421.pdf', type: 'QA Approval', mimeType: 'application/pdf', sizeKb: 176, status: 'COMPLETE' as const, hash: 'e5f2a8c7d3b16e9a', event: 'ACCEPTED_FOR_ASSEMBLY', integrityVerified: true, blockchainTx: null, uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-09-08T11:20:00Z') },
     { evidenceId: 'EVD-2026-005', assetId: assets[2].id, filename: 'inspection_report_EF00423.pdf', type: 'Inspection Report', mimeType: 'application/pdf', sizeKb: 198, status: 'FAILED' as const, hash: 'f1c3a7e2b9d42d8c', event: 'INSPECTION_RECORDED', integrityVerified: false, uploadedByName: 'Rajesh Kumar', uploadedByRole: 'Technician', createdAt: new Date('2026-09-09T10:50:00Z') },
   ];
 
   for (const e of evidenceData) {
     await prisma.evidence.upsert({
       where: { evidenceId: e.evidenceId },
-      update: {},
+      update: { blockchainTx: null },
       create: e,
     });
   }
 
   // ── Certifications ──
+  // Remove stale or fabricated non-confirmed rows so the pilot dataset exposes
+  // only authoritative on-chain proof and does not invite worker reconciliation.
+  await prisma.blockchainTransaction.deleteMany({
+    where: { status: { not: 'CONFIRMED' } },
+  });
+  await prisma.certification.deleteMany({
+    where: { tokenId: '1', NOT: { certId: 'CERT-2026-24767' } },
+  });
   await prisma.certification.upsert({
-    where: { certId: 'CERT-2026-00089' },
-    update: {},
+    where: { certId: 'CERT-2026-24767' },
+    update: {
+      certId: 'CERT-2026-24767',
+      assetId: assets[3].id,
+      batchRefId: batch2.id,
+      tokenId: '1',
+      contractAddress: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
+      network: 'BEL-TRUST-CHAIN',
+      txHash: '0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3',
+      blockNumber: 42801,
+      status: 'CONFIRMED',
+      confirmations: 1,
+    },
     create: {
-      certId: 'CERT-2026-00089', assetId: assets[0].id, batchRefId: batch1.id,
-      tokenId: 'TKN-00089', contractAddress: '0x742d35Cc6634C0532925a3b8D4e9Cc7C0SYNTH',
-      network: 'BEL-TRUST-CHAIN (Synthetic Demo)', txHash: '0x8A42b3c5d1e7f2a9...19F2',
-      blockNumber: 19842317, status: 'CONFIRMED', issuedByName: 'Priya Sharma',
+      certId: 'CERT-2026-24767', assetId: assets[3].id, batchRefId: batch2.id,
+      tokenId: '1', contractAddress: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788',
+      network: 'BEL-TRUST-CHAIN', txHash: '0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3',
+      blockNumber: 42801, status: 'CONFIRMED', issuedByName: 'Priya Sharma',
       issuedByDid: 'did:bel:actor:002', issuedAt: new Date('2026-09-10T11:05:00Z'),
       confirmedAt: new Date('2026-09-10T11:07:34Z'), confirmations: 47,
     },
@@ -229,8 +250,8 @@ async function main() {
     update: {},
     create: {
       certId: 'CERT-2026-00088', assetId: assets[1].id, batchRefId: batch1.id,
-      tokenId: 'TKN-00088', contractAddress: '0x742d35Cc6634C0532925a3b8D4e9Cc7C0SYNTH',
-      network: 'BEL-TRUST-CHAIN (Synthetic Demo)', txHash: '0x2F61c4...7A3E',
+      tokenId: null, contractAddress: null,
+      network: 'BEL-TRUST-CHAIN', txHash: null,
       status: 'PENDING', issuedByName: 'Priya Sharma', issuedByDid: 'did:bel:actor:002',
       issuedAt: new Date('2026-09-12T09:00:00Z'), confirmations: 0,
     },
@@ -238,9 +259,7 @@ async function main() {
 
   // ── Blockchain Transactions ──
   const txData = [
-    { txHash: '0x8A42b3c5d1e7f2a9b4c6d8e0f1a3c5e7...19F2', network: 'BEL-TRUST-CHAIN', blockNumber: 19842317, status: 'CONFIRMED' as const, action: 'Certification Mint', assetId: assets[0].id, confirmations: 47, gasUsed: 94231, fromAddress: '0x3C77f4...A4D1', contractAddress: '0x742d35Cc6634...SYNTH', tokenId: 'TKN-00089', createdAt: new Date('2026-09-10T11:05:00Z') },
-    { txHash: '0x3C77f4a2b8c1d5e9f0a3...A4D1', network: 'BEL-TRUST-CHAIN', blockNumber: 19838201, status: 'CONFIRMED' as const, action: 'Evidence Anchor', assetId: assets[0].id, confirmations: 312, gasUsed: 48820, fromAddress: '0x3C77f4...A4D1', contractAddress: '0x742d35Cc6634...SYNTH', createdAt: new Date('2026-09-05T10:16:00Z') },
-    { txHash: '0x2F61c4d7e9a0b2c5f8...7A3E', network: 'BEL-TRUST-CHAIN', status: 'PENDING' as const, action: 'Certification Mint', assetId: assets[1].id, confirmations: 0, fromAddress: '0x3C77f4...A4D1', contractAddress: '0x742d35Cc6634...SYNTH', tokenId: 'TKN-00088', createdAt: new Date('2026-09-12T09:00:00Z') },
+    { txHash: '0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3', network: 'BEL-TRUST-CHAIN', blockNumber: 42801, status: 'CONFIRMED' as const, action: 'Certification Mint', assetId: assets[3].id, confirmations: 1, gasUsed: 0, fromAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', contractAddress: '0x610178dA211FEF7D417bC0e6FeD39F05609AD788', tokenId: '1', createdAt: new Date('2026-09-10T11:05:00Z') },
   ];
 
   for (const tx of txData) {
@@ -258,8 +277,8 @@ async function main() {
     { eventType: 'EVIDENCE_SUBMITTED', actorDid: 'did:bel:actor:003', actorRole: 'Technician', actorName: 'Rajesh Kumar', action: 'Evidence uploaded — QA Approval', resourceType: 'Evidence', resourceId: 'EVD-2026-004', result: 'SUCCESS', details: 'Evidence fingerprint generated: e5f2a8c7...6e9a. Integrity verified.', createdAt: new Date('2026-09-08T11:20:00Z') },
     { eventType: 'LIFECYCLE_TRANSITIONED', actorDid: 'did:bel:actor:003', actorRole: 'Technician', actorName: 'Rajesh Kumar', action: 'Lifecycle transitioned to ACCEPTED_FOR_ASSEMBLY', resourceType: 'Asset', resourceId: assets[0].id, result: 'SUCCESS', details: 'Asset EF-2026-00421 accepted for assembly after successful inspection.', createdAt: new Date('2026-09-08T11:25:00Z') },
     { eventType: 'EVIDENCE_VERIFIED', actorDid: 'did:bel:actor:004', actorRole: 'Auditor', actorName: 'Deepa Nair', action: 'Evidence integrity verified', resourceType: 'Evidence', resourceId: 'EVD-2026-005', result: 'FAILED', details: 'Fingerprint mismatch detected. Stored: f1c3a7e2...2d8c vs Computed: 9b2e5f1c...8a4d. Asset quarantined.', createdAt: new Date('2026-09-09T14:30:00Z') },
-    { eventType: 'CERTIFICATION_CREATED', actorDid: 'did:bel:actor:002', actorRole: 'NFT Creator', actorName: 'Priya Sharma', action: 'Certification minting initiated', resourceType: 'Certification', resourceId: 'CERT-2026-00089', result: 'SUCCESS', blockchainTxHash: '0x8A42b3...19F2', details: 'NFT Creator reviewed evidence and initiated minting for asset EF-2026-00421.', createdAt: new Date('2026-09-10T11:05:00Z') },
-    { eventType: 'BLOCKCHAIN_TX_CONFIRMED', actorDid: 'did:bel:actor:002', actorRole: 'NFT Creator', actorName: 'Priya Sharma', action: 'Certification confirmed on-chain', resourceType: 'Certification', resourceId: 'CERT-2026-00089', result: 'SUCCESS', blockchainTxHash: '0x8A42b3...19F2', details: 'Certification CERT-2026-00089 confirmed. Block 19842317. 47 confirmations.', createdAt: new Date('2026-09-10T11:07:34Z') },
+    { eventType: 'CERTIFICATION_CREATED', actorDid: 'did:bel:actor:002', actorRole: 'NFT Creator', actorName: 'Priya Sharma', action: 'Certification minting initiated', resourceType: 'Certification', resourceId: 'CERT-2026-24767', result: 'SUCCESS', blockchainTxHash: '0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3', details: 'Synthetic pilot certification mint initiated for asset PT-2026-00105.', createdAt: new Date('2026-09-10T11:05:00Z') },
+    { eventType: 'BLOCKCHAIN_TX_CONFIRMED', actorDid: 'did:bel:actor:002', actorRole: 'NFT Creator', actorName: 'Priya Sharma', action: 'Certification confirmed on-chain', resourceType: 'Certification', resourceId: 'CERT-2026-24767', result: 'SUCCESS', blockchainTxHash: '0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3', details: 'Certification CERT-2026-24767 confirmed on chain. Block 42801. Token 1.', createdAt: new Date('2026-09-10T11:07:34Z') },
   ];
 
   let previousHash = '0'.repeat(64);
@@ -360,6 +379,135 @@ async function main() {
       dispatchedAt: new Date('2026-09-15T08:30:00Z'),
     },
   });
+
+  // ── Expanded synthetic pilot catalogue ──
+  // Every generated record uses a stable business identifier so reseeding is
+  // idempotent and all references point to persisted parent records.
+  const expandedSuppliers = [];
+  for (let i = 3; i <= 12; i += 1) {
+    expandedSuppliers.push(await prisma.supplier.upsert({
+      where: { supplierId: `SUP-SYN-${String(i).padStart(3, '0')}` },
+      update: {},
+      create: {
+        supplierId: `SUP-SYN-${String(i).padStart(3, '0')}`,
+        name: `Synthetic Defence Partner ${String(i).padStart(2, '0')}`,
+        contactInfo: { email: `partner${i}@synthetic-pilot.invalid`, phone: `+91-80-5555-${String(i).padStart(4, '0')}` },
+        status: i === 12 ? 'SUSPENDED' : 'ACTIVE',
+      },
+    }));
+  }
+
+  const allSuppliers = [sup1, sup2, ...expandedSuppliers];
+  const expandedFacilities = [];
+  for (let i = 3; i <= 10; i += 1) {
+    const supplier = allSuppliers[(i - 3) % allSuppliers.length];
+    expandedFacilities.push(await prisma.facility.upsert({
+      where: { facilityId: `FAC-SYN-${String(i).padStart(3, '0')}` },
+      update: {},
+      create: {
+        facilityId: `FAC-SYN-${String(i).padStart(3, '0')}`,
+        supplierId: supplier.id,
+        name: `Synthetic Pilot Facility ${String(i).padStart(2, '0')}`,
+        location: ['Pune', 'Chennai', 'Hyderabad', 'Bengaluru'][i % 4] + ', India',
+        type: i % 3 === 0 ? 'Testing' : i % 3 === 1 ? 'Warehouse' : 'Manufacturing',
+      },
+    }));
+  }
+
+  const allFacilities = [fac1, fac2, ...expandedFacilities];
+  for (let i = 2; i <= 16; i += 1) {
+    const supplier = allSuppliers[i % allSuppliers.length];
+    await prisma.lot.upsert({
+      where: { lotId: `LOT-SYN-2026-${String(i).padStart(3, '0')}` },
+      update: {},
+      create: {
+        lotId: `LOT-SYN-2026-${String(i).padStart(3, '0')}`,
+        supplierId: supplier.id,
+        materialType: ['Titanium Alloy', 'Radar PCB Assembly', 'Ceramic Insulator', 'Optical Sensor'][i % 4],
+        quantity: 100 + i * 25,
+        manufacturedAt: new Date(`2026-${String((i % 8) + 1).padStart(2, '0')}-15T00:00:00Z`),
+      },
+    });
+  }
+
+  for (let i = 2; i <= 16; i += 1) {
+    const dispatch = allFacilities[(i - 2) % allFacilities.length];
+    const receive = allFacilities[(i - 1) % allFacilities.length];
+    await prisma.shipment.upsert({
+      where: { shipmentId: `SHP-SYN-2026-${String(i).padStart(3, '0')}` },
+      update: {},
+      create: {
+        shipmentId: `SHP-SYN-2026-${String(i).padStart(3, '0')}`,
+        dispatchFacilityId: dispatch.id,
+        receiveFacilityId: receive.id,
+        status: i % 5 === 0 ? 'REJECTED' : i % 3 === 0 ? 'RECEIVED' : 'IN_TRANSIT',
+        trackingNumber: `TRK-SYN-${String(i).padStart(6, '0')}`,
+        dispatchedAt: new Date(`2026-${String((i % 8) + 1).padStart(2, '0')}-20T08:30:00Z`),
+      },
+    });
+  }
+
+  const syntheticBatches = [batch1, batch2, batch3];
+  for (let i = 6; i <= 30; i += 1) {
+    const batch = syntheticBatches[i % syntheticBatches.length];
+    const assetId = `SYNTH-2026-${String(i).padStart(3, '0')}`;
+    const eligible = i % 4 === 0;
+    const asset = await prisma.asset.upsert({
+      where: { assetId },
+      update: {},
+      create: {
+        assetId,
+        batchRefId: batch.id,
+        type: ['Radar Module', 'Secure Radio', 'Optical Sensor', 'Power Controller'][i % 4],
+        model: `SYN-MOD-${String(i).padStart(3, '0')}`,
+        serialNumber: `SN-SYN-${String(i).padStart(5, '0')}`,
+        supplier: allSuppliers[i % allSuppliers.length].name,
+        lifecycleState: eligible ? 'ACCEPTED_FOR_ASSEMBLY' : i % 5 === 0 ? 'REJECTED_QUARANTINED' : 'RECEIVED',
+        verificationStatus: eligible ? 'VERIFIED' : i % 5 === 0 ? 'FAILED' : 'PENDING',
+        evidenceCount: 1,
+        evidenceStatus: i % 5 === 0 ? 'FAILED' : 'COMPLETE',
+        certStatus: i % 6 === 0 ? 'CONFIRMED' : eligible ? 'PENDING' : 'NOT_CERTIFIED',
+        certId: i % 6 === 0 ? `CERT-SYN-2026-${String(i).padStart(3, '0')}` : null,
+        registeredByName: 'Synthetic Pilot Operator',
+        description: 'Synthetic pilot record for end-to-end workflow validation.',
+      },
+    });
+
+    await prisma.evidence.upsert({
+      where: { evidenceId: `EVD-SYN-2026-${String(i).padStart(3, '0')}` },
+      update: {},
+      create: {
+        evidenceId: `EVD-SYN-2026-${String(i).padStart(3, '0')}`,
+        assetId: asset.id,
+        filename: `synthetic-inspection-${i}.pdf`,
+        type: 'Inspection Report',
+        mimeType: 'application/pdf',
+        sizeKb: 120 + i,
+        status: i % 5 === 0 ? 'FAILED' : 'COMPLETE',
+        hash: `synthetic-hash-${String(i).padStart(3, '0')}`,
+        event: 'INSPECTION_RECORDED',
+        integrityVerified: i % 5 !== 0,
+        uploadedByName: 'Synthetic Pilot Operator',
+        uploadedByRole: 'QUALITY_INSPECTOR',
+      },
+    });
+
+    if (i % 6 === 0) {
+      await prisma.certification.upsert({
+        where: { certId: `CERT-SYN-2026-${String(i).padStart(3, '0')}` },
+        update: {},
+        create: {
+          certId: `CERT-SYN-2026-${String(i).padStart(3, '0')}`,
+          assetId: asset.id,
+          batchRefId: batch.id,
+          status: 'CONFIRMED',
+          network: 'BEL-TRUST-CHAIN',
+          issuedByName: 'Synthetic Pilot Operator',
+          issuedAt: new Date('2026-09-20T10:00:00Z'),
+        },
+      });
+    }
+  }
 
   console.log('✅ Seed complete — SYNTHETIC / DEMO DATA');
   console.log(`   Users: ${await prisma.user.count()}`);

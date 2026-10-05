@@ -43,7 +43,7 @@ export class CertificationsController {
 
   /**
    * GET /certifications/:id
-   * Returns a single certification by its UUID or certId (e.g. CERT-2026-00089).
+   * Returns a single certification by its UUID or certId (e.g. CERT-2026-24767).
    */
   @Get(':id/blockchain-proof')
   @CasbinPolicy('/api/v1/certifications/:id/blockchain-proof', 'GET')

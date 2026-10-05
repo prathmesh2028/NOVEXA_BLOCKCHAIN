@@ -11,7 +11,6 @@ import {
   CERTIFICATION_TYPES,
   CERTIFICATION_STATUSES,
   VERIFICATION_STATUSES,
-  getDemoCertifications,
 } from "./certificationData";
 import { useAuth } from "../../context/AuthContext";
 import CertificateImageUpload, { PRESET_CERTIFICATE_SEALS } from "../../components/certifications/CertificateImageUpload";
@@ -36,8 +35,6 @@ export default function CertificationsPage() {
   /* ============================================================
      FRONTEND DEMO STATE
      ============================================================ */
-  const [isDemoActive, setIsDemoActive] = useState(false);
-  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
 
   /* ============================================================
      SEARCH / FILTER STATE
@@ -105,8 +102,6 @@ export default function CertificationsPage() {
 
   const fetchData = async () => {
     setLoading(true);
-    setIsDemoActive(false);
-
     try {
       const listRes = await certificationService.listCertifications({ page_size: 100 });
 
@@ -137,19 +132,7 @@ export default function CertificationsPage() {
     }
   };
 
-  const handleLoadDemo = () => {
-    setIsLoadingDemo(true);
-    setTimeout(() => {
-      const demoData = getDemoCertifications();
-      setCerts(demoData);
-      setTotal(demoData.length);
-      setIsDemoActive(true);
-      setIsLoadingDemo(false);
-    }, 280);
-  };
-
-  const handleResetDemo = () => {
-    setIsDemoActive(false);
+  const handleRefresh = () => {
     fetchData();
   };
 
@@ -701,41 +684,16 @@ export default function CertificationsPage() {
               flexWrap: "wrap",
             }}
           >
-            {isDemoActive ? (
-              <div className="cert-demo-btn-group">
-                <button
-                  id="cert-load-demo-btn"
-                  className="cert-load-demo-btn cert-demo-btn--active"
-                  onClick={handleLoadDemo}
-                  disabled={isLoadingDemo}
-                  title="Click to restore / reload deterministic certification demo records"
-                >
-                  <span className="cert-demo-spark-icon">✓</span>
-                  <span>{isLoadingDemo ? "Loading Demo Data..." : "Demo Data Loaded"}</span>
-                </button>
-                <button
-                  id="cert-reset-demo-btn"
-                  className="cert-demo-reset-btn"
-                  onClick={handleResetDemo}
-                  title="Clear demo data and reload live records"
-                >
-                  ↺ Reset Demo
-                </button>
-              </div>
-            ) : (
-              <button
-                id="cert-load-demo-btn"
-                className="cert-load-demo-btn"
-                onClick={handleLoadDemo}
-                disabled={isLoadingDemo}
-                title="Populate Certifications page with realistic demonstration records for evaluation"
-              >
-                <span className={`cert-demo-spark-icon ${isLoadingDemo ? "cert-demo-spinner" : ""}`}>
-                  {isLoadingDemo ? "◌" : "⚡"}
-                </span>
-                <span>{isLoadingDemo ? "Loading Demo Data..." : "LOAD DEMO DATA"}</span>
-              </button>
-            )}
+            <button
+              id="cert-refresh-btn"
+              className="cert-load-demo-btn"
+              onClick={handleRefresh}
+              disabled={loading}
+              title="Refetch persisted certification records"
+            >
+              <span className="cert-demo-spark-icon">↻</span>
+              <span>{loading ? "Refreshing..." : "Refresh"}</span>
+            </button>
 
             {!isAuditor && (
               <>
@@ -765,8 +723,8 @@ export default function CertificationsPage() {
 
             <button
               className="btn-ghost"
-              onClick={handleResetDemo}
-              disabled={loading || isLoadingDemo}
+              onClick={handleRefresh}
+              disabled={loading}
             >
               {loading ? "Loading..." : "↻ Refresh"}
             </button>

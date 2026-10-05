@@ -27,7 +27,7 @@ interface LifecycleRecord {
     state: string;
     date: string;
     actor: string;
-    txHash: string;
+    txHash: string | null;
     details: string;
   }[];
 }
@@ -48,14 +48,14 @@ const DUMMY_LIFECYCLE_ASSETS: LifecycleRecord[] = [
     actor_role: "Quality Inspector",
     evidence_count: "4 / 4 Verified",
     evidence_status: "Complete",
-    blockchain_tx: "0x8A42b3c5d1e7f2a9...19F2",
+    blockchain_tx: "0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3",
     proof_status: "Anchored",
     notes: "Full environmental screening & dual detonator circuit telemetry passed. Ready for ordnance integration.",
     history: [
       { state: "SUPPLIER_DECLARED", date: "2026-08-15 09:22:00", actor: "Priya Sharma (Procurement)", txHash: "0x3C77f4...A4D1", details: "Supplier manifest logged with SHA-256 batch hash" },
       { state: "RECEIVED", date: "2026-08-22 14:45:00", actor: "Depot Logistics Officer", txHash: "0x7B1289...33D8", details: "Physical container unsealed and visual barcoding verified" },
-      { state: "INSPECTION_RECORDED", date: "2026-09-05 10:14:00", actor: "Rajesh Kumar (Quality Inspector)", txHash: "0x8A42b3...19F2", details: "QA electrical & environmental test passed without remarks" },
-      { state: "ACCEPTED_FOR_ASSEMBLY", date: "2026-09-18 14:32:10", actor: "Rajesh Kumar (Quality Inspector)", txHash: "0x1B8Ae9...C3F7", details: "Final acceptance sign-off. Soulbound NFT minting approved" },
+      { state: "INSPECTION_RECORDED", date: "2026-09-05 10:14:00", actor: "Rajesh Kumar (Quality Inspector)", txHash: null, details: "QA electrical & environmental test passed without remarks" },
+      { state: "ACCEPTED_FOR_ASSEMBLY", date: "2026-09-18 14:32:10", actor: "Rajesh Kumar (Quality Inspector)", txHash: "0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3", details: "Final acceptance sign-off. Soulbound certification minting approved" },
     ],
   },
   {
