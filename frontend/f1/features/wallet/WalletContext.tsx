@@ -86,8 +86,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Disable auto-connection to prevent wallet extension errors
-    // checkConnection();
+    checkConnection();
 
     if (typeof window.ethereum !== 'undefined') {
       const handleAccountsChanged = async (accounts: string[]) => {
@@ -102,6 +101,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       const handleChainChanged = (newChainId: string) => {
         setChainId(parseInt(newChainId, 16));
+        setError(null);
       };
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);

@@ -45,6 +45,12 @@ export class CertificationsController {
    * GET /certifications/:id
    * Returns a single certification by its UUID or certId (e.g. CERT-2026-00089).
    */
+  @Get(':id/blockchain-proof')
+  @CasbinPolicy('/api/v1/certifications/:id/blockchain-proof', 'GET')
+  async getBlockchainProof(@Param('id') id: string) {
+    return this.certificationsService.getBlockchainProof(id);
+  }
+
   @Get(':id')
   @CasbinPolicy('/api/v1/certifications/:id', 'GET')
   async getCertification(@Param('id') id: string) {
@@ -72,5 +78,20 @@ export class CertificationsController {
     @Req() req: any,
   ) {
     return this.certificationsService.revokeCertification(id, req.user.sub, body?.reason);
+  }
+}
+
+/**
+ * Wallet-readable ERC-721 metadata. This route intentionally returns only
+ * public certification fields; it does not expose evidence, credentials, or
+ * defence-sensitive asset details.
+ */
+@Controller('certifications/metadata')
+export class CertificationMetadataController {
+  constructor(private readonly certificationsService: CertificationsService) {}
+
+  @Get(':tokenId.json')
+  async getMetadata(@Param('tokenId') tokenId: string) {
+    return this.certificationsService.getMetadataByTokenId(tokenId);
   }
 }

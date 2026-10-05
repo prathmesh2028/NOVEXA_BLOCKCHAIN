@@ -2,6 +2,7 @@ import { Injectable, Logger, BadRequestException, ConflictException, NotFoundExc
 import { PrismaService } from '../../core/database/prisma.service';
 import { AuditService } from '../../asset-management/audit/audit.service';
 import { v4 as uuidv4 } from 'uuid';
+import { BlockchainAdapter } from '../../trust/blockchain/blockchain.adapter';
 
 @Injectable()
 export class CertificationsService {
@@ -10,6 +11,7 @@ export class CertificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly blockchainAdapter: BlockchainAdapter,
   ) {}
 
   private mapCert(c: any) {
@@ -78,6 +80,96 @@ export class CertificationsService {
       if (e?.status === 404) throw e;
       throw e;
     }
+  }
+
+  async getBlockchainProof(id: string) {
+    const cert = await this.prisma.certification.findFirst({
+      where: { OR: [{ id }, { certId: id }] },
+      include: { asset: true, batch: true },
+    });
+    if (!cert) throw new NotFoundException(`Certification ${id} not found`);
+
+    const network = this.blockchainAdapter.getNetworkInfo();
+    const registeredUser = cert.asset.registeredById
+      ? await this.prisma.user.findUnique({
+          where: { id: cert.asset.registeredById },
+          include: { walletBindings: { where: { verified: true } }, actor: true },
+        })
+      : null;
+    const issuerUser = !registeredUser && cert.issuedById
+      ? await this.prisma.user.findUnique({
+          where: { id: cert.issuedById },
+          include: { walletBindings: { where: { verified: true } }, actor: true },
+        })
+      : null;
+    const ownerUser = registeredUser || issuerUser;
+    const expectedOwner = ownerUser?.walletBindings?.[0]?.address
+      || ownerUser?.actor?.walletAddress
+      || null;
+    const onChain = cert.status === 'CONFIRMED' && cert.tokenId && cert.contractAddress
+      ? await this.blockchainAdapter.getTokenState(cert.contractAddress, cert.tokenId)
+      : null;
+    const receipt = cert.txHash ? await this.blockchainAdapter.getTransactionReceipt(cert.txHash) : null;
+    const ownerMatches = Boolean(
+      onChain?.owner
+      && expectedOwner
+      && onChain.owner.toLowerCase() === expectedOwner.toLowerCase(),
+    );
+
+    return {
+      certification: this.mapCert(cert),
+      network: {
+        name: network.network,
+        chain_id: await this.blockchainAdapter.getChainId(),
+        rpc_url: network.rpcUrl,
+        connected: network.connected,
+      },
+      transaction: receipt ? {
+        hash: cert.txHash,
+        block_number: Number(receipt.blockNumber),
+        status: receipt.status,
+      } : null,
+      on_chain: onChain ? {
+        ...onChain,
+        token_id: cert.tokenId,
+        contract_address: cert.contractAddress,
+        expected_owner: expectedOwner,
+      } : null,
+      consistency: {
+        token_id_matches_db: Boolean(onChain && cert.tokenId),
+        transaction_matches_db: Boolean(receipt && cert.txHash),
+        block_matches_db: Boolean(receipt && cert.blockNumber === Number(receipt.blockNumber)),
+        owner_verified: ownerMatches,
+        metadata_available: Boolean(onChain?.tokenUri),
+      },
+    };
+  }
+
+  async getMetadataByTokenId(tokenId: string) {
+    const cert = await this.prisma.certification.findFirst({
+      where: { tokenId },
+      include: { asset: true, batch: true },
+    });
+    if (!cert) throw new NotFoundException(`Token ${tokenId} not found`);
+
+    return {
+      name: `KavachTrust Certification ${cert.certId}`,
+      description: 'Soulbound digital certification for a verified defence asset. Synthetic pilot data.',
+      image: `${process.env.METADATA_IMAGE_BASE_URI || ''}${cert.tokenId}.svg`,
+      external_url: `${process.env.FRONTEND_PUBLIC_URL || 'http://localhost:5173'}/app/certifications/${cert.certId}`,
+      certification_id: cert.certId,
+      asset_id: cert.asset.assetId,
+      batch_id: cert.batch.batchId,
+      status: cert.status,
+      issuer: cert.issuedByName || cert.issuedByDid || 'KavachTrust',
+      verification_reference: cert.txHash,
+      attributes: [
+        { trait_type: 'Certification status', value: cert.status },
+        { trait_type: 'Network', value: cert.network || 'BEL-TRUST-CHAIN' },
+        { trait_type: 'Soulbound', value: 'true' },
+        { trait_type: 'Synthetic pilot data', value: 'true' },
+      ],
+    };
   }
 
   /**

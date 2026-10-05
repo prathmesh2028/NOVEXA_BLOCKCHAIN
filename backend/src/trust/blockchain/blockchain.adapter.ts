@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '../../core/config/config.service';
-import { createPublicClient, createWalletClient, http, fallback, parseAbi, parseEther, encodeFunctionData, decodeEventLog } from 'viem';
+import { createPublicClient, createWalletClient, http, fallback, parseAbi, decodeEventLog } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 /**
@@ -105,6 +105,52 @@ export class BlockchainAdapter {
       return await this.publicClient.getTransactionReceipt({ hash: txHash as `0x${string}` });
     } catch {
       return null;
+    }
+  }
+
+  async getTokenState(contractAddress: string, tokenId: string): Promise<{
+      owner: string;
+      tokenUri: string;
+      locked: boolean;
+      name: string;
+      symbol: string;
+      supportsErc721: boolean;
+      supportsErc5192: boolean;
+    } | null> {
+      if (!this.connected) return null;
+      try {
+        const abi = parseAbi([
+          'function ownerOf(uint256 tokenId) view returns (address)',
+          'function tokenURI(uint256 tokenId) view returns (string)',
+          'function locked(uint256 tokenId) view returns (bool)',
+          'function name() view returns (string)',
+          'function symbol() view returns (string)',
+          'function supportsInterface(bytes4 interfaceId) view returns (bool)',
+        ]);
+        const address = contractAddress as `0x${string}`;
+        const token = BigInt(tokenId);
+        const [owner, tokenUri, locked, name, symbol, supportsErc721, supportsErc5192] =
+          await Promise.all([
+            this.publicClient.readContract({ address, abi, functionName: 'ownerOf', args: [token] }),
+            this.publicClient.readContract({ address, abi, functionName: 'tokenURI', args: [token] }),
+            this.publicClient.readContract({ address, abi, functionName: 'locked', args: [token] }),
+            this.publicClient.readContract({ address, abi, functionName: 'name' }),
+            this.publicClient.readContract({ address, abi, functionName: 'symbol' }),
+            this.publicClient.readContract({ address, abi, functionName: 'supportsInterface', args: ['0x80ac58cd'] }),
+            this.publicClient.readContract({ address, abi, functionName: 'supportsInterface', args: ['0xb45a3c0e'] }),
+          ]);
+        return {
+          owner: String(owner),
+          tokenUri: String(tokenUri),
+          locked: Boolean(locked),
+          name: String(name),
+          symbol: String(symbol),
+          supportsErc721: Boolean(supportsErc721),
+          supportsErc5192: Boolean(supportsErc5192),
+        };
+      } catch (e: any) {
+        this.logger.warn(`Unable to read token ${tokenId} from ${contractAddress}: ${e.message}`);
+        return null;
     }
   }
 

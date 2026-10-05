@@ -31,6 +31,15 @@ async function main() {
   const code = await provider.getCode(address);
   console.log('Contract code exists:', code !== '0x');
 
+  if (process.env.METADATA_BASE_URI) {
+    const metadataBaseUri = process.env.METADATA_BASE_URI.endsWith('/')
+      ? process.env.METADATA_BASE_URI
+      : `${process.env.METADATA_BASE_URI}/`;
+    const setUriTx = await contract.setBaseTokenURI(metadataBaseUri);
+    await setUriTx.wait();
+    console.log('Metadata base URI configured:', metadataBaseUri);
+  }
+
   return address;
 }
 
