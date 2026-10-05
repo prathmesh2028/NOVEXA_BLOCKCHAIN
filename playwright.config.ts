@@ -2,11 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  workers: 1,
+  reporter: 'list',
   use: {
     baseURL: 'http://localhost:8443',
     trace: 'on-first-retry',
@@ -19,13 +19,13 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'npm run dev:backend',
+      command: 'cd backend && npm run start:dev',
       url: 'http://localhost:8000/api/v1/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },
     {
-      command: 'npm run dev:frontend',
+      command: 'cd frontend/f1 && npm run dev',
       url: 'http://localhost:8443',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,

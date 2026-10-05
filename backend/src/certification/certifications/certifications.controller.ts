@@ -46,6 +46,7 @@ export class CertificationsController {
    * Returns a single certification by its UUID or certId (e.g. CERT-2026-00089).
    */
   @Get(':id')
+  @CasbinPolicy('/api/v1/certifications/:id', 'GET')
   async getCertification(@Param('id') id: string) {
     return this.certificationsService.getCertificationById(id);
   }

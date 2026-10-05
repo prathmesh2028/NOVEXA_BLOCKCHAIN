@@ -853,7 +853,7 @@ export default function DashboardPage() {
             <span className="db-meta-sep">•</span>
             <LiveClock />
             <span className="db-meta-sep">•</span>
-            <span className="db-synthetic-badge">SYNTHETIC DEMO PROTOCOL</span>
+            <span className="db-synthetic-badge">SYNTHETIC PILOT DATA</span>
           </div>
         </div>
 

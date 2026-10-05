@@ -40,7 +40,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     role: "QUALITY_INSPECTOR",
     rolePillClass: "pill-tech",
     email: "r.kumar@bel-defence.in",
-    password: "password123",
+    password: "password",
   },
   {
     id: "auditor",
@@ -48,7 +48,7 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     role: "AUDITOR",
     rolePillClass: "pill-auditor",
     email: "d.nair@bel-defence.in",
-    password: "password123",
+    password: "password",
   },
 ];
 
@@ -344,6 +344,7 @@ export default function LoginPage() {
               {DEMO_ACCOUNTS.map((acc) => (
                 <div
                   key={acc.id}
+                  data-testid={`demo-${acc.id}`}
                   className={`cmd-demo-card ${selectedRole === acc.id ? "active" : ""}`}
                   onClick={() => selectDemoAccount(acc)}
                   role="button"
