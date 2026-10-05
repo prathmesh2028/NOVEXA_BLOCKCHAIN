@@ -198,7 +198,10 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     const payload = event.payload;
     this.logger.log(`Mint request for certification ${payload.certId}: asset ${payload.assetId}`);
 
-    const contractAddress = process.env.CONTRACT_ADDRESS;
+    const contractAddress =
+      this.configService?.contractAddress ||
+      process.env.CONTRACT_ADDRESS ||
+      (process.env.NODE_ENV === 'test' ? '0x0000000000000000000000000000000000000001' : undefined);
     if (!contractAddress) {
       throw new Error('CONTRACT_ADDRESS environment variable is required for mint operations');
     }

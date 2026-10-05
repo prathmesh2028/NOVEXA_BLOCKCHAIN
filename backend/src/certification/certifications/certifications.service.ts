@@ -3,6 +3,7 @@ import { PrismaService } from '../../core/database/prisma.service';
 import { AuditService } from '../../asset-management/audit/audit.service';
 import { v4 as uuidv4 } from 'uuid';
 import { BlockchainAdapter } from '../../trust/blockchain/blockchain.adapter';
+import { ConfigService } from '../../core/config/config.service';
 
 @Injectable()
 export class CertificationsService {
@@ -12,6 +13,7 @@ export class CertificationsService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
     private readonly blockchainAdapter: BlockchainAdapter,
+    private readonly configService: ConfigService,
   ) {}
 
   private mapCert(c: any) {
@@ -115,6 +117,11 @@ export class CertificationsService {
       && expectedOwner
       && onChain.owner.toLowerCase() === expectedOwner.toLowerCase(),
     );
+    const receiptBlockNumber = receipt ? Number(receipt.blockNumber) : null;
+    const receiptHash = receipt?.transactionHash
+      ? String(receipt.transactionHash).toLowerCase()
+      : null;
+    const metadataAvailable = Boolean(onChain?.tokenUri && onChain.tokenUri !== `${cert.tokenId}.json`);
 
     return {
       certification: this.mapCert(cert),
@@ -126,7 +133,7 @@ export class CertificationsService {
       },
       transaction: receipt ? {
         hash: cert.txHash,
-        block_number: Number(receipt.blockNumber),
+        block_number: receiptBlockNumber,
         status: receipt.status,
       } : null,
       on_chain: onChain ? {
@@ -136,18 +143,21 @@ export class CertificationsService {
         expected_owner: expectedOwner,
       } : null,
       consistency: {
-        token_id_matches_db: Boolean(onChain && cert.tokenId),
-        transaction_matches_db: Boolean(receipt && cert.txHash),
-        block_matches_db: Boolean(receipt && cert.blockNumber === Number(receipt.blockNumber)),
+        token_id_matches_db: Boolean(onChain && onChain.certification.assetId === cert.asset.assetId),
+        transaction_matches_db: Boolean(receiptHash && cert.txHash && receiptHash === cert.txHash.toLowerCase()),
+        block_matches_db: Boolean(receiptBlockNumber !== null && cert.blockNumber === receiptBlockNumber),
         owner_verified: ownerMatches,
-        metadata_available: Boolean(onChain?.tokenUri),
+        metadata_available: metadataAvailable,
       },
     };
   }
 
   async getMetadataByTokenId(tokenId: string) {
     const cert = await this.prisma.certification.findFirst({
-      where: { tokenId },
+      where: {
+        tokenId,
+        contractAddress: this.configService.contractAddress,
+      },
       include: { asset: true, batch: true },
     });
     if (!cert) throw new NotFoundException(`Token ${tokenId} not found`);

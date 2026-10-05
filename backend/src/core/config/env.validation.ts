@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-dotenv.config();
+dotenv.config({
+  path: path.resolve(__dirname, '../../../.env'),
+  override: true,
+});
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'demo', 'staging', 'production']).default('development'),
@@ -42,7 +46,7 @@ const envSchema = z.object({
   MINIO_SECRET_KEY: z.string().min(1),
   MINIO_BUCKET: z.string().default('kavachtrust-evidence'),
   BLOCKCHAIN_RPC_URL: z.string().default('http://localhost:8545'),
-  BLOCKCHAIN_CHAIN_ID: z.coerce.number().default(1337),
+  BLOCKCHAIN_CHAIN_ID: z.coerce.number().default(31337),
   BLOCKCHAIN_PRIVATE_KEY: z.string().min(1),
   CONTRACT_ADDRESS: z.string().default(''),
   BLOCKCHAIN_NETWORK_NAME: z.string().default('BEL-TRUST-CHAIN'),

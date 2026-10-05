@@ -116,6 +116,13 @@ export class BlockchainAdapter {
       symbol: string;
       supportsErc721: boolean;
       supportsErc5192: boolean;
+      certification: {
+        assetId: string;
+        batchId: string;
+        evidenceHash: string;
+        issuedAt: number;
+        revokedAt: number;
+      };
     } | null> {
       if (!this.connected) return null;
       try {
@@ -126,10 +133,11 @@ export class BlockchainAdapter {
           'function name() view returns (string)',
           'function symbol() view returns (string)',
           'function supportsInterface(bytes4 interfaceId) view returns (bool)',
+          'function getCertification(uint256 tokenId) view returns (string assetId, string batchId, string evidenceHash, uint256 issuedAt, uint256 revokedAt)',
         ]);
         const address = contractAddress as `0x${string}`;
         const token = BigInt(tokenId);
-        const [owner, tokenUri, locked, name, symbol, supportsErc721, supportsErc5192] =
+        const [owner, tokenUri, locked, name, symbol, supportsErc721, supportsErc5192, certification] =
           await Promise.all([
             this.publicClient.readContract({ address, abi, functionName: 'ownerOf', args: [token] }),
             this.publicClient.readContract({ address, abi, functionName: 'tokenURI', args: [token] }),
@@ -138,6 +146,7 @@ export class BlockchainAdapter {
             this.publicClient.readContract({ address, abi, functionName: 'symbol' }),
             this.publicClient.readContract({ address, abi, functionName: 'supportsInterface', args: ['0x80ac58cd'] }),
             this.publicClient.readContract({ address, abi, functionName: 'supportsInterface', args: ['0xb45a3c0e'] }),
+            this.publicClient.readContract({ address, abi, functionName: 'getCertification', args: [token] }),
           ]);
         return {
           owner: String(owner),
@@ -147,6 +156,13 @@ export class BlockchainAdapter {
           symbol: String(symbol),
           supportsErc721: Boolean(supportsErc721),
           supportsErc5192: Boolean(supportsErc5192),
+          certification: {
+            assetId: String((certification as any)[0]),
+            batchId: String((certification as any)[1]),
+            evidenceHash: String((certification as any)[2]),
+            issuedAt: Number((certification as any)[3]),
+            revokedAt: Number((certification as any)[4]),
+          },
         };
       } catch (e: any) {
         this.logger.warn(`Unable to read token ${tokenId} from ${contractAddress}: ${e.message}`);

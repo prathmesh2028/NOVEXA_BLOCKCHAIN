@@ -64,12 +64,17 @@ export default function CertificationDetailPage() {
     }).ethereum;
     const chainId = proof?.network.chain_id;
     const token = proof?.on_chain;
-    if (!ethereum || !token || !chainId) {
+    if (!ethereum) {
+      setWalletMessage("MetaMask is not available in this browser. Connect MetaMask on BEL Trust Chain (chain ID 31337) to import this verified token.");
+      return;
+    }
+    if (!token || !chainId) {
       setWalletMessage("Wallet import is unavailable until the confirmed token proof is loaded.");
       return;
     }
     try {
-      const currentChainId = Number(await ethereum.request({ method: "eth_chainId" }));
+      const rawChainId = await ethereum.request({ method: "eth_chainId" }) as string;
+      const currentChainId = Number.parseInt(rawChainId, 16);
       if (currentChainId !== chainId) {
         await ethereum.request({
           method: "wallet_switchEthereumChain",
@@ -83,7 +88,10 @@ export default function CertificationDetailPage() {
           options: { address: token.contract_address, tokenId: token.token_id },
         }],
       });
-      setWalletMessage("MetaMask import request sent for this real certification token.");
+      setWalletMessage(
+        "MetaMask import request sent. If this local network does not support NFT discovery, " +
+        "use MetaMask's Import NFT flow with the prefilled contract and token ID shown below.",
+      );
     } catch (error: any) {
       console.error("MetaMask NFT import failed:", error);
       setWalletMessage(
@@ -397,15 +405,27 @@ export default function CertificationDetailPage() {
                 type="button"
                 className="btn-primary"
                 onClick={addToMetaMask}
-                disabled={!connectedWallet || connectedChainId !== proof.network.chain_id}
+                disabled={!proof}
                 style={{ border: "none", cursor: "pointer" }}
-                title={!connectedWallet ? "Connect MetaMask first" : connectedChainId !== proof.network.chain_id ? "Switch MetaMask to BEL Trust Chain (31337)" : "Request NFT import in MetaMask"}
+                title={!proof ? "Load confirmed blockchain proof first" : "Switch to BEL Trust Chain and request NFT import"}
               >
                 View in Wallet / Add to MetaMask
               </button>
               <span style={{ color: "#64748b", fontSize: "0.75rem" }}>
-                Connected wallet: {connectedWallet || "not connected"} · Network: {connectedChainId === proof.network.chain_id ? "BEL Trust Chain" : "switch required"}
+                Connected wallet: {connectedWallet || "not connected"} · Network: {!connectedWallet
+                  ? "not connected"
+                  : connectedChainId === proof.network.chain_id
+                    ? "BEL Trust Chain"
+                    : "switch required"}
               </span>
+            </div>
+            <div style={{ marginTop: "12px", color: "#94a3b8", fontSize: "0.75rem", lineHeight: 1.6 }}>
+              MetaMask auto-discovery is not guaranteed for local custom networks. The action above
+              requests the supported wallet import method; if MetaMask opens its manual import view,
+              use these verified values:
+              <div style={{ marginTop: "6px", fontFamily: "monospace", wordBreak: "break-all" }}>
+                Network: BEL Trust Chain (chain ID {proof.network.chain_id}) · Contract: {proof.on_chain.contract_address} · Token ID: {proof.on_chain.token_id}
+              </div>
             </div>
             {walletMessage && (
               <div style={{ color: "#fbbf24", fontSize: "0.8125rem", marginTop: "10px" }}>{walletMessage}</div>

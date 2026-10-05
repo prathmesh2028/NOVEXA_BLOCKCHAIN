@@ -95,6 +95,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           setWalletBinding(null);
         } else {
           setAddress(accounts[0]);
+          const currentChainId = await createWalletClient({ transport: custom(window.ethereum) }).getChainId();
+          setChainId(currentChainId);
           await syncWalletState(accounts[0]);
         }
       };

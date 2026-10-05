@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "kavach_token",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDYyYTdkNi1kY2ZmLTRkMzUtYWVkOC1mZTMzZjNhNDczNWQiLCJlbWFpbCI6ImEubWVodGFAYmVsLWRlZmVuY2UuaW4iLCJyb2xlcyI6WyJTWVNURU1fQURNSU4iXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDEiLCJpYXQiOjE3OTExNjA3OTQsImV4cCI6MTc5MTI0NzE5NCwiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.hJ4F7m61_fi9mqKI-fhNsfxba5FFZYjG8Cr3-ge1LNM",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDYyYTdkNi1kY2ZmLTRkMzUtYWVkOC1mZTMzZjNhNDczNWQiLCJlbWFpbCI6ImEubWVodGFAYmVsLWRlZmVuY2UuaW4iLCJyb2xlcyI6WyJTWVNURU1fQURNSU4iXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDEiLCJpYXQiOjE3OTExNzk0NjMsImV4cCI6MTc5MTI2NTg2MywiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.XJOokMPP37esrJTp5QcfFC22ngEmBiI8WrAKd2jnXVQ",
       "domain": "localhost",
       "path": "/",
       "expires": -1,
@@ -21,11 +21,7 @@
         },
         {
           "name": "kavach_token",
-          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDYyYTdkNi1kY2ZmLTRkMzUtYWVkOC1mZTMzZjNhNDczNWQiLCJlbWFpbCI6ImEubWVodGFAYmVsLWRlZmVuY2UuaW4iLCJyb2xlcyI6WyJTWVNURU1fQURNSU4iXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDEiLCJpYXQiOjE3OTExNjA3OTQsImV4cCI6MTc5MTI0NzE5NCwiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.hJ4F7m61_fi9mqKI-fhNsfxba5FFZYjG8Cr3-ge1LNM"
-        },
-        {
-          "name": "novexa-theme",
-          "value": "dark"
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDYyYTdkNi1kY2ZmLTRkMzUtYWVkOC1mZTMzZjNhNDczNWQiLCJlbWFpbCI6ImEubWVodGFAYmVsLWRlZmVuY2UuaW4iLCJyb2xlcyI6WyJTWVNURU1fQURNSU4iXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDEiLCJpYXQiOjE3OTExNzk0NjMsImV4cCI6MTc5MTI2NTg2MywiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.XJOokMPP37esrJTp5QcfFC22ngEmBiI8WrAKd2jnXVQ"
         }
       ]
     }
