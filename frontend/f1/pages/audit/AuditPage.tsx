@@ -98,8 +98,8 @@ export default function AuditPage() {
       <div className="sysact-notice-box">
         <span style={{ fontSize: "1rem" }}>ⓘ</span>
         <div>
-          <span className="sysact-notice-strong">Tamper-evident system activity log: </span>
-          All system activity events are cryptographically linked to blockchain records. Any attempt to modify or delete historical events is detectable.
+          <span className="sysact-notice-strong">System Activity Ledger: </span>
+          System activity events are cryptographically hashed and anchored. This enables tamper detection for the digital records shown here.
         </div>
       </div>
 

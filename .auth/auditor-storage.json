@@ -1,0 +1,29 @@
+{
+  "cookies": [
+    {
+      "name": "kavach_token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1YzRhM2JlNi0xZTExLTQ0ZDktYTFiNy03ODg0NWJmNzVhY2UiLCJlbWFpbCI6ImQubmFpckBiZWwtZGVmZW5jZS5pbiIsInJvbGVzIjpbIkFVRElUT1IiXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDQiLCJpYXQiOjE3OTExNzk0NjksImV4cCI6MTc5MTI2NTg2OSwiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.F0itBZ2SOV4UgWANJMx7DwMOu4FSrCXHJ1TTYImYmZk",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:8443",
+      "localStorage": [
+        {
+          "name": "kavach_user",
+          "value": "{\"id\":\"usr-004\",\"email\":\"d.nair@bel-defence.in\",\"name\":\"Deepa Nair\",\"roles\":[\"AUDITOR\"]}"
+        },
+        {
+          "name": "kavach_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1YzRhM2JlNi0xZTExLTQ0ZDktYTFiNy03ODg0NWJmNzVhY2UiLCJlbWFpbCI6ImQubmFpckBiZWwtZGVmZW5jZS5pbiIsInJvbGVzIjpbIkFVRElUT1IiXSwiZGlkIjoiZGlkOmJlbDphY3RvcjowMDQiLCJpYXQiOjE3OTExNzk0NjksImV4cCI6MTc5MTI2NTg2OSwiYXVkIjoia2F2YWNodHJ1c3QtYXBpIiwiaXNzIjoia2F2YWNodHJ1c3QifQ.F0itBZ2SOV4UgWANJMx7DwMOu4FSrCXHJ1TTYImYmZk"
+        }
+      ]
+    }
+  ]
+}

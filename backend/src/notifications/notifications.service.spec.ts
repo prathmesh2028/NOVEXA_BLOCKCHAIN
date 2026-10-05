@@ -56,7 +56,7 @@ describe('NotificationsService', () => {
 
     it('should create targeted notification with custom severity and link', async () => {
       const input = {
-        recipientRole: 'NFT_CREATOR' as any,
+        recipientRole: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER' as any,
         title: 'Approval Required',
         message: 'Approval APR-001 needs action',
         type: 'APPROVAL_REQUIRED' as any,
@@ -82,7 +82,7 @@ describe('NotificationsService', () => {
 
       const result = await service.listNotifications({
         userId: 'usr-1',
-        roles: ['TECHNICIAN'],
+        roles: ['QUALITY_INSPECTOR'],
         isRead: false,
         page: 1,
         pageSize: 10,
@@ -97,7 +97,7 @@ describe('NotificationsService', () => {
         where: {
           OR: [
             { recipientId: 'usr-1' },
-            { recipientRole: { in: ['TECHNICIAN'] } },
+            { recipientRole: { in: ['QUALITY_INSPECTOR'] } },
           ],
           isRead: false,
         },
@@ -112,14 +112,14 @@ describe('NotificationsService', () => {
     it('should return unread count for user and roles', async () => {
       mockPrisma.notification.count.mockResolvedValue(5);
 
-      const count = await service.getUnreadCount('usr-1', ['ADMIN']);
+      const count = await service.getUnreadCount('usr-1', ['SYSTEM_ADMIN']);
       expect(count).toBe(5);
       expect(mockPrisma.notification.count).toHaveBeenCalledWith({
         where: {
           isRead: false,
           OR: [
             { recipientId: 'usr-1' },
-            { recipientRole: { in: ['ADMIN'] } },
+            { recipientRole: { in: ['SYSTEM_ADMIN'] } },
           ],
         },
       });
@@ -152,7 +152,7 @@ describe('NotificationsService', () => {
       mockPrisma.notification.findUnique.mockResolvedValue({
         id: 'notif-other',
         recipientId: 'other-user',
-        recipientRole: 'TECHNICIAN',
+        recipientRole: 'QUALITY_INSPECTOR',
         isRead: false,
       });
 
@@ -161,16 +161,16 @@ describe('NotificationsService', () => {
       ).rejects.toThrow('You are not authorized to modify this notification');
     });
 
-    it('should allow markAsRead if user has the recipient role or is ADMIN', async () => {
+    it('should allow markAsRead if user has the recipient role or is SYSTEM_ADMIN', async () => {
       mockPrisma.notification.findUnique.mockResolvedValue({
         id: 'notif-role',
         recipientId: null,
-        recipientRole: 'TECHNICIAN',
+        recipientRole: 'QUALITY_INSPECTOR',
         isRead: false,
       });
       mockPrisma.notification.update.mockResolvedValue({ id: 'notif-role', isRead: true });
 
-      const result = await service.markAsRead('notif-role', 'tech-user', ['TECHNICIAN']);
+      const result = await service.markAsRead('notif-role', 'tech-user', ['QUALITY_INSPECTOR']);
       expect(result.isRead).toBe(true);
     });
   });
@@ -179,14 +179,14 @@ describe('NotificationsService', () => {
     it('should update unread notifications and return count', async () => {
       mockPrisma.notification.updateMany.mockResolvedValue({ count: 3 });
 
-      const result = await service.markAllAsRead('usr-1', ['TECHNICIAN']);
+      const result = await service.markAllAsRead('usr-1', ['QUALITY_INSPECTOR']);
       expect(result.updatedCount).toBe(3);
       expect(mockPrisma.notification.updateMany).toHaveBeenCalledWith({
         where: {
           isRead: false,
           OR: [
             { recipientId: 'usr-1' },
-            { recipientRole: { in: ['TECHNICIAN'] } },
+            { recipientRole: { in: ['QUALITY_INSPECTOR'] } },
           ],
         },
         data: {

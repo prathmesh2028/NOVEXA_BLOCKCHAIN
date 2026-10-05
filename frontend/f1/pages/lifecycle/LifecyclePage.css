@@ -915,60 +915,174 @@
   background: rgba(30, 58, 96, 0.6);
 }
 
-/* ─── MODAL STYLES ─── */
+/* ─── MODAL STYLES (Viewport-Fixed Portal) ─── */
 .lc-modal-backdrop {
   position: fixed;
-  inset: 0;
-  background: rgba(3, 7, 18, 0.8);
-  backdrop-filter: blur(6px);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+  align-items: flex-start;
+  z-index: 999999;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
   animation: lcFadeIn 200ms ease forwards;
 }
 
 .lc-modal-card {
-  width: 100%;
-  max-width: 540px;
-  background: var(--lc-bg-card);
-  border: 1px solid var(--lc-border);
+  position: fixed;
+  left: 50%;
+  top: clamp(24px, 5vh, 56px);
+  transform: translateX(-50%);
+  width: 540px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - clamp(48px, 10vh, 80px));
+  background: var(--lc-bg-card, #111827);
+  border: 1px solid var(--lc-border, #1f2937);
   border-radius: 14px;
-  padding: 24px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(56, 189, 248, 0.15);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(56, 189, 248, 0.15);
+  z-index: 1000000;
+  overflow: hidden;
+  box-sizing: border-box;
   animation: lcModalZoom 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .lc-modal-header {
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  border-bottom: 1px solid var(--lc-border, #1f2937);
+  background: var(--lc-bg-card, #111827);
+  flex-shrink: 0;
 }
 
 .lc-modal-title {
   font-size: 1.125rem;
   font-weight: 800;
-  color: var(--lc-text-title);
+  color: var(--lc-text-title, #f9fafb);
   margin: 0;
 }
 
 .lc-modal-close {
   background: none;
   border: none;
-  color: var(--lc-text-muted);
+  color: var(--lc-text-muted, #9ca3af);
   cursor: pointer;
   font-size: 1.25rem;
   line-height: 1;
   padding: 4px;
+  border-radius: 4px;
   transition: color 160ms ease;
 }
 
 .lc-modal-close:hover {
-  color: var(--lc-text-title);
+  color: var(--lc-text-title, #f9fafb);
+}
+
+.lc-modal-body {
+  padding: 20px 24px 24px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lc-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--lc-border, #1f2937);
+  flex-shrink: 0;
+}
+
+/* Light Mode Overrides for Modal */
+[data-theme="light"] .lc-modal-backdrop,
+.theme-light .lc-modal-backdrop,
+body[data-theme="light"] .lc-modal-backdrop,
+html[data-theme="light"] .lc-modal-backdrop {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+[data-theme="light"] .lc-modal-card,
+.theme-light .lc-modal-card,
+body[data-theme="light"] .lc-modal-card,
+html[data-theme="light"] .lc-modal-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .lc-modal-header,
+.theme-light .lc-modal-header,
+body[data-theme="light"] .lc-modal-header,
+html[data-theme="light"] .lc-modal-header {
+  background: #ffffff;
+  border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .lc-modal-title,
+.theme-light .lc-modal-title,
+body[data-theme="light"] .lc-modal-title,
+html[data-theme="light"] .lc-modal-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .lc-modal-close,
+.theme-light .lc-modal-close,
+body[data-theme="light"] .lc-modal-close,
+html[data-theme="light"] .lc-modal-close {
+  color: #64748b;
+}
+
+[data-theme="light"] .lc-modal-close:hover,
+.theme-light .lc-modal-close:hover,
+body[data-theme="light"] .lc-modal-close:hover,
+html[data-theme="light"] .lc-modal-close:hover {
+  color: #0f172a;
+}
+
+[data-theme="light"] .lc-modal-footer,
+.theme-light .lc-modal-footer,
+body[data-theme="light"] .lc-modal-footer,
+html[data-theme="light"] .lc-modal-footer {
+  border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .lc-quick-fill-box,
+.theme-light .lc-quick-fill-box {
+  background: rgba(37, 99, 235, 0.05);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="light"] .lc-modal-card .lc-search-input,
+.theme-light .lc-modal-card .lc-search-input,
+body[data-theme="light"] .lc-modal-card .lc-search-input,
+html[data-theme="light"] .lc-modal-card .lc-search-input,
+[data-theme="light"] .lc-modal-card .lc-select,
+.theme-light .lc-modal-card .lc-select,
+body[data-theme="light"] .lc-modal-card .lc-select,
+html[data-theme="light"] .lc-modal-card .lc-select {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 /* Quick Fill Banner in Modal */
@@ -1099,11 +1213,11 @@
 @keyframes lcModalZoom {
   from {
     opacity: 0;
-    transform: scale(0.97) translateY(8px);
+    transform: translateX(-50%) scale(0.97) translateY(8px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateX(-50%) scale(1) translateY(0);
   }
 }
 

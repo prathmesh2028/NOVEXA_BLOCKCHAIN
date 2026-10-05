@@ -199,9 +199,12 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`Mint request for certification ${payload.certId}: asset ${payload.assetId}`);
 
     const contractAddress =
+      this.configService?.contractAddress ||
       process.env.CONTRACT_ADDRESS ||
-      process.env.KAVACH_SBT_ADDRESS ||
-      '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+      (process.env.NODE_ENV === 'test' ? '0x0000000000000000000000000000000000000001' : undefined);
+    if (!contractAddress) {
+      throw new Error('CONTRACT_ADDRESS environment variable is required for mint operations');
+    }
 
     // Fetch certification & asset details to get actual evidence hash and batch
     const certDetails = await this.prisma.certification.findUnique({
@@ -232,9 +235,9 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         where: { id: certDetails.asset.registeredById },
         include: { walletBindings: { where: { verified: true } }, actor: true },
       });
-      if (regUser?.walletBindings?.[0]?.address) {
+      if (regUser?.walletBindings?.[0]?.address && isAddress(regUser.walletBindings[0].address)) {
         recipient = regUser.walletBindings[0].address;
-      } else if (regUser?.actor?.walletAddress) {
+      } else if (regUser?.actor?.walletAddress && isAddress(regUser.actor.walletAddress)) {
         recipient = regUser.actor.walletAddress;
       }
     }
@@ -243,20 +246,19 @@ export class WorkerService implements OnModuleInit, OnModuleDestroy {
         where: { id: certDetails.issuedById },
         include: { walletBindings: { where: { verified: true } }, actor: true },
       });
-      if (issuerUser?.walletBindings?.[0]?.address) {
+      if (issuerUser?.walletBindings?.[0]?.address && isAddress(issuerUser.walletBindings[0].address)) {
         recipient = issuerUser.walletBindings[0].address;
-      } else if (issuerUser?.actor?.walletAddress) {
+      } else if (issuerUser?.actor?.walletAddress && isAddress(issuerUser.actor.walletAddress)) {
         recipient = issuerUser.actor.walletAddress;
       }
     }
-    if (!recipient && this.configService?.defaultNftRecipient) {
+    if (!recipient && this.configService?.defaultNftRecipient && isAddress(this.configService.defaultNftRecipient)) {
       recipient = this.configService.defaultNftRecipient;
     }
-    if (!recipient && process.env.DEFAULT_NFT_RECIPIENT) {
+    if (!recipient && process.env.DEFAULT_NFT_RECIPIENT && isAddress(process.env.DEFAULT_NFT_RECIPIENT)) {
       recipient = process.env.DEFAULT_NFT_RECIPIENT;
     }
-    recipient = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
-    
+
     if (!recipient) {
       throw new Error(`Failed to resolve valid blockchain recipient address for asset ${payload.assetId}`);
     }

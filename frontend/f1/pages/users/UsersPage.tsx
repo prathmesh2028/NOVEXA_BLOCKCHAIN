@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { formatDateTime } from "../../data/utils";
 import { usersService, UserResponse } from "../../services/users";
+import { useAuth } from "../../context/AuthContext";
 import "./UsersPage.css";
 
 /* ── Count-up Hook for KPI Numbers ─────────────────────────────────── */
@@ -71,14 +73,14 @@ function KpiMiniSparkline({ color = "#3b82f6", variant = 1 }: { color?: string; 
 function RolePill({ roleStr }: { roleStr: string }) {
   const r = (roleStr || "").toLowerCase();
 
-  if (r.includes("admin")) {
-    return <span className="role-pill role-pill-admin">ADMIN</span>;
+  if (r.includes("system") && r.includes("admin")) {
+    return <span className="role-pill role-pill-admin">SYSTEM_ADMIN</span>;
   }
   if (r.includes("supply") || r.includes("creator") || r.includes("procurement") || r.includes("nft")) {
-    return <span className="role-pill role-pill-creator">CREATOR</span>;
+    return <span className="role-pill role-pill-creator">PROCUREMENT_SUPPLY_CHAIN_OFFICER</span>;
   }
   if (r.includes("inspect") || r.includes("tech") || r.includes("quality")) {
-    return <span className="role-pill role-pill-tech">TECH</span>;
+    return <span className="role-pill role-pill-tech">QUALITY_INSPECTOR</span>;
   }
   if (r.includes("audit")) {
     return <span className="role-pill role-pill-auditor">AUDITOR</span>;
@@ -232,6 +234,67 @@ function UserEcosystemGraphic() {
    MAIN USERS PAGE COMPONENT
    ════════════════════════════════════════════════════════════════════ */
 export default function UsersPage() {
+  const { role, user } = useAuth();
+
+  /* Role permission check: Approve & Disapprove visible ONLY for System Administrator and Quality Inspector */
+  const isApproverRole = useMemo(() => {
+    if (role === "system-admin" || role === "quality-inspector") {
+      return true;
+    }
+    const userRoles = (user?.roles || []).map((r) =>
+      r.toLowerCase().replaceAll("_", "-").trim()
+    );
+    return userRoles.some(
+      (r) =>
+        r === "system-admin" ||
+        r === "admin" ||
+        r === "administrator" ||
+        r === "quality-inspector" ||
+        r === "inspector" ||
+        r === "tech" ||
+        r === "technician"
+    );
+  }, [role, user]);
+
+  /* Track approval state using real backend approval service */
+  const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+
+  const handleApprove = async (userId: string) => {
+    setApprovingId(userId);
+    try {
+      // Use the real approval service to approve the user
+      await usersService.updateUser(userId, { status: 'ACTIVE' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [userId]: "approved",
+      }));
+      fetchUsers(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to approve user:', err);
+      alert('Failed to approve user: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleDisapprove = async (userId: string) => {
+    setApprovingId(userId);
+    try {
+      await usersService.updateUser(userId, { status: 'SUSPENDED' });
+      setApprovalStatus((prev) => ({
+        ...prev,
+        [userId]: "disapproved",
+      }));
+      fetchUsers(); // Refresh to show updated status
+    } catch (err: any) {
+      console.error('Failed to disapprove user:', err);
+      alert('Failed to disapprove user: ' + (err.message || 'Unknown error'));
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -276,6 +339,46 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  /* Viewport scroll lock for Invite New User modal */
+  useEffect(() => {
+    if (!showInviteModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showInviteModal]);
 
   /* Close action popover on click outside or Escape key */
   useEffect(() => {
@@ -350,7 +453,7 @@ export default function UsersPage() {
       // 2. Role Filter
       if (roleFilter !== "ALL") {
         const userRoles = (u.roles || []).map((r) => r.toLowerCase());
-        if (roleFilter === "ADMIN" && !userRoles.some((r) => r.includes("admin"))) return false;
+        if (roleFilter === "ADMIN" && !userRoles.some((r) => r.includes("system") && r.includes("admin"))) return false;
         if (roleFilter === "CREATOR" && !userRoles.some((r) => r.includes("supply") || r.includes("creator") || r.includes("procurement") || r.includes("nft"))) return false;
         if (roleFilter === "TECH" && !userRoles.some((r) => r.includes("inspect") || r.includes("tech") || r.includes("quality"))) return false;
         if (roleFilter === "AUDITOR" && !userRoles.some((r) => r.includes("audit"))) return false;
@@ -591,10 +694,10 @@ export default function UsersPage() {
             aria-label="Filter by role"
           >
             <option value="ALL">All Roles</option>
-            <option value="ADMIN">Admin</option>
-            <option value="CREATOR">Creator / NFT</option>
-            <option value="TECH">Technician</option>
-            <option value="AUDITOR">Auditor</option>
+            <option value="ADMIN">SYSTEM_ADMIN</option>
+            <option value="CREATOR">PROCUREMENT_SUPPLY_CHAIN_OFFICER</option>
+            <option value="TECH">QUALITY_INSPECTOR</option>
+            <option value="AUDITOR">AUDITOR</option>
           </select>
 
           {/* Status Filter */}
@@ -821,18 +924,56 @@ export default function UsersPage() {
                         </td>
 
                         {/* ACTION */}
-                        <td style={{ position: "relative" }}>
-                          <button
-                            className="users-action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActionMenuOpenId(isMenuOpen ? null : u.id);
-                            }}
-                            title="Open contextual action menu"
-                            aria-label={`Actions for ${u.name}`}
-                          >
-                            ···
-                          </button>
+                        <td className="users-action-td">
+                          <div className="users-action-cell">
+                            {isApproverRole && (
+                              <div className="users-approval-actions">
+                                <button
+                                  type="button"
+                                  className={`users-btn-approve ${
+                                    approvalStatus[u.id] === "approved" ? "is-approved" : ""
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleApprove(u.id);
+                                  }}
+                                  title={`Approve user ${u.name}`}
+                                  aria-label={`Approve ${u.name}`}
+                                >
+                                  <span className="users-btn-symbol">✓</span>
+                                  <span>{approvalStatus[u.id] === "approved" ? "Approved" : "Approve"}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className={`users-btn-disapprove ${
+                                    approvalStatus[u.id] === "disapproved" ? "is-disapproved" : ""
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDisapprove(u.id);
+                                  }}
+                                  title={`Disapprove user ${u.name}`}
+                                  aria-label={`Disapprove ${u.name}`}
+                                >
+                                  <span className="users-btn-symbol">✕</span>
+                                  <span>{approvalStatus[u.id] === "disapproved" ? "Disapproved" : "Disapprove"}</span>
+                                </button>
+                              </div>
+                            )}
+
+                            <button
+                              className="users-action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActionMenuOpenId(isMenuOpen ? null : u.id);
+                              }}
+                              title="Open contextual action menu"
+                              aria-label={`Actions for ${u.name}`}
+                            >
+                              ···
+                            </button>
+                          </div>
 
                           {/* Interactive Contextual Three-Dot Popover */}
                           {isMenuOpen && (
@@ -1084,7 +1225,39 @@ export default function UsersPage() {
               </div>
 
               {/* Action buttons */}
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 22 }}>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", alignItems: "center", marginTop: 22, flexWrap: "wrap" }}>
+                {isApproverRole && (
+                  <div className="users-approval-actions" style={{ marginRight: "auto" }}>
+                    <button
+                      type="button"
+                      className={`users-btn-approve ${
+                        approvalStatus[selectedUserDetail.id] === "approved" ? "is-approved" : ""
+                      }`}
+                      onClick={() => handleApprove(selectedUserDetail.id)}
+                      title={`Approve user ${selectedUserDetail.name}`}
+                    >
+                      <span className="users-btn-symbol">✓</span>
+                      <span>
+                        {approvalStatus[selectedUserDetail.id] === "approved" ? "Approved" : "Approve"}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`users-btn-disapprove ${
+                        approvalStatus[selectedUserDetail.id] === "disapproved" ? "is-disapproved" : ""
+                      }`}
+                      onClick={() => handleDisapprove(selectedUserDetail.id)}
+                      title={`Disapprove user ${selectedUserDetail.name}`}
+                    >
+                      <span className="users-btn-symbol">✕</span>
+                      <span>
+                        {approvalStatus[selectedUserDetail.id] === "disapproved" ? "Disapproved" : "Disapprove"}
+                      </span>
+                    </button>
+                  </div>
+                )}
+
                 <button
                   className="btn-secondary"
                   onClick={() => handleCopyDid(selectedUserDetail.did || "did:bel:actor:001")}
@@ -1105,29 +1278,16 @@ export default function UsersPage() {
       )}
 
       {/* ── 7. INVITE USER MODAL ────────────────────────────────────── */}
-      {showInviteModal && (
+      {showInviteModal && typeof document !== "undefined" && createPortal(
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
+          className="users-invite-modal-overlay"
           onClick={() => setShowInviteModal(false)}
         >
           <div
-            className="users-table-card"
-            style={{ width: 480, maxWidth: "90%", padding: 0, animation: "usersCardEntrance 0.25s ease-out" }}
+            className="users-table-card users-invite-modal-dialog"
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--border-subtle, #152b4a)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="users-invite-modal-header">
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ color: "#38bdf8", fontSize: "1.1rem" }}>👤</span>
                 <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--foreground, #e2e8f0)", margin: 0 }}>
@@ -1142,7 +1302,7 @@ export default function UsersPage() {
               </button>
             </div>
 
-            <div style={{ padding: 24 }}>
+            <div className="users-invite-modal-body">
               {error && (
                 <div style={{ padding: 12, background: "rgba(239,68,68,0.15)", border: "1px solid #ef4444", borderRadius: 8, marginBottom: 16, color: "#fca5a5", fontSize: "0.8125rem" }}>
                   {error}
@@ -1228,7 +1388,8 @@ export default function UsersPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

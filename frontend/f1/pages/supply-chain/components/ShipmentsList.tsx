@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { supplyChainService, ShipmentResponse, FacilityResponse } from "../../../services/supply-chain";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import { useAuth, normalizeRole } from "../../../context/AuthContext";
 
 const overlay: React.CSSProperties = {
   position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -25,6 +26,44 @@ const lbl: React.CSSProperties = {
 };
 
 export default function ShipmentsList() {
+  const { role, user } = useAuth();
+
+  const isApproverRole = useMemo(() => {
+    const normalized = normalizeRole(role);
+    if (normalized === "system-admin" || normalized === "quality-inspector") {
+      return true;
+    }
+    const userRoles = (user?.roles || []).map((r) =>
+      r.toLowerCase().replaceAll("_", "-").trim()
+    );
+    return userRoles.some(
+      (r) =>
+        r === "system-admin" ||
+        r === "admin" ||
+        r === "administrator" ||
+        r === "quality-inspector" ||
+        r === "inspector" ||
+        r === "tech" ||
+        r === "technician"
+    );
+  }, [role, user]);
+
+  const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+
+  const handleApprove = (id: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "approved" ? ("" as any) : "approved",
+    }));
+  };
+
+  const handleDisapprove = (id: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "disapproved" ? ("" as any) : "disapproved",
+    }));
+  };
+
   const [shipments, setShipments] = useState<ShipmentResponse[]>([]);
   const [facilities, setFacilities] = useState<FacilityResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,19 +174,19 @@ export default function ShipmentsList() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-              {["Shipment ID", "Lot", "Origin", "Destination / Transit Route", "Tracking", "Status"].map(h => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
+              {["Shipment ID", "Lot", "Origin", "Destination / Transit Route", "Tracking", "Status", ...(isApproverRole ? ["Actions"] : [])].map(h => (
+                <th key={h} style={{ padding: "10px 14px", textAlign: h === "Actions" ? "right" : "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading shipments…</td></tr>
+              <tr><td colSpan={isApproverRole ? 7 : 6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading shipments…</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No shipments found. Click <strong>+ Dispatch Shipment</strong> to create one.</td></tr>
+              <tr><td colSpan={isApproverRole ? 7 : 6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No shipments found. Click <strong>+ Dispatch Shipment</strong> to create one.</td></tr>
             ) : filtered.map((s, idx) => {
-              const originName = s.origin_facility?.name || (s as any).dispatchFacility?.name || "Origin Site";
-              const destName = s.destination_facility?.name || (s as any).receiveFacility?.name || "Destination Site";
+              const originName = s.dispatchFacility?.name || (s as any).origin_facility?.name || "Origin Site";
+              const destName = s.receiveFacility?.name || (s as any).destination_facility?.name || "Destination Site";
               return (
                 <tr
                   key={s.id}
@@ -155,7 +194,7 @@ export default function ShipmentsList() {
                   style={{ animationDelay: `${Math.min(idx, 12) * 45}ms` }}
                 >
                   <td style={{ padding: "12px 14px" }}><span style={{ color: "#f59e0b", fontWeight: 600 }}>{s.shipment_id || (s as any).shipmentId || s.id}</span></td>
-                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>{s.lot?.lot_id || (s as any).lotId || "—"}</td>
+                  <td style={{ padding: "12px 14px", fontWeight: 600 }}>—</td>
                   <td style={{ padding: "12px 14px", fontSize: "0.8rem", color: "var(--muted)" }}>{originName}</td>
                   <td style={{ padding: "12px 14px", fontSize: "0.8rem" }}>
                     <div className="sc-shipment-track">
@@ -166,6 +205,34 @@ export default function ShipmentsList() {
                   </td>
                   <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{s.tracking_number || (s as any).trackingNumber || "—"}</td>
                   <td style={{ padding: "12px 14px" }}><StatusBadge status={(s as any).status || "PENDING"} size="sm" /></td>
+                  {isApproverRole && (
+                    <td style={{ padding: "12px 14px", textAlign: "right", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                        <button
+                          type="button"
+                          className={`sc-btn-approve ${approvalStatus[s.id] === "approved" ? "is-approved" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApprove(s.id);
+                          }}
+                          title="Mark shipment as Approved"
+                        >
+                          ✓ APPROVED
+                        </button>
+                        <button
+                          type="button"
+                          className={`sc-btn-disapprove ${approvalStatus[s.id] === "disapproved" ? "is-disapproved" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDisapprove(s.id);
+                          }}
+                          title="Mark shipment as Disapproved"
+                        >
+                          ✕ DISAPPROVED
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}

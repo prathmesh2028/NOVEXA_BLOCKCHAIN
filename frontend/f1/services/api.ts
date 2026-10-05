@@ -87,6 +87,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   if (!response.ok) {
+    // Don't auto-clear token - let the user see the error and decide when to re-login
+    // Only clear on explicit 401 (unauthorized/expired), not on 403 (permission issue)
+    if (response.status === 401) {
+      console.warn(`Authentication error (401), clearing token`);
+      localStorage.removeItem('kavach_token');
+      localStorage.removeItem('kavach_user');
+    }
+
     const errorMsg = Array.isArray(data?.message) 
       ? data.message.join(', ')
       : (data?.message || data?.detail || response.statusText || 'API Request Failed');

@@ -13,10 +13,17 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
+  // Demo mode warning
+  if (config.isDemoMode) {
+    logger.warn('⚠️  KAVACHTRUST DEMO MODE ENABLED');
+    logger.warn('⚠️  DEMO AUTHENTICATION IS NOT SUITABLE FOR PRODUCTION');
+    logger.warn('⚠️  Use NODE_ENV=production or APP_ENV=production for production deployment');
+  }
+
   // Security
   app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS
+  // CORS - Explicit allowlist from environment
   app.enableCors({
     origin: config.corsOrigins,
     credentials: true,
@@ -56,6 +63,7 @@ async function bootstrap() {
   logger.log(`KavachTrust Backend V2 running on http://localhost:${port}`);
   logger.log(`API prefix: ${config.apiPrefix}`);
   logger.log(`Environment: ${config.nodeEnv}`);
+  logger.log(`CORS origins: ${config.corsOrigins.join(', ')}`);
 }
 
 bootstrap();

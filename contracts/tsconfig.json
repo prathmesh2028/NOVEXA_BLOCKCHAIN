@@ -20,8 +20,11 @@
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "compilerOptions": {
-      "module": "node16",
-      "moduleResolution": "node16"
-    }
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "esModuleInterop": true
+    },
+    "transpileOnly": true,
+    "files": true
   }
 }

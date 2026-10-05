@@ -15,7 +15,7 @@ describe('AuthService (Authentication & Password Management)', () => {
     name: 'Arjun Mehta',
     status: 'ACTIVE',
     passwordHash,
-    roles: [{ role: 'ADMIN' }],
+    roles: [{ role: 'SYSTEM_ADMIN' }],
     actor: { did: 'did:bel:actor:001' },
   };
   const mockNftUser = {
@@ -24,7 +24,7 @@ describe('AuthService (Authentication & Password Management)', () => {
     name: 'Priya Sharma',
     status: 'ACTIVE',
     passwordHash,
-    roles: [{ role: 'NFT_CREATOR' }],
+    roles: [{ role: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER' }],
     actor: { did: 'did:bel:actor:002' },
   };
 
@@ -52,6 +52,7 @@ describe('AuthService (Authentication & Password Management)', () => {
       jwtExpiry: '24h',
       jwtIssuer: 'kavachtrust',
       jwtAudience: 'kavachtrust-api',
+      isDemoMode: true,
     };
 
     service = new AuthService(mockPrisma, mockConfig);
@@ -67,6 +68,13 @@ describe('AuthService (Authentication & Password Management)', () => {
     it('rejects invalid password', async () => {
       await expect(
         service.login('admin@kavachtrust.gov.in', 'wrongpassword')
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    // SECURITY: Empty password must NEVER authenticate anyone, even in demo mode
+    it('rejects empty password even in demo mode', async () => {
+      await expect(
+        service.login('admin@kavachtrust.gov.in', '')
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -103,7 +111,7 @@ describe('AuthService (Authentication & Password Management)', () => {
         name: 'Disabled',
         status: 'DISABLED',
         passwordHash: await bcrypt.hash('password', 10),
-        roles: [{ role: 'TECHNICIAN' }],
+        roles: [{ role: 'QUALITY_INSPECTOR' }],
         actor: null,
       };
       mockPrisma.user.findUnique = vi.fn().mockResolvedValue(disabledUser);

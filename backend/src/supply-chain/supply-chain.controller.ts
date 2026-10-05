@@ -18,6 +18,11 @@ export class SupplyChainController {
     return this.supplyChainService.createSupplier(body, req.user?.id || req.user?.sub || 'system');
   }
 
+  @Patch('suppliers/:id')
+  updateSupplier(@Param('id') id: string, @Body() body: any, @Req() req: any) {
+    return this.supplyChainService.updateSupplier(id, body, req.user?.id || req.user?.sub || 'system');
+  }
+
   @Get('facilities')
   getFacilities() {
     return this.supplyChainService.getFacilities();

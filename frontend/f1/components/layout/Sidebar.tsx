@@ -516,7 +516,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     fontWeight: 600,
                   }}
                 >
-                  {getRoleLabel(role)}
+                  {getRoleLabel(role || "system-admin")}
                 </div>
               </div>
             </div>

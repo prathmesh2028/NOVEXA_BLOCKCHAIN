@@ -2,8 +2,19 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { api } from "../../services/api";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
+import { inspectionService } from "../../services/inspections";
 import { formatDateTime } from "../../data/utils";
+import { DemoRecord } from "../../data/demoData";
+import "./InspectionsPage.css";
+
+const DEMO_INSPECTION_DATA = {
+  assetId: "TIR-2026-003076",
+  result: "PASS",
+  notes:
+    "Visual inspection completed. Assembly integrity verified. Connector pins inspected and found within acceptable limits. Calibration status confirmed. No critical defects observed.",
+  evidenceIds: [] as string[],
+};
 
 export default function InspectionsPage() {
   const [inspections, setInspections] = useState<any[]>([]);
@@ -13,12 +24,14 @@ export default function InspectionsPage() {
   const [resultFilter, setResultFilter] = useState("ALL");
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [recordError, setRecordError] = useState<string | null>(null);
+  const [demoLoaded, setDemoLoaded] = useState(false);
   const [recordForm, setRecordForm] = useState({
     assetId: "",
     result: "PASS",
     notes: "",
     evidenceIds: [] as string[],
   });
+  const [deciding, setDeciding] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInspections();
@@ -28,7 +41,7 @@ export default function InspectionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<any>("/inspections");
+      const data = await inspectionService.listInspections();
       setInspections(data.items || []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch inspections");
@@ -37,16 +50,57 @@ export default function InspectionsPage() {
     }
   };
 
+  const handleLoadDemoData = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setRecordForm({
+      assetId: DEMO_INSPECTION_DATA.assetId,
+      result: DEMO_INSPECTION_DATA.result,
+      notes: DEMO_INSPECTION_DATA.notes,
+      evidenceIds: [],
+    });
+    setRecordError(null);
+    setDemoLoaded(true);
+    setTimeout(() => {
+      setDemoLoaded(false);
+    }, 2500);
+  };
+
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setRecordForm(prev => ({ ...prev, assetId: record.data.asset_id }));
+    }
+  };
+
   const handleRecordInspection = async (e: React.FormEvent) => {
     e.preventDefault();
     setRecordError(null);
     try {
-      await api.post("/inspections/record", recordForm);
+      await inspectionService.recordInspection({
+        asset_id: recordForm.assetId,
+        result: recordForm.result as 'PASS' | 'FAIL' | 'CONDITIONAL',
+        notes: recordForm.notes,
+        evidence_ids: recordForm.evidenceIds,
+      });
       setShowRecordModal(false);
       setRecordForm({ assetId: "", result: "PASS", notes: "", evidenceIds: [] });
       fetchInspections();
     } catch (err: any) {
       setRecordError(err.message || "Failed to record inspection");
+    }
+  };
+
+  const handleDecideInspection = async (inspectionId: string, decision: 'ACCEPT' | 'REJECT') => {
+    setDeciding(inspectionId);
+    try {
+      await inspectionService.decideInspection(inspectionId, { decision });
+      fetchInspections();
+    } catch (err: any) {
+      setError(err.message || `Failed to ${decision.toLowerCase()} inspection`);
+    } finally {
+      setDeciding(null);
     }
   };
 
@@ -181,7 +235,7 @@ export default function InspectionsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-                  {["Target Asset", "Inspector DID", "Result Status", "Inspection Notes", "Evidence", "Timestamp", "Action"].map((h) => (
+                  {["Target Asset", "Inspector DID", "Result Status", "Inspection Notes", "Evidence", "Timestamp", "Decision", "Action"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -224,6 +278,34 @@ export default function InspectionsPage() {
                     </td>
                     <td style={{ padding: "14px 16px", fontSize: "0.75rem", color: "var(--muted)", whiteSpace: "nowrap" }}>
                       {formatDateTime(inspection.createdAt)}
+                    </td>
+                    <td style={{ padding: "14px 16px" }}>
+                      {(inspection.asset?.lifecycleState === 'RECEIVED' || inspection.asset?.lifecycleState === 'INSPECTION_RECORDED') && (
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button
+                            className="btn-primary"
+                            style={{ fontSize: "0.7rem", padding: "2px 8px", minWidth: 50 }}
+                            onClick={() => handleDecideInspection(inspection.id, 'ACCEPT')}
+                            disabled={deciding === inspection.id}
+                          >
+                            {deciding === inspection.id ? '...' : 'ACCEPT'}
+                          </button>
+                          <button
+                            className="btn-secondary"
+                            style={{ fontSize: "0.7rem", padding: "2px 8px", minWidth: 50, background: "#ef4444", borderColor: "#dc2626" }}
+                            onClick={() => handleDecideInspection(inspection.id, 'REJECT')}
+                            disabled={deciding === inspection.id}
+                          >
+                            {deciding === inspection.id ? '...' : 'REJECT'}
+                          </button>
+                        </div>
+                      )}
+                      {inspection.asset?.lifecycleState === 'ACCEPTED_FOR_ASSEMBLY' && (
+                        <StatusBadge status="ACCEPTED" size="sm" />
+                      )}
+                      {inspection.asset?.lifecycleState === 'REJECTED_QUARANTINED' && (
+                        <StatusBadge status="REJECTED" size="sm" />
+                      )}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <Link to={`/app/assets/${inspection.assetId}`} className="btn-secondary" style={{ fontSize: "0.75rem", padding: "4px 10px" }}>
@@ -278,19 +360,40 @@ export default function InspectionsPage() {
                 </div>
               )}
 
+              {/* DEMO DATA QUICK FILL BAR */}
+              <div className="insp-demo-bar">
+                <div className="insp-demo-bar-info">
+                  <span className="insp-demo-badge">SIH DEMO</span>
+                  <span className="insp-demo-text">Pre-fill realistic QA inspection report</span>
+                </div>
+                <button
+                  type="button"
+                  id="insp-load-demo-btn"
+                  className={`insp-load-demo-btn ${demoLoaded ? "insp-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Automatically fill inspection form with realistic demo values"
+                >
+                  <span className="insp-demo-icon">{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "DEMO DATA LOADED" : "LOAD DEMO DATA"}</span>
+                </button>
+              </div>
+
               <div>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>
                   Target Asset ID *
                 </label>
-                <input
-                  type="text"
-                  className="internal-search-input"
-                  style={{ width: "100%" }}
-                  value={recordForm.assetId}
-                  onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
-                  placeholder="e.g. EF-2026-00421 or UUID"
-                  required
-                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="text"
+                    className="internal-search-input"
+                    style={{ flex: 1 }}
+                    value={recordForm.assetId}
+                    onChange={(e) => setRecordForm({ ...recordForm, assetId: e.target.value })}
+                    placeholder="e.g., TIR-2026-003076 or UUID"
+                    required
+                  />
+                  <DemoDataDropdown type="asset" onSelect={handleDemoDataSelect} />
+                </div>
               </div>
 
               <div>
@@ -323,13 +426,26 @@ export default function InspectionsPage() {
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
-                <button type="button" className="btn-secondary" onClick={() => setShowRecordModal(false)}>
-                  Cancel
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 10, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+                <button
+                  type="button"
+                  id="insp-load-demo-footer-btn"
+                  className={`insp-load-demo-footer-btn ${demoLoaded ? "insp-demo-btn--loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Pre-fill form with synthetic inspection parameters"
+                >
+                  <span>{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "Demo Data Applied" : "USE DUMMY DATA"}</span>
                 </button>
-                <button type="submit" className="btn-primary">
-                  Record Inspection
-                </button>
+
+                <div style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
+                  <button type="button" className="btn-secondary" onClick={() => setShowRecordModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Record Inspection
+                  </button>
+                </div>
               </div>
             </form>
           </div>

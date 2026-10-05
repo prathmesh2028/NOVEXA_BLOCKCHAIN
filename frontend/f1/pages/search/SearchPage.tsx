@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { searchService, SearchResult } from "../../services/search";
+import { DemoRecord } from "../../data/demoData";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,6 +52,14 @@ export default function SearchPage() {
 
   const total = results.length;
 
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    const searchTerm = record.data.asset_id || record.data.cert_id || record.label;
+    setQuery(searchTerm);
+    setSearchParams({ q: searchTerm });
+    setSubmitted(true);
+    performSearch(searchTerm);
+  };
+
   return (
     <div className="page-fade">
       <PageHeader
@@ -71,6 +81,7 @@ export default function SearchPage() {
               autoFocus
             />
           </div>
+          <DemoDataDropdown onSelect={handleDemoDataSelect} />
           <button type="submit" className="btn-primary" style={{ padding: "11px 20px" }}>Search</button>
         </div>
       </form>
@@ -190,7 +201,7 @@ export default function SearchPage() {
           <div className="section-label" style={{ marginBottom: 4 }}>SEARCHABLE RECORDS</div>
           {[
             { icon: "◈", label: "Asset ID / Batch ID", example: "EF-2026-00421 · EF-BATCH-2026-017" },
-            { icon: "◆", label: "Certification ID / Token ID", example: "CERT-2026-00089 · TKN-00089" },
+            { icon: "◆", label: "Certification ID / Token ID", example: "CERT-2026-24767 · 1" },
             { icon: "⬡", label: "Transaction Hash", example: "0x8A42b3…19F2" },
             { icon: "◉", label: "User DID / Name", example: "did:bel:actor:001 · Priya Sharma" },
           ].map((item) => (

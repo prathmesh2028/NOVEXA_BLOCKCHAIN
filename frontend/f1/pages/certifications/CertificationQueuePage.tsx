@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
 import { certificationService } from "../../services/certifications";
-import CertificateImageUpload from "../../components/certifications/CertificateImageUpload";
+import CertificateImageUpload, { PRESET_CERTIFICATE_SEALS } from "../../components/certifications/CertificateImageUpload";
 import "./CertificationQueuePage.css";
 
 export default function CertificationQueuePage() {
@@ -20,10 +21,85 @@ export default function CertificationQueuePage() {
   const [certificateImageName, setCertificateImageName] = useState<string | null>(null);
   const [modalStatus, setModalStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [demoLoaded, setDemoLoaded] = useState(false);
 
   useEffect(() => {
     fetchQueue();
   }, []);
+
+  /* Viewport scroll lock for NFT Create modal */
+  useEffect(() => {
+    if (!showCreateModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showCreateModal]);
+
+  /* Close modal on Escape key */
+  useEffect(() => {
+    if (!showCreateModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowCreateModal(false);
+        setModalStatus(null);
+        setCertificateImage(null);
+        setCertificateImageName(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showCreateModal]);
+
+  const handleLoadDemoData = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setSelectedAssetId("EF-2026-001");
+    setBatchIdInput("FUZE-BATCH-2026-001");
+    if (PRESET_CERTIFICATE_SEALS && PRESET_CERTIFICATE_SEALS.length > 0) {
+      const demoSeal = PRESET_CERTIFICATE_SEALS[0];
+      setCertificateImage(demoSeal.dataUrl);
+      setCertificateImageName(`${demoSeal.name.toLowerCase().replace(/\s+/g, "_")}.svg`);
+    }
+    setModalStatus(null);
+    setDemoLoaded(true);
+    setTimeout(() => {
+      setDemoLoaded(false);
+    }, 2500);
+  };
 
   const fetchQueue = async () => {
     setLoading(true);
@@ -224,144 +300,211 @@ export default function CertificationQueuePage() {
         </div>
       )}
 
-      {/* NFT Create Modal */}
-      {showCreateModal && (
+      {/* NFT Create Modal (Viewport-Fixed Portal) */}
+      {showCreateModal && typeof document !== "undefined" && createPortal(
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: 16,
+          className="queue-modal-backdrop"
+          onClick={() => {
+            setShowCreateModal(false);
+            setModalStatus(null);
+            setCertificateImage(null);
+            setCertificateImageName(null);
           }}
         >
-          <div className="queue-modal-panel">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <div>
-                <div style={{ fontSize: "1rem", fontWeight: 600, color: "#f5f5f5" }}>NFT Create · Mint Certification</div>
-                <div style={{ fontSize: "0.75rem", color: "#737373" }}>Issue immutable cryptographic token on BEL-TRUST-CHAIN</div>
+          <div
+            className="queue-modal-panel"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-queue-title"
+          >
+            <div className="queue-modal-header">
+              <div className="queue-modal-title-wrap">
+                <div id="modal-queue-title" className="queue-modal-title">
+                  <span style={{ color: "#3b82f6", fontSize: "1.1rem" }}>🪙</span>
+                  NFT Create · Mint Certification
+                </div>
+                <div className="queue-modal-subtitle">
+                  Issue immutable cryptographic token on BEL-TRUST-CHAIN
+                </div>
               </div>
               <button
+                type="button"
+                className="queue-modal-close-btn"
                 onClick={() => {
                   setShowCreateModal(false);
                   setModalStatus(null);
                   setCertificateImage(null);
                   setCertificateImageName(null);
                 }}
-                style={{ background: "none", border: "none", color: "#737373", cursor: "pointer", fontSize: "1.2rem" }}
+                aria-label="Close modal"
+                title="Close modal (Esc)"
               >
                 ✕
               </button>
             </div>
 
-            {modalStatus && (
-              <div
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 6,
-                  fontSize: "0.8125rem",
-                  marginBottom: 14,
-                  background: modalStatus.type === "success" ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                  border: `1px solid ${modalStatus.type === "success" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
-                  color: modalStatus.type === "success" ? "#4ade80" : "#f87171",
-                }}
-              >
-                {modalStatus.message}
-              </div>
-            )}
-
-            <form onSubmit={handleMintCertification} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#a3a3a3", marginBottom: 4 }}>
-                  Target Asset ID *
-                </label>
-                {queue.length > 0 ? (
-                  <select
-                    className="queue-form-select"
-                    value={selectedAssetId}
-                    onChange={(e) => setSelectedAssetId(e.target.value)}
-                    required
+            <form
+              onSubmit={handleMintCertification}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: "1 1 auto",
+                minHeight: 0,
+                overflow: "hidden",
+              }}
+            >
+              <div className="queue-modal-body">
+                {modalStatus && (
+                  <div
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: 8,
+                      fontSize: "0.8125rem",
+                      background: modalStatus.type === "success" ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
+                      border: `1px solid ${modalStatus.type === "success" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
+                      color: modalStatus.type === "success" ? "#4ade80" : "#f87171",
+                      fontWeight: 500,
+                    }}
                   >
-                    {queue.map((a: any) => {
-                      const id = a.asset_id || a.id;
-                      return (
-                        <option key={a.id || id} value={id}>
-                          {id} — {a.model || a.type} ({a.lifecycle_state})
+                    {modalStatus.message}
+                  </div>
+                )}
+
+                {/* DEMO DATA QUICK FILL BAR */}
+                <div className="queue-demo-bar">
+                  <div className="queue-demo-bar-info">
+                    <span className="queue-demo-badge">SIH DEMO</span>
+                    <span className="queue-demo-text">Pre-fill fictional defence certification</span>
+                  </div>
+                  <button
+                    type="button"
+                    id="queue-load-demo-btn"
+                    className={`queue-load-demo-btn ${demoLoaded ? "loaded" : ""}`}
+                    onClick={handleLoadDemoData}
+                    title="Automatically fill form with realistic demo values"
+                  >
+                    <span>{demoLoaded ? "✓" : "⚡"}</span>
+                    <span>{demoLoaded ? "DEMO DATA LOADED" : "LOAD DEMO DATA"}</span>
+                  </button>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", color: "#a3a3a3", marginBottom: 6, fontWeight: 600 }}>
+                    Target Asset ID *
+                  </label>
+                  {queue.length > 0 ? (
+                    <select
+                      className="queue-form-select"
+                      value={selectedAssetId}
+                      onChange={(e) => setSelectedAssetId(e.target.value)}
+                      required
+                    >
+                      {queue.map((a: any) => {
+                        const id = a.asset_id || a.id;
+                        return (
+                          <option key={a.id || id} value={id}>
+                            {id} — {a.model || a.type} ({a.lifecycle_state})
+                          </option>
+                        );
+                      })}
+                      {selectedAssetId && !queue.some((a) => (a.asset_id || a.id) === selectedAssetId) && (
+                        <option value={selectedAssetId}>
+                          {selectedAssetId} — Electronic Fuze Assembly (ACCEPTED_FOR_ASSEMBLY) [Demo]
                         </option>
-                      );
-                    })}
-                  </select>
-                ) : (
+                      )}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      className="queue-form-input"
+                      value={selectedAssetId}
+                      onChange={(e) => setSelectedAssetId(e.target.value)}
+                      placeholder="e.g. EF-2026-00421"
+                      required
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", color: "#a3a3a3", marginBottom: 6, fontWeight: 600 }}>
+                    Batch / Assembly ID (Optional)
+                  </label>
                   <input
                     type="text"
                     className="queue-form-input"
-                    value={selectedAssetId}
-                    onChange={(e) => setSelectedAssetId(e.target.value)}
-                    placeholder="e.g. EF-2026-00421"
-                    required
+                    value={batchIdInput}
+                    onChange={(e) => setBatchIdInput(e.target.value)}
+                    placeholder="e.g. FUZE-BATCH-2026-001"
                   />
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", color: "#a3a3a3", marginBottom: 4 }}>
-                  Batch / Assembly ID (Optional)
-                </label>
-                <input
-                  type="text"
-                  className="queue-form-input"
-                  value={batchIdInput}
-                  onChange={(e) => setBatchIdInput(e.target.value)}
-                  placeholder="e.g. BATCH-2026-Q1"
+                {/* Certificate Image Upload */}
+                <CertificateImageUpload
+                  value={certificateImage}
+                  fileName={certificateImageName}
+                  onChange={(val, name) => {
+                    setCertificateImage(val);
+                    setCertificateImageName(name || null);
+                  }}
                 />
-              </div>
 
-              {/* Certificate Image Upload */}
-              <CertificateImageUpload
-                value={certificateImage}
-                fileName={certificateImageName}
-                onChange={(val, name) => {
-                  setCertificateImage(val);
-                  setCertificateImageName(name || null);
-                }}
-              />
-
-              <div style={{ padding: "10px 12px", background: "#1f1f1f", border: "1px solid #303030", borderRadius: 8, fontSize: "0.75rem", color: "#a3a3a3", lineHeight: 1.5 }}>
-                <span style={{ color: "#f5f5f5", fontWeight: 600 }}>ERC-5192 Soulbound Token: </span>
-                Generates a non-transferable on-chain certification token bound to the selected defence asset with attached verification seal.
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => {
-                    setShowCreateModal(false);
-                    setModalStatus(null);
-                    setCertificateImage(null);
-                    setCertificateImageName(null);
+                <div
+                  className="queue-info-box"
+                  style={{
+                    padding: "10px 12px",
+                    background: "#1f1f1f",
+                    border: "1px solid #303030",
+                    borderRadius: 8,
+                    fontSize: "0.75rem",
+                    color: "#a3a3a3",
+                    lineHeight: 1.5,
                   }}
                 >
-                  Cancel
-                </button>
+                  <strong style={{ color: "#f5f5f5", fontWeight: 600 }}>ERC-5192 Soulbound Token: </strong>
+                  Generates a non-transferable on-chain certification token bound to the selected defence asset with attached verification seal.
+                </div>
+              </div>
+
+              {/* PINNED MODAL FOOTER */}
+              <div className="queue-modal-footer">
                 <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={isSubmitting || !selectedAssetId}
+                  type="button"
+                  id="queue-load-demo-footer-btn"
+                  className={`queue-load-demo-footer-btn ${demoLoaded ? "loaded" : ""}`}
+                  onClick={handleLoadDemoData}
+                  title="Populate demo data"
                 >
-                  {isSubmitting ? "Minting NFT..." : "Mint NFT Certification"}
+                  <span>{demoLoaded ? "✓" : "⚡"}</span>
+                  <span>{demoLoaded ? "Demo Filled" : "Use Dummy Data"}</span>
                 </button>
+
+                <div className="queue-modal-footer-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setModalStatus(null);
+                      setCertificateImage(null);
+                      setCertificateImageName(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={isSubmitting || !selectedAssetId}
+                  >
+                    {isSubmitting ? "Minting NFT..." : "Mint NFT Certification"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

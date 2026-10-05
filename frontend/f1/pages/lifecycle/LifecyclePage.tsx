@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import StatusBadge from "../../components/ui/StatusBadge";
 import { api } from "../../services/api";
@@ -26,7 +27,7 @@ interface LifecycleRecord {
     state: string;
     date: string;
     actor: string;
-    txHash: string;
+    txHash: string | null;
     details: string;
   }[];
 }
@@ -47,14 +48,14 @@ const DUMMY_LIFECYCLE_ASSETS: LifecycleRecord[] = [
     actor_role: "Quality Inspector",
     evidence_count: "4 / 4 Verified",
     evidence_status: "Complete",
-    blockchain_tx: "0x8A42b3c5d1e7f2a9...19F2",
+    blockchain_tx: "0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3",
     proof_status: "Anchored",
     notes: "Full environmental screening & dual detonator circuit telemetry passed. Ready for ordnance integration.",
     history: [
       { state: "SUPPLIER_DECLARED", date: "2026-08-15 09:22:00", actor: "Priya Sharma (Procurement)", txHash: "0x3C77f4...A4D1", details: "Supplier manifest logged with SHA-256 batch hash" },
       { state: "RECEIVED", date: "2026-08-22 14:45:00", actor: "Depot Logistics Officer", txHash: "0x7B1289...33D8", details: "Physical container unsealed and visual barcoding verified" },
-      { state: "INSPECTION_RECORDED", date: "2026-09-05 10:14:00", actor: "Rajesh Kumar (Quality Inspector)", txHash: "0x8A42b3...19F2", details: "QA electrical & environmental test passed without remarks" },
-      { state: "ACCEPTED_FOR_ASSEMBLY", date: "2026-09-18 14:32:10", actor: "Rajesh Kumar (Quality Inspector)", txHash: "0x1B8Ae9...C3F7", details: "Final acceptance sign-off. Soulbound NFT minting approved" },
+      { state: "INSPECTION_RECORDED", date: "2026-09-05 10:14:00", actor: "Rajesh Kumar (Quality Inspector)", txHash: null, details: "QA electrical & environmental test passed without remarks" },
+      { state: "ACCEPTED_FOR_ASSEMBLY", date: "2026-09-18 14:32:10", actor: "Rajesh Kumar (Quality Inspector)", txHash: "0x149fcf101a9d95320c1f6e4cc9d876d937f743bfbe4754bfa8e30992fe8ba6a3", details: "Final acceptance sign-off. Soulbound certification minting approved" },
     ],
   },
   {
@@ -260,6 +261,62 @@ export default function LifecyclePage() {
     fetchRules();
   }, []);
 
+  /* Viewport scroll lock for Execute Lifecycle State Transition modal */
+  useEffect(() => {
+    if (!showTransitionModal) return;
+
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const mainEl = document.querySelector(".app-main-content") as HTMLElement | null;
+    const mainScrollTop = mainEl ? mainEl.scrollTop : 0;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalMainOverflow = mainEl ? mainEl.style.overflow : undefined;
+
+    // Compensate for scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (mainEl) {
+      mainEl.style.overflow = "hidden";
+      if (mainEl.scrollTop !== mainScrollTop) {
+        mainEl.scrollTop = mainScrollTop;
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      if (mainEl && originalMainOverflow !== undefined) {
+        mainEl.style.overflow = originalMainOverflow;
+        mainEl.scrollTop = mainScrollTop;
+      }
+      window.scrollTo(0, windowScrollY);
+    };
+  }, [showTransitionModal]);
+
+  /* Close modal on Escape key */
+  useEffect(() => {
+    if (!showTransitionModal) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setShowTransitionModal(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showTransitionModal]);
+
   const fetchRules = async () => {
     setLoading(true);
     setIsRefreshing(true);
@@ -299,16 +356,16 @@ export default function LifecyclePage() {
     } catch {
       // Fallback default rules if offline
       setRules([
-        { from_state: "UNREGISTERED", to_state: "SUPPLIER_DECLARED", allowed_role: "PROCUREMENT, QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Initial asset declaration by supplier" },
-        { from_state: "SUPPLIER_DECLARED", to_state: "RECEIVED", allowed_role: "PROCUREMENT, QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Logistics depot physical receipt" },
-        { from_state: "RECEIVED", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: true, description: "Physical bench test & QA checkpoint recorded" },
-        { from_state: "RECEIVED", to_state: "INSPECTION_OVERDUE", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Automated SLA deadline expiry" },
-        { from_state: "RECEIVED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Visual damage or seal violation on arrival" },
-        { from_state: "INSPECTION_OVERDUE", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: true, description: "Expedited bench test clearance" },
-        { from_state: "INSPECTION_OVERDUE", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Overdue timeout quarantine" },
-        { from_state: "INSPECTION_RECORDED", to_state: "ACCEPTED_FOR_ASSEMBLY", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: false, description: "Final QA sign-off and Soulbound NFT clearance" },
-        { from_state: "INSPECTION_RECORDED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: true, requires_inspection: false, description: "Telemetry deviation or acoustic test failure" },
-        { from_state: "ACCEPTED_FOR_ASSEMBLY", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, ADMIN", requires_evidence: false, requires_inspection: false, description: "Post-assembly defect discovery quarantine" },
+        { from_state: "UNREGISTERED", to_state: "SUPPLIER_DECLARED", allowed_role: "PROCUREMENT_SUPPLY_CHAIN_OFFICER, QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Initial asset declaration by supplier" },
+        { from_state: "SUPPLIER_DECLARED", to_state: "RECEIVED", allowed_role: "PROCUREMENT_SUPPLY_CHAIN_OFFICER, QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Logistics depot physical receipt" },
+        { from_state: "RECEIVED", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: true, description: "Physical bench test & QA checkpoint recorded" },
+        { from_state: "RECEIVED", to_state: "INSPECTION_OVERDUE", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Automated SLA deadline expiry" },
+        { from_state: "RECEIVED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Visual damage or seal violation on arrival" },
+        { from_state: "INSPECTION_OVERDUE", to_state: "INSPECTION_RECORDED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: true, description: "Expedited bench test clearance" },
+        { from_state: "INSPECTION_OVERDUE", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Overdue timeout quarantine" },
+        { from_state: "INSPECTION_RECORDED", to_state: "ACCEPTED_FOR_ASSEMBLY", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: false, description: "Final QA sign-off and Soulbound NFT clearance" },
+        { from_state: "INSPECTION_RECORDED", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: true, requires_inspection: false, description: "Telemetry deviation or acoustic test failure" },
+        { from_state: "ACCEPTED_FOR_ASSEMBLY", to_state: "REJECTED_QUARANTINED", allowed_role: "QUALITY_INSPECTOR, SYSTEM_ADMIN", requires_evidence: false, requires_inspection: false, description: "Post-assembly defect discovery quarantine" },
       ]);
       setStateMachine({
         states: [
@@ -416,7 +473,7 @@ export default function LifecyclePage() {
     return matchesSearch && matchesState;
   });
 
-  const uniqueRoles = ["QUALITY_INSPECTOR", "PROCUREMENT", "SYSTEM_ADMIN"];
+  const uniqueRoles = ["QUALITY_INSPECTOR", "PROCUREMENT_SUPPLY_CHAIN_OFFICER", "SYSTEM_ADMIN"];
 
   // Real KPI Computations with animated numbers
   const totalStates = stateMachine?.states?.length || 7;
@@ -980,8 +1037,8 @@ export default function LifecyclePage() {
         </div>
       )}
 
-      {/* ─── EXECUTE TRANSITION MODAL ─── */}
-      {showTransitionModal && (
+      {/* ─── EXECUTE TRANSITION MODAL (Viewport-Fixed Portal) ─── */}
+      {showTransitionModal && typeof document !== "undefined" && createPortal(
         <div
           className="lc-modal-backdrop"
           onClick={(e) => {
@@ -1006,114 +1063,118 @@ export default function LifecyclePage() {
                 className="lc-modal-close"
                 onClick={() => setShowTransitionModal(false)}
                 aria-label="Close modal"
+                title="Close modal"
               >
                 ✕
               </button>
             </div>
 
-            {/* Quick Fill Dummy Asset Selector for Testing */}
-            <div className="lc-quick-fill-box">
-              <div className="lc-quick-fill-label">
-                ⚡ Quick Fill Asset for Testing:
-              </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {lifecycleAssets.slice(0, 4).map((a) => (
-                  <button
-                    key={a.asset_id}
-                    type="button"
-                    className={`lc-quick-btn ${transitionForm.asset_id === a.asset_id ? "active" : ""}`}
-                    onClick={() => quickFillDummyAsset(a)}
-                  >
-                    {a.asset_id} ({a.lifecycle_state.split("_")[0]})
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleTransition} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Target Asset ID *
-                </label>
-                <input
-                  type="text"
-                  className="lc-search-input"
-                  style={{ height: 42, paddingLeft: 14 }}
-                  value={transitionForm.asset_id}
-                  onChange={(e) => setTransitionForm({ ...transitionForm, asset_id: e.target.value })}
-                  placeholder="e.g. EF-2026-00421"
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Target Lifecycle State *
-                </label>
-                <select
-                  className="lc-select"
-                  style={{ width: "100%", height: 42 }}
-                  value={transitionForm.to_state}
-                  onChange={(e) => setTransitionForm({ ...transitionForm, to_state: e.target.value })}
-                  required
-                >
-                  <option value="">Select destination state...</option>
-                  {(stateMachine?.states || [
-                    "SUPPLIER_DECLARED",
-                    "RECEIVED",
-                    "INSPECTION_RECORDED",
-                    "INSPECTION_OVERDUE",
-                    "ACCEPTED_FOR_ASSEMBLY",
-                    "REJECTED_QUARANTINED",
-                  ]).map((state: string) => (
-                    <option key={state} value={state}>
-                      {state.replace(/_/g, " ")}
-                    </option>
+            <div className="lc-modal-body">
+              {/* Quick Fill Dummy Asset Selector for Testing */}
+              <div className="lc-quick-fill-box">
+                <div className="lc-quick-fill-label">
+                  ⚡ Quick Fill Asset for Testing:
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {lifecycleAssets.slice(0, 4).map((a) => (
+                    <button
+                      key={a.asset_id}
+                      type="button"
+                      className={`lc-quick-btn ${transitionForm.asset_id === a.asset_id ? "active" : ""}`}
+                      onClick={() => quickFillDummyAsset(a)}
+                    >
+                      {a.asset_id} ({a.lifecycle_state.split("_")[0]})
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
-              <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  Transition Justification & Reason *
-                </label>
-                <textarea
-                  className="lc-search-input"
-                  style={{ width: "100%", height: 80, padding: "10px 14px", resize: "vertical" }}
-                  value={transitionForm.reason}
-                  onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })}
-                  placeholder="State reason for advancing asset to next lifecycle stage..."
-                  rows={3}
-                  required
-                />
-              </div>
+              <form onSubmit={handleTransition} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Target Asset ID *
+                  </label>
+                  <input
+                    type="text"
+                    className="lc-search-input"
+                    style={{ height: 42, paddingLeft: 14 }}
+                    value={transitionForm.asset_id}
+                    onChange={(e) => setTransitionForm({ ...transitionForm, asset_id: e.target.value })}
+                    placeholder="e.g. EF-2026-00421"
+                    required
+                  />
+                </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
-                <button
-                  type="button"
-                  className="lc-btn-secondary"
-                  onClick={() => setShowTransitionModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="lc-btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <span className="lc-refresh-icon spinning">↻</span>
-                      Transitioning...
-                    </>
-                  ) : (
-                    "Execute Transition"
-                  )}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Target Lifecycle State *
+                  </label>
+                  <select
+                    className="lc-select"
+                    style={{ width: "100%", height: 42 }}
+                    value={transitionForm.to_state}
+                    onChange={(e) => setTransitionForm({ ...transitionForm, to_state: e.target.value })}
+                    required
+                  >
+                    <option value="">Select destination state...</option>
+                    {(stateMachine?.states || [
+                      "SUPPLIER_DECLARED",
+                      "RECEIVED",
+                      "INSPECTION_RECORDED",
+                      "INSPECTION_OVERDUE",
+                      "ACCEPTED_FOR_ASSEMBLY",
+                      "REJECTED_QUARANTINED",
+                    ]).map((state: string) => (
+                      <option key={state} value={state}>
+                        {state.replace(/_/g, " ")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "var(--lc-text-title)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Transition Justification & Reason *
+                  </label>
+                  <textarea
+                    className="lc-search-input"
+                    style={{ width: "100%", height: 80, padding: "10px 14px", resize: "vertical" }}
+                    value={transitionForm.reason}
+                    onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })}
+                    placeholder="State reason for advancing asset to next lifecycle stage..."
+                    rows={3}
+                    required
+                  />
+                </div>
+
+                <div className="lc-modal-footer">
+                  <button
+                    type="button"
+                    className="lc-btn-secondary"
+                    onClick={() => setShowTransitionModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="lc-btn-primary"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="lc-refresh-icon spinning">↻</span>
+                        Transitioning...
+                      </>
+                    ) : (
+                      "Execute Transition"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

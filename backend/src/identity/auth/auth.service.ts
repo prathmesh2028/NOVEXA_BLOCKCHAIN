@@ -43,7 +43,7 @@ const FALLBACK_USERS = [
     name: 'Arjun Mehta',
     passwordHash: '$2a$10$wT28t/4t.eZ8R9h0zN8WReK9Jm0v8t6s1K8m7y6d5e4r3q2w1e0r9',
     status: 'ACTIVE',
-    roles: ['SYSTEM_ADMIN', 'ADMIN'],
+    roles: ['SYSTEM_ADMIN'],
     actor: {
       id: 'act-001',
       did: 'did:bel:actor:001',
@@ -58,7 +58,7 @@ const FALLBACK_USERS = [
     name: 'Priya Sharma',
     passwordHash: '$2a$10$wT28t/4t.eZ8R9h0zN8WReK9Jm0v8t6s1K8m7y6d5e4r3q2w1e0r9',
     status: 'ACTIVE',
-    roles: ['PROCUREMENT_SUPPLY_CHAIN_OFFICER', 'NFT_CREATOR', 'CREATOR'],
+    roles: ['PROCUREMENT_SUPPLY_CHAIN_OFFICER'],
     actor: {
       id: 'act-002',
       did: 'did:bel:actor:002',
@@ -73,7 +73,7 @@ const FALLBACK_USERS = [
     name: 'Rajesh Kumar',
     passwordHash: '$2a$10$wT28t/4t.eZ8R9h0zN8WReK9Jm0v8t6s1K8m7y6d5e4r3q2w1e0r9',
     status: 'ACTIVE',
-    roles: ['QUALITY_INSPECTOR', 'TECHNICIAN', 'TECH'],
+    roles: ['QUALITY_INSPECTOR'],
     actor: {
       id: 'act-003',
       did: 'did:bel:actor:003',
@@ -169,14 +169,13 @@ export class AuthService {
       }
     }
 
-    // DEMO MODE: Permit standard passwords
+    // DEMO MODE: Permit standard passwords (NEVER empty password)
     if (this.config.isDemoMode && !isPasswordValid) {
       if (
         password === 'password' ||
         password === 'admin' ||
         password === 'demo' ||
-        password === '123456' ||
-        !password
+        password === '123456'
       ) {
         isPasswordValid = true;
       }
@@ -226,7 +225,7 @@ export class AuthService {
       return {
         sub: 'usr-001',
         email: 'a.mehta@bel-defence.in',
-        roles: ['SYSTEM_ADMIN', 'ADMIN'],
+        roles: ['SYSTEM_ADMIN'],
         did: 'did:bel:actor:001',
       };
     }
@@ -318,5 +317,32 @@ export class AuthService {
 
     this.logger.log(`Password updated for user ${user.email}`);
     return { message: 'Password updated successfully' };
+  }
+
+  /**
+   * DEVELOPMENT ONLY: Reset password without knowing current password
+   * This is for demo/development purposes and should be disabled in production
+   */
+  async resetPassword(email: string, newPassword: string): Promise<{ message: string }> {
+    if (!email || !newPassword) {
+      throw new BadRequestException('email and new_password are required');
+    }
+    if (newPassword.length < 8) {
+      throw new BadRequestException('new_password must be at least 8 characters long');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email: email.trim() } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash },
+    });
+
+    this.logger.log(`Password reset for user ${user.email} (development mode)`);
+    return { message: 'Password reset successfully' };
   }
 }

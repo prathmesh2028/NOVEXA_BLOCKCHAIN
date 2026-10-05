@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { supplyChainService, LotResponse, SupplierResponse } from "../../../services/supply-chain";
 import StatusBadge from "../../../components/ui/StatusBadge";
+import { useAuth, normalizeRole } from "../../../context/AuthContext";
 
 const overlay: React.CSSProperties = {
   position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -25,6 +26,44 @@ const lbl: React.CSSProperties = {
 };
 
 export default function LotsList() {
+  const { role, user } = useAuth();
+
+  const isApproverRole = useMemo(() => {
+    const normalized = normalizeRole(role);
+    if (normalized === "system-admin" || normalized === "quality-inspector") {
+      return true;
+    }
+    const userRoles = (user?.roles || []).map((r) =>
+      r.toLowerCase().replaceAll("_", "-").trim()
+    );
+    return userRoles.some(
+      (r) =>
+        r === "system-admin" ||
+        r === "admin" ||
+        r === "administrator" ||
+        r === "quality-inspector" ||
+        r === "inspector" ||
+        r === "tech" ||
+        r === "technician"
+    );
+  }, [role, user]);
+
+  const [approvalStatus, setApprovalStatus] = useState<Record<string, "approved" | "disapproved">>({});
+
+  const handleApprove = (id: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "approved" ? ("" as any) : "approved",
+    }));
+  };
+
+  const handleDisapprove = (id: string) => {
+    setApprovalStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "disapproved" ? ("" as any) : "disapproved",
+    }));
+  };
+
   const [lots, setLots] = useState<LotResponse[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,6 +103,20 @@ export default function LotsList() {
     setBatchRef(`BATCH-${Date.now().toString(36).toUpperCase()}`);
     setMfgDate(new Date().toISOString().split("T")[0]);
     setStatus(null); setShowModal(true);
+  };
+
+  const loadDemoData = () => {
+    const supplier = suppliers[0];
+    if (!supplier) {
+      setStatus({ type: "error", msg: "No persisted supplier is available for demo data." });
+      return;
+    }
+    setMaterialType("Radar Waveguide Assembly");
+    setQuantity("250");
+    setSupplierId(supplier.id);
+    setBatchRef("BATCH-2026-Q3-001");
+    setMfgDate("2026-09-15");
+    setStatus({ type: "success", msg: `Loaded persisted supplier "${supplier.name}".` });
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -121,16 +174,16 @@ export default function LotsList() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--table-header-bg)" }}>
-              {["Lot ID", "Batch Reference", "Material / Type", "Supplier", "Qty", "Mfg Date", "Status"].map(h => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
+              {["Lot ID", "Batch Reference", "Material / Type", "Supplier", "Qty", "Mfg Date", "Status", ...(isApproverRole ? ["Actions"] : [])].map(h => (
+                <th key={h} style={{ padding: "10px 14px", textAlign: h === "Actions" ? "right" : "left", fontSize: "0.6875rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading lots…</td></tr>
+              <tr><td colSpan={isApproverRole ? 8 : 7} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>Loading lots…</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No lots found. Click <strong>+ Create Material Lot</strong> to add one.</td></tr>
+              <tr><td colSpan={isApproverRole ? 8 : 7} style={{ padding: 36, textAlign: "center", color: "var(--muted)" }}>No lots found. Click <strong>+ Create Material Lot</strong> to add one.</td></tr>
             ) : filtered.map((l, idx) => (
               <tr
                 key={l.id}
@@ -149,6 +202,34 @@ export default function LotsList() {
                 <td style={{ padding: "12px 14px", fontSize: "0.85rem", fontWeight: 500 }}>{l.quantity ?? 0} {l.unit || "units"}</td>
                 <td style={{ padding: "12px 14px", fontSize: "0.75rem", color: "var(--muted)" }}>{l.manufactured_date || (l as any).manufacturedAt?.split?.("T")[0] || "—"}</td>
                 <td style={{ padding: "12px 14px" }}><StatusBadge status={(l as any).status || "CREATED"} size="sm" /></td>
+                {isApproverRole && (
+                  <td style={{ padding: "12px 14px", textAlign: "right", whiteSpace: "nowrap" }}>
+                    <div style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                      <button
+                        type="button"
+                        className={`sc-btn-approve ${approvalStatus[l.id] === "approved" ? "is-approved" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApprove(l.id);
+                        }}
+                        title="Mark lot as Approved"
+                      >
+                        ✓ APPROVED
+                      </button>
+                      <button
+                        type="button"
+                        className={`sc-btn-disapprove ${approvalStatus[l.id] === "disapproved" ? "is-disapproved" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDisapprove(l.id);
+                        }}
+                        title="Mark lot as Disapproved"
+                      >
+                        ✕ DISAPPROVED
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -180,6 +261,14 @@ export default function LotsList() {
                 </div>
               )}
               <form id="create-lot-form" onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <button
+                  type="button"
+                  onClick={loadDemoData}
+                  disabled={suppliers.length === 0 || isSubmitting}
+                  style={{ alignSelf: "flex-start", padding: "7px 12px", borderRadius: 6, border: "1px solid #2563eb", background: "rgba(37,99,235,0.12)", color: "#60a5fa", cursor: "pointer", fontSize: "0.78rem" }}
+                >
+                  Load Demo Data
+                </button>
                 <div>
                   <label style={lbl}>Material / Component Type <span style={{ color: "#ef4444" }}>*</span></label>
                   <input style={inp} type="text" required placeholder="e.g. Radar Waveguide Assembly, PCB Rev-3.1" value={materialType} onChange={e => setMaterialType(e.target.value)} />

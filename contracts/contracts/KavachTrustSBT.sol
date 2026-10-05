@@ -14,6 +14,7 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
     using Strings for uint256;
 
     uint256 private _nextTokenId;
+    string private _baseTokenURI;
 
     // Struct to store certification metadata on-chain
     struct CertificationData {
@@ -41,6 +42,29 @@ contract KavachTrustSBT is ERC721, Ownable, IERC5192 {
 
     constructor() ERC721("KavachTrust Certification", "KTC") Ownable(msg.sender) {
         _nextTokenId = 1;
+    }
+
+    /**
+     * @dev Sets the HTTPS/IPFS metadata base URI. Minting and soulbound
+     * semantics are unchanged; only the wallet-readable metadata location is
+     * configured by the contract owner.
+     */
+    function setBaseTokenURI(string calldata baseTokenURI_) external onlyOwner {
+        _baseTokenURI = baseTokenURI_;
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return _baseTokenURI;
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        _requireOwned(tokenId);
+        return string.concat(_baseURI(), tokenId.toString(), ".json");
     }
 
     /**

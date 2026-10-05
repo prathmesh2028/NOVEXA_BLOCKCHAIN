@@ -93,7 +93,7 @@ describe('ApprovalsService', () => {
         stage: 'QA_REVIEW',
         requestedById: 'user-1',
         requestedByName: 'Alice QC',
-        requestedByRole: 'TECHNICIAN',
+        requestedByRole: 'QUALITY_INSPECTOR',
         comments: 'Ready for final inspection sign-off',
       });
 
@@ -154,7 +154,7 @@ describe('ApprovalsService', () => {
         service.decideApproval('apr-nonexistent', {
           status: 'APPROVED',
           approverId: 'approver-1',
-          approverRole: 'NFT_CREATOR',
+          approverRole: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER',
         }),
       ).rejects.toThrow(NotFoundException);
     });
@@ -170,7 +170,7 @@ describe('ApprovalsService', () => {
         service.decideApproval('apr-1', {
           status: 'APPROVED',
           approverId: 'approver-1',
-          approverRole: 'NFT_CREATOR',
+          approverRole: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER',
         }),
       ).rejects.toThrow(BadRequestException);
     });
@@ -190,7 +190,7 @@ describe('ApprovalsService', () => {
         approvalId: 'APR-2026-00001',
         status: 'APPROVED',
         approverId: 'approver-1',
-        approverRole: 'NFT_CREATOR',
+        approverRole: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER',
         decidedAt: new Date(),
       };
       mockTx.approval.update.mockResolvedValue(updatedApproval);
@@ -199,7 +199,7 @@ describe('ApprovalsService', () => {
         status: 'APPROVED',
         approverId: 'approver-1',
         approverName: 'Bob Lead',
-        approverRole: 'NFT_CREATOR',
+        approverRole: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER',
         comments: 'Signed off with digital signature',
         digitalSignature: '0xabc123...',
       });
@@ -251,7 +251,7 @@ describe('ApprovalsService', () => {
       await service.decideApproval('apr-2', {
         status: 'REJECTED',
         approverId: 'approver-1',
-        approverRole: 'NFT_CREATOR',
+        approverRole: 'PROCUREMENT_SUPPLY_CHAIN_OFFICER',
         comments: 'Tolerance test failed',
       });
 

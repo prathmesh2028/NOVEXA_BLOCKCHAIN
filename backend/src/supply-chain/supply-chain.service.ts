@@ -36,8 +36,8 @@ export class SupplyChainService {
         orderBy: { createdAt: 'desc' },
       });
       return list.map((s) => this.formatSupplier(s));
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty suppliers list: ${err.message}`);
+    } catch (error: any) {
+      this.logger.error('Failed to fetch suppliers:', error.message);
       return [];
     }
   }
@@ -93,12 +93,44 @@ export class SupplyChainService {
     return this.formatSupplier(supplier);
   }
 
+  async updateSupplier(id: string, data: any, userId: string) {
+    const supplier = await this.prisma.supplier.findFirst({
+      where: { OR: [{ id }, { supplierId: id }] },
+    });
+    if (!supplier) throw new NotFoundException('Supplier not found');
+
+    const updated = await this.prisma.supplier.update({
+      where: { id: supplier.id },
+      data: {
+        ...(data.name && { name: data.name.trim() }),
+        ...(data.status && { status: data.status }),
+        ...(data.contactInfo && { contactInfo: data.contactInfo }),
+      },
+      include: { facilities: true },
+    });
+
+    const actorId = userId && userId !== 'system' ? userId : undefined;
+    try {
+      await this.audit.recordEvent({
+        eventType: 'SUPPLIER_UPDATED',
+        action: 'Updated supplier status',
+        resourceType: 'Supplier',
+        resourceId: updated.id,
+        actorId,
+        details: `Updated supplier ${updated.name} (${updated.supplierId}) to status ${data.status || 'updated'}`,
+      });
+    } catch (auditErr: any) {
+      this.logger.warn(`Failed to record audit event for supplier ${updated.id}: ${auditErr?.message || auditErr}`);
+    }
+    return this.formatSupplier(updated);
+  }
+
   // FACILITIES
   async getFacilities() {
     try {
       return await this.prisma.facility.findMany({ include: { supplier: true } });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty facilities list: ${err.message}`);
+    } catch (error: any) {
+      this.logger.error('Failed to fetch facilities:', error.message);
       return [];
     }
   }
@@ -153,8 +185,8 @@ export class SupplyChainService {
   async getLots() {
     try {
       return await this.prisma.lot.findMany({ include: { supplier: true } });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty lots list: ${err.message}`);
+    } catch (error: any) {
+      this.logger.error('Failed to fetch lots:', error.message);
       return [];
     }
   }
@@ -234,12 +266,7 @@ export class SupplyChainService {
 
   // SHIPMENTS
   async getShipments() {
-    try {
-      return await this.prisma.shipment.findMany({ include: { dispatchFacility: true, receiveFacility: true } });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty shipments list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.shipment.findMany({ include: { dispatchFacility: true, receiveFacility: true } });
   }
 
   async createShipment(data: any, userId: string) {
@@ -341,15 +368,10 @@ export class SupplyChainService {
 
   // CUSTODY TRANSFERS
   async getCustodyTransfers() {
-    try {
-      return await this.prisma.custodyTransfer.findMany({
-        include: { shipment: true },
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty custody transfers list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.custodyTransfer.findMany({
+      include: { shipment: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async createCustodyTransfer(data: any, userId: string) {
@@ -435,19 +457,14 @@ export class SupplyChainService {
 
   // SUPPLY CHAIN EVENTS
   async getSupplyChainEvents(params: { entityType?: string; entityId?: string } = {}) {
-    try {
-      const where: any = {};
-      if (params.entityType) where.entityType = params.entityType;
-      if (params.entityId) where.entityId = params.entityId;
+    const where: any = {};
+    if (params.entityType) where.entityType = params.entityType;
+    if (params.entityId) where.entityId = params.entityId;
 
-      return await this.prisma.supplyChainEvent.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty events list: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.supplyChainEvent.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async createSupplyChainEvent(data: any, userId: string) {

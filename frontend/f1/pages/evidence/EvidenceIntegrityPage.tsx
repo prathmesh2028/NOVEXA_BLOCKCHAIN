@@ -2,13 +2,23 @@ import { useState } from "react";
 import { Link } from "react-router";
 import PageHeader from "../../components/ui/PageHeader";
 import StatusBadge from "../../components/ui/StatusBadge";
+import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { api } from "../../services/api";
+import { DemoRecord } from "../../data/demoData";
 
 export default function EvidenceIntegrityPage() {
   const [assetId, setAssetId] = useState("");
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleDemoDataSelect = (record: DemoRecord) => {
+    if (record.type === 'asset') {
+      setAssetId(record.data.asset_id);
+    } else if (record.type === 'evidence') {
+      setAssetId(record.data.asset_id);
+    }
+  };
 
   const fetchIntegrityReport = async () => {
     if (!assetId.trim()) {
@@ -55,9 +65,10 @@ export default function EvidenceIntegrityPage() {
             value={assetId}
             onChange={(e) => setAssetId(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Enter Asset ID (e.g. EF-2026-00421)"
+            placeholder="Enter Asset ID (e.g. EF-2026-00422)"
             style={{ flex: 1 }}
           />
+          <DemoDataDropdown type="evidence" onSelect={handleDemoDataSelect} />
           <button
             className="btn-primary"
             onClick={fetchIntegrityReport}

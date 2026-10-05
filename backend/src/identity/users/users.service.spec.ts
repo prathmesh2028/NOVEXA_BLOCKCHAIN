@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UsersService } from './users.service';
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { AppRole } from '@prisma/client';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -36,18 +35,19 @@ describe('UsersService', () => {
         name: 'Tech User',
         status: 'PENDING',
         createdAt: new Date('2026-01-01'),
-        roles: [{ role: AppRole.QUALITY_INSPECTOR }],
+        roles: [{ role: 'QUALITY_INSPECTOR' }],
       };
       mockPrisma.user.create.mockResolvedValue(mockUser);
 
       const result = await service.inviteUser({
         email: 'tech@example.com',
         name: 'Tech User',
-        role: AppRole.QUALITY_INSPECTOR,
+        role: 'QUALITY_INSPECTOR',
       });
 
       expect(result.email).toBe('tech@example.com');
-      expect(result.roles).toContain(AppRole.QUALITY_INSPECTOR);
+      expect(Array.isArray(result.roles)).toBe(true);
+      expect(result.roles).toContain('QUALITY_INSPECTOR');
       expect(result.status).toBe('PENDING');
     });
 
@@ -69,7 +69,7 @@ describe('UsersService', () => {
         service.inviteUser({
           email: 'duplicate@example.com',
           name: 'Dup User',
-          role: AppRole.AUDITOR,
+          role: 'AUDITOR',
         }),
       ).rejects.toThrow(ConflictException);
     });
@@ -81,7 +81,7 @@ describe('UsersService', () => {
         service.inviteUser({
           email: 'offline@example.com',
           name: 'Offline User',
-          role: AppRole.QUALITY_INSPECTOR,
+          role: 'QUALITY_INSPECTOR',
         }),
       ).rejects.toThrow('Connection refused');
     });
@@ -99,7 +99,7 @@ describe('UsersService', () => {
           status: 'ACTIVE',
           createdAt: new Date(),
           lastActive: new Date(),
-          roles: [{ role: 'ADMIN' }],
+          roles: [{ role: 'SYSTEM_ADMIN' }],
           actor: { did: 'did:web:example', identityStatus: 'VERIFIED' },
         },
       ];
@@ -109,7 +109,7 @@ describe('UsersService', () => {
       const result = await service.listUsers({ page: 1, page_size: 10 });
       expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
-      expect(result.items[0].roles).toContain('ADMIN');
+      expect(result.items[0].roles).toContain('SYSTEM_ADMIN');
     });
 
     it('filters by search term in database query', async () => {
@@ -120,7 +120,7 @@ describe('UsersService', () => {
           name: 'Arjun Mehta',
           status: 'ACTIVE',
           createdAt: new Date(),
-          roles: [{ role: 'ADMIN' }],
+          roles: [{ role: 'SYSTEM_ADMIN' }],
           actor: null,
         },
       ]);
@@ -148,21 +148,21 @@ describe('UsersService', () => {
           name: 'Admin User',
           status: 'ACTIVE',
           createdAt: new Date(),
-          roles: [{ role: 'ADMIN' }],
+          roles: [{ role: 'SYSTEM_ADMIN' }],
           actor: null,
         },
       ]);
       mockPrisma.user.count.mockResolvedValue(1);
 
-      const result = await service.listUsers({ role: 'ADMIN' });
+      const result = await service.listUsers({ role: 'SYSTEM_ADMIN' });
       expect(mockPrisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            roles: { some: { role: 'ADMIN' } },
+            roles: { some: { role: 'SYSTEM_ADMIN' } },
           }),
         }),
       );
-      expect(result.items[0].roles).toContain('ADMIN');
+      expect(result.items[0].roles).toContain('SYSTEM_ADMIN');
     });
 
     it('throws database error when database is offline in production mode', async () => {

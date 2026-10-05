@@ -59,6 +59,12 @@ describe("KavachTrustSBT", function () {
     expect(await sbt.supportsInterface("0xb45a3c0e")).to.be.true;
   });
 
+  it("Should expose wallet-readable metadata without changing soulbound behavior", async function () {
+    await sbt.setBaseTokenURI("https://metadata.example.test/certifications/");
+    await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash");
+    expect(await sbt.tokenURI(1)).to.equal("https://metadata.example.test/certifications/1.json");
+  });
+
   describe("Revocation", function () {
     beforeEach(async function () {
       await sbt.mintCertification(user.address, "AST-1", "BCH-1", "hash");

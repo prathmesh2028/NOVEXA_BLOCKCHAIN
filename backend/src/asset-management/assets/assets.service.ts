@@ -19,7 +19,9 @@ export class AssetsService {
   }
 
   private async enforceAssetAccess(asset: any, user: any) {
-    if (!user || user.roles.includes('SYSTEM_ADMIN') || user.roles.includes('AUDITOR')) return;
+    if (!user) return;
+    // Allow SYSTEM_ADMIN, AUDITOR, and QUALITY_INSPECTOR to access all assets
+    if (user.roles.includes('SYSTEM_ADMIN') || user.roles.includes('AUDITOR') || user.roles.includes('QUALITY_INSPECTOR')) return;
     if (!asset.registeredById) return;
     if (asset.registeredById === user.sub) return;
 
@@ -82,7 +84,7 @@ export class AssetsService {
 
     const where: any = {};
 
-    if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
+    if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR') && !params.user.roles.includes('QUALITY_INSPECTOR')) {
       const userDomain = this.getSupplierDomain(params.user.email);
       if (userDomain) {
         const usersInDomain = await this.prisma.user.findMany({
@@ -246,7 +248,7 @@ export class AssetsService {
         certStatus: { not: 'CONFIRMED' }, // not already certified
       };
 
-      if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR')) {
+      if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR') && !params.user.roles.includes('QUALITY_INSPECTOR')) {
         const userDomain = this.getSupplierDomain(params.user.email);
         if (userDomain) {
           const usersInDomain = await this.prisma.user.findMany({

@@ -30,6 +30,9 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(import.meta.dirname, 'frontend/f1'),
         '/frontend': path.resolve(import.meta.dirname, 'frontend'),
         '/src': path.resolve(import.meta.dirname, 'frontend/f1'),
+        react: path.resolve(import.meta.dirname, 'node_modules/react'),
+        'react-dom': path.resolve(import.meta.dirname, 'node_modules/react-dom'),
+        'react-dom/client': path.resolve(import.meta.dirname, 'node_modules/react-dom/client'),
       },
     },
     optimizeDeps: {

@@ -137,15 +137,10 @@ ${nonce}`;
    * Returns all wallet bindings for a user.
    */
   async getWallets(userId: string) {
-    try {
-      return await this.prisma.walletBinding.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' }
-      });
-    } catch (err: any) {
-      this.logger.warn(`DB offline — returning empty wallets: ${err.message}`);
-      return [];
-    }
+    return await this.prisma.walletBinding.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   /**
