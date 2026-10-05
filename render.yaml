@@ -12,7 +12,7 @@ services:
     plan: free
     buildCommand: pnpm install --frozen-lockfile && pnpm prisma generate && pnpm build
     startCommand: pnpm prisma migrate deploy && pnpm start:prod
-    healthCheckPath: /
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -31,7 +31,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: http://localhost:5173
+        value: https://novexablockchain-f1-a6h2.vercel.app,http://localhost:5173
       - key: MINIO_ENDPOINT
         value: localhost
       - key: MINIO_PORT

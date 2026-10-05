@@ -31,8 +31,20 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
   });
 
-  // Global prefix — root path excluded so Render health-check (GET /) returns 200
-  app.setGlobalPrefix(config.apiPrefix, { exclude: ['/'] });
+  // Explicit root & health endpoints directly on Express to guarantee immediate 200 OK for Render health checks
+  const httpAdapter = app.getHttpAdapter();
+  if (httpAdapter && typeof httpAdapter.getInstance === 'function') {
+    const expressApp = httpAdapter.getInstance();
+    const sendHealth = (_req: any, res: any) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).send(JSON.stringify({ status: 'ok', service: 'kavachtrust-api', version: '2.0.0' }));
+    };
+    expressApp.get('/', sendHealth);
+    expressApp.get('/health', sendHealth);
+  }
+
+  // Global prefix — root path and health excluded so Render health-check returns 200 immediately
+  app.setGlobalPrefix(config.apiPrefix, { exclude: ['/', 'health'] });
 
   // Global Validation Pipe
   app.useGlobalPipes(

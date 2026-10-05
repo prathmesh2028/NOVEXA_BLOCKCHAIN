@@ -8,7 +8,7 @@ import { PrismaService } from '../core/database/prisma.service';
  */
 @Controller()
 export class RootController {
-  @Get()
+  @Get('/')
   root() {
     return { status: 'ok', service: 'kavachtrust-api', version: '2.0.0' };
   }
