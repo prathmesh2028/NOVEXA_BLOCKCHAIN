@@ -245,7 +245,9 @@ export class AssetsService {
     try {
       const where: any = {
         lifecycleState: 'ACCEPTED_FOR_ASSEMBLY',
-        certStatus: { not: 'CONFIRMED' }, // not already certified
+        certifications: { none: {} },
+        certStatus: { notIn: ['CONFIRMED', 'PENDING'] },
+        evidence: { some: { integrityVerified: true } },
       };
 
       if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR') && !params.user.roles.includes('QUALITY_INSPECTOR')) {
@@ -270,19 +272,14 @@ export class AssetsService {
         this.prisma.asset.count({ where }),
       ]);
 
-      // Only include assets with at least one integrity-verified evidence
-      const eligible = dbAssets.filter(
-        (a: any) => a.evidence && a.evidence.some((e: any) => e.integrityVerified),
-      );
-
       return {
-        items: eligible.map((a: any) => ({
+        items: dbAssets.map((a: any) => ({
           ...this.mapAsset(a),
           verified_evidence_count: a.evidence.filter((e: any) => e.integrityVerified).length,
           total_evidence_count: a.evidence.length,
           eligible_reason: 'ACCEPTED_FOR_ASSEMBLY with verified evidence',
         })),
-        total: eligible.length,
+        total: dbTotal,
         page,
         page_size: pageSize,
         has_next: skip + pageSize < dbTotal,

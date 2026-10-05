@@ -3,47 +3,12 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
-// Suppress non-critical library errors (viem, wallet extensions, etc.)
+// The injected provider can reject local custom RPC URLs before application code runs.
 const originalError = console.error;
 const originalWarn = console.warn;
 
 const shouldSuppress = (args: any[]) => {
-  const message = args[0]?.toString?.() || '';
-  const stringArgs = args.map(a => String(a)).join(' ');
-  return (
-    message.includes('Unlisted TLDs in URLs are not supported') ||
-    stringArgs.includes('Unlisted TLDs in URLs are not supported') ||
-    message.includes('inpage.js') ||
-    stringArgs.includes('inpage.js') ||
-    message.includes('Unable to obtain channel secret') ||
-    message.includes('Unable to find node id') ||
-    message.includes('Broadcast channel unavailable') ||
-    message.includes('broadcast system') ||
-    message.includes('TonAdapter') ||
-    message.includes('SolanaAdapter') ||
-    message.includes('TronAdapter') ||
-    message.includes('BitcoinAdapter') ||
-    message.includes('EthereumAdapter') ||
-    message.includes('Web3RpcProvider') ||
-    message.includes('ExtendedBroadcastMessage') ||
-    message.includes('Failed to connect wallet') ||
-    message.includes('UnknownRpcError') ||
-    message.includes('BinanceInjectedProvider') ||
-    message.includes('ProvidersManager') ||
-    message.includes('viem') ||
-    stringArgs.includes('TonAdapter') ||
-    stringArgs.includes('SolanaAdapter') ||
-    stringArgs.includes('TronAdapter') ||
-    stringArgs.includes('BitcoinAdapter') ||
-    stringArgs.includes('EthereumAdapter') ||
-    stringArgs.includes('Web3RpcProvider') ||
-    stringArgs.includes('ExtendedBroadcastMessage') ||
-    stringArgs.includes('Failed to connect wallet') ||
-    stringArgs.includes('UnknownRpcError') ||
-    stringArgs.includes('BinanceInjectedProvider') ||
-    stringArgs.includes('ProvidersManager') ||
-    stringArgs.includes('viem')
-  );
+  return args.map(a => String(a)).join(' ').includes('Unlisted TLDs in URLs are not supported');
 };
 
 console.error = (...args) => {
@@ -56,54 +21,11 @@ console.warn = (...args) => {
   originalWarn.apply(console, args);
 };
 
-// Suppress unhandled promise rejections from library warnings
 window.addEventListener('unhandledrejection', (event) => {
-  const reasonStr = String(event.reason);
-  if (
-    event.reason?.message?.includes('Unlisted TLDs in URLs are not supported') ||
-    reasonStr.includes('Unlisted TLDs in URLs are not supported') ||
-    reasonStr.includes('inpage.js') ||
-    reasonStr.includes('channel secret') ||
-    reasonStr.includes('Broadcast channel') ||
-    reasonStr.includes('TonAdapter') ||
-    reasonStr.includes('SolanaAdapter') ||
-    reasonStr.includes('TronAdapter') ||
-    reasonStr.includes('BitcoinAdapter') ||
-    reasonStr.includes('EthereumAdapter') ||
-    reasonStr.includes('Web3RpcProvider') ||
-    reasonStr.includes('ExtendedBroadcastMessage') ||
-    reasonStr.includes('Failed to connect wallet') ||
-    reasonStr.includes('UnknownRpcError') ||
-    reasonStr.includes('BinanceInjectedProvider') ||
-    reasonStr.includes('ProvidersManager') ||
-    reasonStr.includes('viem')
-  ) {
+  if (String(event.reason).includes('Unlisted TLDs in URLs are not supported')) {
     event.preventDefault();
   }
 });
-
-// Suppress window-level errors from wallet extension
-window.addEventListener('error', (event) => {
-  const message = event.message || '';
-  if (
-    message.includes('inpage.js') ||
-    message.includes('channel secret') ||
-    message.includes('Broadcast channel') ||
-    message.includes('TonAdapter') ||
-    message.includes('SolanaAdapter') ||
-    message.includes('TronAdapter') ||
-    message.includes('BitcoinAdapter') ||
-    message.includes('EthereumAdapter') ||
-    message.includes('Web3RpcProvider') ||
-    message.includes('ExtendedBroadcastMessage') ||
-    message.includes('BinanceInjectedProvider') ||
-    message.includes('ProvidersManager')
-  ) {
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
-}, true);
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {

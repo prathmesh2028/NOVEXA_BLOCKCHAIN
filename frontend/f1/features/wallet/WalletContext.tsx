@@ -69,16 +69,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       // Suppress all wallet extension errors for development
       const errStr = String(err.message || err);
-      if (
-        errStr.includes('TLD') ||
-        errStr.includes('Broadcast channel') ||
-        errStr.includes('channel secret') ||
-        errStr.includes('UnknownRpcError') ||
-        errStr.includes('BinanceInjectedProvider') ||
-        errStr.includes('ProvidersManager') ||
-        errStr.includes('viem')
-      ) {
-        // Silently ignore wallet extension errors
+      if (errStr.includes('Unlisted TLDs in URLs are not supported')) {
         return;
       }
       console.error('Failed to check wallet connection', err);
@@ -148,17 +139,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       // Suppress all wallet extension errors for development
       const errStr = String(err.message || err);
-      if (
-        errStr.includes('TLD') ||
-        errStr.includes('Broadcast channel') ||
-        errStr.includes('channel secret') ||
-        errStr.includes('UnknownRpcError') ||
-        errStr.includes('BinanceInjectedProvider') ||
-        errStr.includes('ProvidersManager') ||
-        errStr.includes('viem')
-      ) {
-        // Silently ignore wallet extension errors
-        setError('Wallet connection not available in development environment');
+      if (errStr.includes('Unlisted TLDs in URLs are not supported')) {
+        setError('Wallet provider rejected the local RPC URL. Use a configured localhost network in MetaMask.');
         return;
       }
       console.error('Failed to connect wallet', err);

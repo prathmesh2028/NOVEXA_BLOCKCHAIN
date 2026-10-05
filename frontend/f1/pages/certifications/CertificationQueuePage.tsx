@@ -87,8 +87,13 @@ export default function CertificationQueuePage() {
       e.preventDefault();
       e.stopPropagation();
     }
-    setSelectedAssetId("EF-2026-001");
-    setBatchIdInput("FUZE-BATCH-2026-001");
+    const eligibleAsset = queue.find((asset) => asset.eligible_for_mint);
+    if (!eligibleAsset) {
+      setModalStatus({ type: "error", message: "No current eligible asset is available. Refresh the queue." });
+      return;
+    }
+    setSelectedAssetId(eligibleAsset.asset_db_id || eligibleAsset.asset_id);
+    setBatchIdInput("");
     if (PRESET_CERTIFICATE_SEALS && PRESET_CERTIFICATE_SEALS.length > 0) {
       const demoSeal = PRESET_CERTIFICATE_SEALS[0];
       setCertificateImage(demoSeal.dataUrl);
@@ -108,8 +113,9 @@ export default function CertificationQueuePage() {
       const data = await api.get<any>("/certifications/queue");
       const items = data.items || [];
       setQueue(items);
-      if (items.length > 0 && !selectedAssetId) {
-        setSelectedAssetId(items[0].asset_id || items[0].id);
+      const eligibleAsset = items.find((item: any) => item.eligible_for_mint);
+      if (eligibleAsset && !selectedAssetId) {
+        setSelectedAssetId(eligibleAsset.asset_db_id || eligibleAsset.asset_id);
       }
     } catch (err: any) {
       setError(err.message || "Failed to fetch certification queue");
@@ -122,7 +128,12 @@ export default function CertificationQueuePage() {
     if (assetId) {
       setSelectedAssetId(assetId);
     } else if (queue.length > 0) {
-      setSelectedAssetId(queue[0].asset_id || queue[0].id);
+      const eligibleAsset = queue.find((asset) => asset.eligible_for_mint);
+      if (!eligibleAsset) {
+        setModalStatus({ type: "error", message: "No current eligible asset is available. Refresh the queue." });
+        return;
+      }
+      setSelectedAssetId(eligibleAsset.asset_db_id || eligibleAsset.asset_id);
     }
     setBatchIdInput("");
     setCertificateImage(null);
@@ -156,9 +167,15 @@ export default function CertificationQueuePage() {
         setCertificateImageName(null);
       }, 1500);
     } catch (err: any) {
+      await fetchQueue();
+      const message = err.data?.message || err.message || "Failed to create NFT certification";
       setModalStatus({
         type: "error",
-        message: err.data?.message || err.message || "Failed to create NFT certification",
+        message: err.status === 409
+          ? "This asset already has a certification."
+          : err.status === 400 && /not found/i.test(message)
+            ? "Selected asset is no longer available. Refresh eligible assets."
+            : message,
       });
     } finally {
       setIsSubmitting(false);
@@ -278,14 +295,18 @@ export default function CertificationQueuePage() {
                       <Link to={`/app/assets/${asset.asset_id || asset.id}`} className="btn-ghost" style={{ fontSize: "0.75rem" }}>
                         Review
                       </Link>
-                      {asset.cert_status !== "CONFIRMED" && (
+                      {asset.eligible_for_mint ? (
                         <button
                           className="btn-primary"
                           style={{ fontSize: "0.75rem" }}
-                          onClick={() => openCreateModal(asset.asset_id || asset.id)}
+                          onClick={() => openCreateModal(asset.asset_db_id || asset.asset_id)}
                         >
                           + NFT Create
                         </button>
+                      ) : (
+                        <span style={{ color: "#a3a3a3", fontSize: "0.75rem" }}>
+                          {asset.cert_status === "CONFIRMED" ? "Already Minted" : "Processing"}
+                        </span>
                       )}
                     </div>
                   </td>

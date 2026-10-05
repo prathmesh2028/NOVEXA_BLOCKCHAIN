@@ -7,6 +7,7 @@ import DemoDataDropdown from "../../components/ui/DemoDataDropdown";
 import { formatDate } from "../../data/utils";
 import type { CertificationResponse } from "../../services/certifications";
 import { certificationService } from "../../services/certifications";
+import { api } from "../../services/api";
 import {
   CERTIFICATION_TYPES,
   CERTIFICATION_STATUSES,
@@ -58,15 +59,20 @@ export default function CertificationsPage() {
   const [certificateImage, setCertificateImage] = useState<string | null>(null);
   const [certificateImageName, setCertificateImageName] = useState<string | null>(null);
   const [modalDemoLoaded, setModalDemoLoaded] = useState(false);
+  const [eligibleAssets, setEligibleAssets] = useState<any[]>([]);
 
   const handleModalLoadDemoData = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    // Use real persisted asset ID from demo data
-    setAssetIdInput("EF-2026-00422");
-    setBatchIdInput("EF-BATCH-2026-017");
+    const eligibleAsset = eligibleAssets[0];
+    if (!eligibleAsset) {
+      setCreateStatus({ type: "error", message: "No current eligible asset is available. Refresh eligible assets." });
+      return;
+    }
+    setAssetIdInput(eligibleAsset.id);
+    setBatchIdInput(eligibleAsset.batch_id || "");
     if (PRESET_CERTIFICATE_SEALS && PRESET_CERTIFICATE_SEALS.length > 0) {
       const demoSeal = PRESET_CERTIFICATE_SEALS[0];
       setCertificateImage(demoSeal.dataUrl);
@@ -81,8 +87,15 @@ export default function CertificationsPage() {
 
   const handleDemoDataSelect = (record: DemoRecord) => {
     if (record.type === 'asset') {
-      setAssetIdInput(record.data.asset_id);
-      setBatchIdInput(record.data.batch_id || '');
+      const eligibleAsset = eligibleAssets.find(
+        (asset) => asset.id === record.data.asset_id || asset.asset_id === record.data.asset_id,
+      );
+      if (eligibleAsset) {
+        setAssetIdInput(eligibleAsset.id);
+        setBatchIdInput(eligibleAsset.batch_id || '');
+      } else {
+        setCreateStatus({ type: "error", message: "That demo asset is not currently eligible. Use Load Demo Data to select a live asset." });
+      }
     } else if (record.type === 'certification') {
       // If selecting a certification, navigate to its detail page
       window.location.href = `/app/certifications/${record.data.cert_id}`;
@@ -104,8 +117,10 @@ export default function CertificationsPage() {
     setLoading(true);
     try {
       const listRes = await certificationService.listCertifications({ page_size: 100 });
+      const eligibleRes = await api.get<any>("/assets/eligible?page_size=100");
 
       setCerts(listRes.items);
+      setEligibleAssets(eligibleRes.items || []);
       setTotal(listRes.total);
 
       setPending(
@@ -214,8 +229,17 @@ export default function CertificationsPage() {
     setCreateStatus(null);
 
     try {
+      const eligibleRes = await api.get<any>("/assets/eligible?page_size=100");
+      const selectedAsset = (eligibleRes.items || []).find(
+        (asset: any) => asset.id === assetIdInput.trim() || asset.asset_id === assetIdInput.trim(),
+      );
+      if (!selectedAsset) {
+        setEligibleAssets(eligibleRes.items || []);
+        setCreateStatus({ type: "error", message: "Selected asset is no longer available. Refresh eligible assets." });
+        return;
+      }
       await certificationService.createCertification({
-        asset_id: assetIdInput.trim(),
+        asset_id: selectedAsset.id,
         batch_id: batchIdInput.trim() || undefined,
         certificate_image: certificateImage || undefined,
         image_name: certificateImageName || undefined,
@@ -237,13 +261,16 @@ export default function CertificationsPage() {
         setCreateStatus(null);
       }, 1500);
     } catch (err: any) {
+      const message = err?.data?.message || err?.message || "Failed to create certification";
       setCreateStatus({
         type: "error",
-        message:
-          err?.data?.message ||
-          err?.message ||
-          "Failed to create certification",
+        message: err?.status === 409
+          ? "This asset already has a certification."
+          : err?.status === 400 && /not found/i.test(message)
+            ? "Selected asset is no longer available. Refresh eligible assets."
+            : message,
       });
+      fetchData();
     } finally {
       setIsSubmitting(false);
     }

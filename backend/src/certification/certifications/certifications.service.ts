@@ -347,6 +347,8 @@ export class CertificationsService {
     try {
       const where: any = {
         lifecycleState: 'ACCEPTED_FOR_ASSEMBLY',
+        certStatus: { not: 'REVOKED' },
+        evidence: { some: { integrityVerified: true } },
       };
 
       const dbAssets = await this.prisma.asset.findMany({
@@ -363,6 +365,7 @@ export class CertificationsService {
         const verifiedEvidence = (a.evidence || []).filter((e: any) => e.integrityVerified);
         const pendingCert = (a.certifications || []).find((c: any) => c.status === 'PENDING');
         const confirmedCert = (a.certifications || []).find((c: any) => c.status === 'CONFIRMED');
+        const assetAlreadyCertified = a.certStatus === 'CONFIRMED' || a.certStatus === 'PENDING';
 
         return {
           asset_id: a.assetId,
@@ -374,9 +377,9 @@ export class CertificationsService {
           lifecycle_state: a.lifecycleState,
           verified_evidence_count: verifiedEvidence.length,
           total_evidence_count: a.evidence.length,
-          cert_status: confirmedCert ? 'CONFIRMED' : pendingCert ? 'PENDING' : 'NOT_CERTIFIED',
+          cert_status: confirmedCert || assetAlreadyCertified ? 'CONFIRMED' : pendingCert ? 'PENDING' : 'NOT_CERTIFIED',
           cert_id: confirmedCert?.certId || pendingCert?.certId || null,
-          eligible_for_mint: !confirmedCert && !pendingCert && verifiedEvidence.length > 0,
+          eligible_for_mint: !confirmedCert && !pendingCert && !assetAlreadyCertified && verifiedEvidence.length > 0,
           created_at: a.createdAt.toISOString(),
           updated_at: a.updatedAt.toISOString(),
         };
