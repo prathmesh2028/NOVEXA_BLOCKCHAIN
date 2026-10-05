@@ -5,6 +5,7 @@ import StatusBadge from "../../components/ui/StatusBadge";
 import { formatDateTime } from "../../data/utils";
 import { evidenceService } from "../../services/evidence";
 import { assetService } from "../../services/assets";
+import { API_BASE_URL } from "../../services/api";
 
 export default function EvidenceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -74,7 +75,7 @@ export default function EvidenceDetailPage() {
         actions={
           <div style={{ display: "flex", gap: 8 }}>
             <a
-              href={`http://localhost:8000/api/v1/evidence/${evidence.id}/download`}
+              href={`${API_BASE_URL}/evidence/${evidence.id}/download`}
               target="_blank"
               rel="noreferrer"
               className="btn-secondary"

@@ -7,6 +7,7 @@ This directory separates current operational references from historical project 
 - [Backend API](../backend/docs/api.md)
 - [Backend architecture](../backend/docs/architecture.md)
 - [Deployment and operations](../backend/docs/deployment.md)
+- [Vercel frontend + Render backend deployment](deployment-vercel-render.md)
 - [Backend security](../backend/docs/security.md)
 - [Historical implementation blueprint](archive/project-history/IMPLEMENTATION_BLUEPRINT.md)
 
