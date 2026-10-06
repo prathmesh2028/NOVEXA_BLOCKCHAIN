@@ -16,6 +16,7 @@
   <a href="https://min.io/"><img src="https://img.shields.io/badge/Object_Storage-MinIO%20S3-C72C48?style=flat-square&logo=minio&logoColor=white" alt="MinIO" /></a>
   <a href="https://soliditylang.org/"><img src="https://img.shields.io/badge/Smart_Contracts-Solidity%200.8.20-363636?style=flat-square&logo=solidity&logoColor=white" alt="Solidity" /></a>
   <a href="SECURITY.md"><img src="https://img.shields.io/badge/Security-Zero--Trust%20Architecture-red?style=flat-square&logo=security" alt="Security" /></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square" alt="PRs Welcome" /></a>
 </p>
 
 ---
@@ -316,6 +317,7 @@ For in-depth guides and architectural references:
 - ☁️ [Vercel & Render Deployment Guide](docs/deployment-vercel-render.md)
 - 🛡️ [Security Policy & Disclosures](SECURITY.md)
 - ♿ [Accessibility Conformance Guide](ACCESSIBILITY.md)
+- 🤝 [Contributing Guidelines](CONTRIBUTING.md)
 
 ---
 

@@ -17,6 +17,7 @@ This directory provides operational references, architecture blueprints, deploym
 | **Frontend Documentation** | React 19 architecture, routing, design tokens, and components | [frontend/f1/README.md](../frontend/f1/README.md) |
 | **Smart Contracts Guide** | ERC-721 + IERC5192 Soulbound Token specifications and Hardhat | [contracts/README.md](../contracts/README.md) |
 | **Cloud Deployment** | Vercel (Frontend) + Render (Backend & DB) operations guide | [deployment-vercel-render.md](deployment-vercel-render.md) |
+| **Contributing Guidelines** | Development workflow, coding standards, and PR checklist | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 
 ---
 
