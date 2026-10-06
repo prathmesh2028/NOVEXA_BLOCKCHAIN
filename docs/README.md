@@ -1,20 +1,31 @@
-# Documentation Index
+# KavachTrust — Documentation Directory
 
-This directory separates current operational references from historical project evidence.
+This directory provides operational references, architecture blueprints, deployment guides, and provenance records for the **KavachTrust** platform.
 
-## Current References
+---
 
-- [Backend API](../backend/docs/api.md)
-- [Backend architecture](../backend/docs/architecture.md)
-- [Deployment and operations](../backend/docs/deployment.md)
-- [Vercel frontend + Render backend deployment](deployment-vercel-render.md)
-- [Backend security](../backend/docs/security.md)
-- [Historical implementation blueprint](archive/project-history/IMPLEMENTATION_BLUEPRINT.md)
+## Core System Documentation
 
-## Historical Material
+| Document | Description | Location |
+| :--- | :--- | :--- |
+| **System README** | Main platform overview, quickstart & architecture | [README.md](../README.md) |
+| **Security Policy & Architecture** | Vulnerability disclosure SLA, zero-trust model, data classification | [SECURITY.md](../SECURITY.md) |
+| **Accessibility Conformance** | WCAG 2.1 AA compliance, keyboard navigation, screen reader guide | [ACCESSIBILITY.md](../ACCESSIBILITY.md) |
+| **Backend API Reference** | Detailed REST endpoint parameters and request/response schemas | [backend/docs/api.md](../backend/docs/api.md) |
+| **Backend Architecture** | Domain model, module design, and transaction outbox pattern | [backend/docs/architecture.md](../backend/docs/architecture.md) |
+| **Backend Deployment** | Production configuration, containerization, and environment variables | [backend/docs/deployment.md](../backend/docs/deployment.md) |
+| **Frontend Documentation** | React 19 architecture, routing, design tokens, and components | [frontend/f1/README.md](../frontend/f1/README.md) |
+| **Smart Contracts Guide** | ERC-721 + IERC5192 Soulbound Token specifications and Hardhat | [contracts/README.md](../contracts/README.md) |
+| **Cloud Deployment** | Vercel (Frontend) + Render (Backend & DB) operations guide | [deployment-vercel-render.md](deployment-vercel-render.md) |
 
-- `archive/` contains superseded handoffs, gap analyses, and reports.
-- `forensic_audit/` contains detailed forensic findings from earlier reviews.
-- `project_xray/` contains explanatory snapshots of the project at earlier points in time.
+---
 
-Historical documents are retained for provenance only. When they conflict with source code, package manifests, or migrations, the current implementation wins.
+## Historical & Forensic Records
+
+Historical audit snapshots and prior architecture drafts are retained under specialized directories for forensic provenance:
+
+- `archive/` — Historical handoffs, early design iterations, and legacy system blueprints.
+- `forensic_audit/` — Detailed forensic reports from previous codebase audits.
+- `project_xray/` — Architectural component snapshots from earlier development milestones.
+
+> **Note**: Historical documents are preserved for auditability and compliance trails. When historical notes diverge from current source code or database migrations, current repository code represents the single source of truth.
