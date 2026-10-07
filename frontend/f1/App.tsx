@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { RoleProvider } from "./context/RoleContext";
 import { WalletProvider } from "./features/wallet/WalletContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <RoleProvider>
           <WalletProvider>
             <RouterProvider router={router} />
+            <Analytics />
           </WalletProvider>
         </RoleProvider>
       </AuthProvider>

@@ -27,6 +27,7 @@
     "vitest": "^5.0.2"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
