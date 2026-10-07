@@ -27,16 +27,19 @@ configuration to production. Those are development services.
 4. Do not commit `backend/.env`, private keys, database URLs, or object-storage
    secrets. Add them only in the platform secret managers.
 
-## 2. Create the Render PostgreSQL database
+## 2. Use the existing Render PostgreSQL database
 
-1. In Render, choose **New > PostgreSQL**.
-2. Select the same region as the API service.
-3. Use a production plan appropriate for the expected data and evidence volume.
-4. After creation, copy the database's **Internal Database URL**. It becomes
-   the backend `DATABASE_URL`. Use the internal URL when the API is also on
-   Render; it avoids routing database traffic over the public internet.
-5. Back up the database before production migrations and enable Render's backup
+1. Open the existing Render PostgreSQL service linked to this application.
+2. Copy its **Internal Database URL** and set it manually as the backend
+   `DATABASE_URL`. Do not use a Supabase URL and do not commit the URL.
+3. Use the internal URL when the API is also on Render; it avoids routing
+   database traffic over the public internet.
+4. Back up the database before production migrations and enable Render's backup
    option where available.
+
+The repository includes [`backend/.env.example`](../backend/.env.example) as a
+safe checklist. It contains placeholders only; `backend/.env` is ignored and
+must never be committed.
 
 ## 3. Create the Render backend web service
 
@@ -46,7 +49,7 @@ Create **New > Web Service**, connect the repository, and use these settings:
 | --- | --- |
 | Root Directory | `backend` |
 | Runtime | Node |
-| Build Command | `corepack enable && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm build` |
+| Build Command | `corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm build` |
 | Start Command | `pnpm prisma migrate deploy && pnpm start:prod` |
 | Health Check Path | `/health` |
 | Auto-deploy | Enabled for the production branch |
@@ -103,7 +106,10 @@ WEBAUTHN_RP_ID=kavachtrust.vercel.app
 WEBAUTHN_ORIGIN=https://kavachtrust.vercel.app
 ```
 
-`PORT` is optional because Render injects it and the backend defaults to `8000`.
+`PORT` is optional because Render injects it and the backend defaults to `10000`.
+Do not use `prisma db push` or run the demo seed from the Render start command:
+restarts must apply committed migrations only and must not overwrite production
+records.
 The backend's environment validation also requires `MINIO_ACCESS_KEY`,
 `MINIO_SECRET_KEY`, and `BLOCKCHAIN_PRIVATE_KEY`, even if a feature is not yet
 being used. Use real secret values rather than local development defaults.
@@ -133,7 +139,10 @@ or a database migration failure.
 1. In Vercel, choose **Add New > Project** and import the same GitHub
    repository.
 2. Set **Root Directory** to `frontend/f1`.
-3. Use the detected Vite framework settings, or set:
+3. Set the Vercel project **Root Directory** to `frontend/f1`. The committed
+   [`vercel.json`](../frontend/f1/vercel.json) provides the Vite framework,
+   pnpm install command, build command, output directory, and SPA rewrite.
+   If Vercel shows these fields in the dashboard, they should be:
 
    | Setting | Value |
    | --- | --- |

@@ -1,4 +1,8 @@
 {
+  "framework": "vite",
+  "installCommand": "corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",

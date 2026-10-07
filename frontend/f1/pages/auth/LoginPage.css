@@ -412,18 +412,21 @@
 /* Continuous Rotating World Map - India Centered */
 .earth-texture-rotating {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
   border-radius: 50%;
-  background-size: auto 100%;
-  background-repeat: repeat-x;
-  background-position: -381px 0;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
   animation: earthSpinContinuous 65s linear infinite;
   will-change: background-position;
 }
 
 @keyframes earthSpinContinuous {
-  0% { background-position-x: -381px; }
-  100% { background-position-x: -1241px; }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-25%); }
 }
 
 /* Photorealistic 3D Spherical Light & Deep Shadow Overlay */

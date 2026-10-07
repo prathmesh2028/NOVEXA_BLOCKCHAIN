@@ -5,6 +5,16 @@ export interface CertificationResponse {
   cert_id: string;
   asset_id: string;
   batch_id: string;
+  asset?: {
+    id: string;
+    assetId: string;
+    assetName: string;
+    type?: string;
+    model: string;
+    serialNumber: string;
+    supplier: string | null;
+  } | null;
+  type?: string;
   token_id: string | null;
   contract_address: string | null;
   network: string | null;

@@ -31,7 +31,12 @@ export class MinioService implements OnModuleInit {
       this.isOnline = true;
       this.logger.log('MinIO connection established');
     } catch (error: any) {
-      this.logger.warn(`MinIO connection unavailable, using real local filesystem storage (${this.localStorageDir}). Reason: ${error.message}`);
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production';
+      this.logger.error(`MinIO connection unavailable: ${error.message}`);
+      if (isProduction) {
+        throw error;
+      }
+      this.logger.warn(`Using local filesystem storage (${this.localStorageDir}) in development.`);
       this.isOnline = false;
       if (!fs.existsSync(this.localStorageDir)) {
         fs.mkdirSync(this.localStorageDir, { recursive: true });

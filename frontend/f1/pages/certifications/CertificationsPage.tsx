@@ -27,6 +27,7 @@ export default function CertificationsPage() {
 
   const [certs, setCerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [total, setTotal] = useState(0);
   const [pending, setPending] = useState(0);
@@ -102,6 +103,7 @@ export default function CertificationsPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const listRes = await certificationService.listCertifications({ page_size: 100 });
 
@@ -123,6 +125,7 @@ export default function CertificationsPage() {
       );
     } catch (err) {
       console.error("Failed to load certifications:", err);
+      setLoadError(err instanceof Error ? err.message : "Failed to load certifications");
       setCerts([]);
       setTotal(0);
       setPending(0);
@@ -281,7 +284,7 @@ export default function CertificationsPage() {
         authority.includes(normalizedSearch) ||
         txHash.includes(normalizedSearch);
 
-      const statusVal = cert.status || "Valid";
+      const statusVal = cert.status || "NOT_CERTIFIED";
       const matchesStatus =
         statusFilter === "ALL" || statusVal === statusFilter;
 
@@ -880,9 +883,15 @@ export default function CertificationsPage() {
                 All Statuses
               </option>
 
-              {["Valid", "Expiring", "Expired"].map((s) => (
-                <option key={s} value={s}>
-                  Status: {s}
+              {[
+                ["CONFIRMED", "Confirmed"],
+                ["PENDING", "Pending"],
+                ["FAILED", "Failed"],
+                ["REVOKED", "Revoked"],
+                ["NOT_CERTIFIED", "Not certified"],
+              ].map(([value, label]) => (
+                <option key={value} value={value}>
+                  Status: {label}
                 </option>
               ))}
             </select>
@@ -995,6 +1004,19 @@ export default function CertificationsPage() {
           >
             Retrieving certification records...
           </p>
+        </div>
+      ) : loadError ? (
+        <div
+          className="panel"
+          style={{
+            padding: "40px 24px",
+            textAlign: "center",
+            color: "#f87171",
+            border: "1px solid rgba(239, 68, 68, 0.35)",
+            borderRadius: "12px",
+          }}
+        >
+          {loadError}
         </div>
       ) : filteredCerts.length === 0 ? (
         <div

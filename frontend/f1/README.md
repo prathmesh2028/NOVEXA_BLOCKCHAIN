@@ -59,7 +59,7 @@ frontend/f1/
 
 - **Node.js**: `>= 20.0.0`
 - **pnpm**: `>= 9.0.0`
-- Running backend API instance (default: `http://localhost:3001`)
+- Running backend API instance (default: `http://localhost:10000`)
 
 ---
 
@@ -73,10 +73,10 @@ cp .env.example .env
 
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
-| `VITE_API_BASE_URL` | `http://localhost:3001/api` | Backend API base URL |
-| `VITE_BLOCKCHAIN_RPC_URL` | `http://localhost:8545` | Besu JSON-RPC endpoint |
-| `VITE_SBT_CONTRACT_ADDRESS` | `0x...` | Deployed `KavachTrustSBT` address |
-| `VITE_CHAIN_ID` | `1337` | EVM Chain ID |
+| `VITE_API_URL` | `http://localhost:10000` | Backend API origin; `/api/v1` is added automatically |
+| `VITE_BLOCKCHAIN_RPC_URL` | — | Optional browser-accessible Besu JSON-RPC endpoint |
+| `VITE_SBT_CONTRACT_ADDRESS` | — | Optional deployed `KavachTrustSBT` address |
+| `VITE_BLOCKCHAIN_CHAIN_ID` | `31337` | EVM Chain ID |
 
 ---
 

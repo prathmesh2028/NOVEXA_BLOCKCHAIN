@@ -31,7 +31,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         this.logger.warn(`Auto-seeding check skipped: ${seedErr.message}`);
       }
     } catch (err: any) {
-      this.logger.warn(`PostgreSQL connection unavailable (${err.message}). Starting server in offline/fallback mode.`);
+      this.logger.error(`PostgreSQL connection unavailable: ${err.message}`);
+      if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+        throw err;
+      }
+      this.logger.warn('Starting server in local offline/fallback mode.');
     }
   }
 

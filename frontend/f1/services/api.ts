@@ -15,9 +15,12 @@ export function resolveBaseUrl(): string {
   // 2. Vite environment variable
   const raw = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/$/, '');
 
-  // 3. Fallback to localhost:8000 if not specified
+  // Keep local development convenient, but never silently target localhost in a deployed build.
   if (!raw) {
-    return 'http://localhost:8000/api/v1';
+    if (import.meta.env.PROD) {
+      throw new Error('VITE_API_URL is required for production builds');
+    }
+    return 'http://localhost:10000/api/v1';
   }
 
   return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;

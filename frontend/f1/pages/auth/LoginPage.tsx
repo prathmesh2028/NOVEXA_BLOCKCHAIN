@@ -6,7 +6,8 @@ import ThemeToggle from "../../components/ui/ThemeToggle";
 import { DEMO_ACCOUNTS, DemoAccount } from "../../data/demoAccounts";
 import "./LoginPage.css";
 
-// Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
+// Photorealistic 3D Earth Globe Asset (India Centered with Night Lights)
+import earthGlobeImg from "./assets/earth_globe.jpg";
 import earthPanoramicImg from "./assets/earth_panoramic.jpg";
 
 export default function LoginPage() {
@@ -202,9 +203,11 @@ export default function LoginPage() {
               {/* 3D Earth Globe Sphere */}
               <div className="earth-globe">
                 {/* Continuous Rotating World Map with India Night City Lights */}
-                <div
+                <img
                   className="earth-texture-rotating"
-                  style={{ backgroundImage: `url(${earthPanoramicImg})` }}
+                  src={earthPanoramicImg}
+                  alt=""
+                  aria-hidden="true"
                 />
 
                 {/* 3D Spherical Light & Deep Shadow Overlay */}

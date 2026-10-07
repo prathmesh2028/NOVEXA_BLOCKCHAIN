@@ -23,11 +23,15 @@ async function bootstrap() {
   // Security
   app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS - Dynamic allowlist supporting all Vercel domains, localhost, and configured origins
+  const allowedOrigins = new Set(config.corsOrigins);
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Allow requests with no origin (mobile apps, curl, server-to-server) or any web origin
-      callback(null, true);
+      // Requests without an Origin header include health checks and server-to-server calls.
+      if (!origin || allowedOrigins.has(origin.replace(/\/+$/, ''))) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Origin is not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -74,8 +78,8 @@ async function bootstrap() {
   }
 
   const port = config.port;
-  await app.listen(port);
-  logger.log(`KavachTrust Backend V2 running on http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`KavachTrust Backend V2 running on port ${port} (0.0.0.0)`);
   logger.log(`API prefix: ${config.apiPrefix}`);
   logger.log(`Environment: ${config.nodeEnv}`);
   logger.log(`CORS origins: ${config.corsOrigins.join(', ')}`);
