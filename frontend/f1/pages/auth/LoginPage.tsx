@@ -6,8 +6,8 @@ import ThemeToggle from "../../components/ui/ThemeToggle";
 import { DEMO_ACCOUNTS, DemoAccount } from "../../data/demoAccounts";
 import "./LoginPage.css";
 
-// Photorealistic 3D Earth Globe Asset (Cool Blue / Cyan Palette)
-import earthPanoramicImg from "./assets/earth_panoramic.jpg";
+// Photorealistic 3D Earth Globe Asset (India Centered with Night Lights)
+import earthGlobeImg from "./assets/earth_globe.jpg";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -201,10 +201,13 @@ export default function LoginPage() {
 
               {/* 3D Earth Globe Sphere */}
               <div className="earth-globe">
-                {/* Continuous Rotating World Map with India Night City Lights */}
-                <div
-                  className="earth-texture-rotating"
-                  style={{ backgroundImage: `url(${earthPanoramicImg})` }}
+                {/* Photorealistic 3D Earth Globe with India Night City Lights */}
+                <img
+                  className="earth-globe-image"
+                  src={earthGlobeImg}
+                  alt="BEL Defence Trust 3D Earth Globe"
+                  aria-hidden="true"
+                  loading="eager"
                 />
 
                 {/* 3D Spherical Light & Deep Shadow Overlay */}
@@ -321,8 +324,55 @@ export default function LoginPage() {
 
             {/* Real Login Error Banner */}
             {error && (
-              <div className="cmd-error-banner" role="alert">
-                ✕ {error}
+              <div className="cmd-error-banner" role="alert" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>✕ {error}</div>
+                {error.toLowerCase().includes('connect') && (
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = localStorage.getItem('kavach_api_url') || '';
+                        const url = window.prompt('Enter your deployed Backend URL (e.g. https://your-backend.onrender.com):', current);
+                        if (url && url.trim()) {
+                          localStorage.setItem('kavach_api_url', url.trim());
+                          window.location.reload();
+                        }
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        border: '1px solid rgba(239, 68, 68, 0.5)',
+                        borderRadius: '6px',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      ⚙️ Configure Backend URL
+                    </button>
+                    {localStorage.getItem('kavach_api_url') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          localStorage.removeItem('kavach_api_url');
+                          window.location.reload();
+                        }}
+                        style={{
+                          padding: '6px 10px',
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#888',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          textDecoration: 'underline',
+                        }}
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

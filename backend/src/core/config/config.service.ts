@@ -55,7 +55,13 @@ export class ConfigService {
 
   // CORS
   get corsOrigins(): string[] {
-    return this.config.CORS_ORIGINS.split(',').map(s => s.trim());
+    const raw = this.config.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean);
+    const origins = new Set<string>();
+    for (const o of raw) {
+      origins.add(o);
+      origins.add(o.replace(/\/+$/, ''));
+    }
+    return Array.from(origins);
   }
 
   // Sentry

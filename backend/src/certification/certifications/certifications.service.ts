@@ -22,6 +22,16 @@ export class CertificationsService {
       cert_id: c.certId,
       asset_id: c.assetId,
       batch_id: c.batch?.batchId || c.batchRefId,
+      asset: c.asset ? {
+        id: c.asset.id,
+        assetId: c.asset.assetId,
+        assetName: c.asset.description || `${c.asset.type} ${c.asset.model}`.trim(),
+        type: c.asset.type,
+        model: c.asset.model,
+        serialNumber: c.asset.serialNumber,
+        supplier: c.asset.supplier,
+      } : null,
+      type: c.asset?.type || 'Certification',
       token_id: c.tokenId,
       contract_address: c.contractAddress,
       network: c.network,
@@ -50,7 +60,11 @@ export class CertificationsService {
     try {
       const [dbCerts, dbTotal] = await Promise.all([
         this.prisma.certification.findMany({
-          where, include: { batch: true }, skip, take: pageSize, orderBy: { issuedAt: 'desc' },
+          where,
+          include: { batch: true, asset: true },
+          skip,
+          take: pageSize,
+          orderBy: { issuedAt: 'desc' },
         }),
         this.prisma.certification.count({ where }),
       ]);
@@ -69,9 +83,15 @@ export class CertificationsService {
 
   async getCertificationById(id: string) {
     try {
-      let cert = await this.prisma.certification.findUnique({ where: { id }, include: { batch: true } });
+      let cert = await this.prisma.certification.findUnique({
+        where: { id },
+        include: { batch: true, asset: true },
+      });
       if (!cert) {
-        cert = await this.prisma.certification.findUnique({ where: { certId: id }, include: { batch: true } });
+        cert = await this.prisma.certification.findUnique({
+          where: { certId: id },
+          include: { batch: true, asset: true },
+        });
       }
       if (!cert) {
         const { NotFoundException } = await import('@nestjs/common');

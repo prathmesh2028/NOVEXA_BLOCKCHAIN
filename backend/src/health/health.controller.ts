@@ -1,6 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../core/database/prisma.service';
 
+/**
+ * Root controller — NOT under the global /api/v1 prefix.
+ * Render (and other PaaS providers) perform health-checks against GET /
+ * before marking the service as healthy. Without this the deploy times out.
+ */
+@Controller()
+export class RootController {
+  @Get('/')
+  root() {
+    return { status: 'ok', service: 'kavachtrust-api', version: '2.0.0' };
+  }
+}
+
 @Controller()
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}

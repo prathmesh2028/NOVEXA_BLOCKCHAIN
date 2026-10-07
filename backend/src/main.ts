@@ -23,16 +23,35 @@ async function bootstrap() {
   // Security
   app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS - Explicit allowlist from environment
+  const allowedOrigins = new Set(config.corsOrigins);
   app.enableCors({
-    origin: config.corsOrigins,
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Requests without an Origin header include health checks and server-to-server calls.
+      if (!origin || allowedOrigins.has(origin.replace(/\/+$/, ''))) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Origin is not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
   });
 
-  // Global prefix
-  app.setGlobalPrefix(config.apiPrefix);
+  // Explicit root & health endpoints directly on Express to guarantee immediate 200 OK for Render health checks
+  const httpAdapter = app.getHttpAdapter();
+  if (httpAdapter && typeof httpAdapter.getInstance === 'function') {
+    const expressApp = httpAdapter.getInstance();
+    const sendHealth = (_req: any, res: any) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).send(JSON.stringify({ status: 'ok', service: 'kavachtrust-api', version: '2.0.0' }));
+    };
+    expressApp.get('/', sendHealth);
+    expressApp.get('/health', sendHealth);
+  }
+
+  // Global prefix — root path and health excluded so Render health-check returns 200 immediately
+  app.setGlobalPrefix(config.apiPrefix, { exclude: ['/', 'health'] });
 
   // Global Validation Pipe
   app.useGlobalPipes(
@@ -59,8 +78,8 @@ async function bootstrap() {
   }
 
   const port = config.port;
-  await app.listen(port);
-  logger.log(`KavachTrust Backend V2 running on http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`KavachTrust Backend V2 running on port ${port} (0.0.0.0)`);
   logger.log(`API prefix: ${config.apiPrefix}`);
   logger.log(`Environment: ${config.nodeEnv}`);
   logger.log(`CORS origins: ${config.corsOrigins.join(', ')}`);

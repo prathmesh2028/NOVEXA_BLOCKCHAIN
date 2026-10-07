@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: kavachtrust-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm build
+    startCommand: pnpm prisma migrate deploy && pnpm start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: API_PREFIX
+        value: /api/v1
+      - key: LOG_LEVEL
+        value: info
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: MINIO_ENDPOINT
+        sync: false
+      - key: MINIO_PORT
+        value: 443
+      - key: MINIO_USE_SSL
+        value: true
+      - key: MINIO_ACCESS_KEY
+        sync: false
+      - key: MINIO_SECRET_KEY
+        sync: false
+      - key: MINIO_BUCKET
+        value: kavachtrust-evidence
+      - key: BLOCKCHAIN_MODE
+        sync: false
+      - key: BLOCKCHAIN_RPC_URL
+        sync: false
+      - key: BLOCKCHAIN_CHAIN_ID
+        sync: false
+      - key: BLOCKCHAIN_PRIVATE_KEY
+        sync: false
+      - key: CONTRACT_ADDRESS
+        sync: false
+      - key: BLOCKCHAIN_NETWORK_NAME
+        sync: false
+      - key: BLOCKCHAIN_CONFIRMATIONS_REQUIRED
+        sync: false
+      - key: AES_KEY
+        sync: false
+      - key: WEBAUTHN_RP_NAME
+        sync: false
+      - key: WEBAUTHN_RP_ID
+        sync: false
+      - key: WEBAUTHN_ORIGIN
+        sync: false
