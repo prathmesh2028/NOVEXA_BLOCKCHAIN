@@ -20,8 +20,13 @@ export class AssetsService {
 
   private async enforceAssetAccess(asset: any, user: any) {
     if (!user) return;
-    // Allow SYSTEM_ADMIN, AUDITOR, and QUALITY_INSPECTOR to access all assets
-    if (user.roles.includes('SYSTEM_ADMIN') || user.roles.includes('AUDITOR') || user.roles.includes('QUALITY_INSPECTOR')) return;
+    // Allow SYSTEM_ADMIN, AUDITOR, QUALITY_INSPECTOR, and PROCUREMENT_SUPPLY_CHAIN_OFFICER to access all assets
+    if (
+      user.roles.includes('SYSTEM_ADMIN') ||
+      user.roles.includes('AUDITOR') ||
+      user.roles.includes('QUALITY_INSPECTOR') ||
+      user.roles.includes('PROCUREMENT_SUPPLY_CHAIN_OFFICER')
+    ) return;
     if (!asset.registeredById) return;
     if (asset.registeredById === user.sub) return;
 
@@ -83,25 +88,40 @@ export class AssetsService {
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
+    const andConditions: any[] = [];
 
-    if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR') && !params.user.roles.includes('QUALITY_INSPECTOR')) {
+    const internalRoles = ['SYSTEM_ADMIN', 'AUDITOR', 'QUALITY_INSPECTOR', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER'];
+    const isInternalUser = params.user?.roles?.some((r: string) => internalRoles.includes(r));
+
+    if (params.user && !isInternalUser) {
       const userDomain = this.getSupplierDomain(params.user.email);
       if (userDomain) {
         const usersInDomain = await this.prisma.user.findMany({
           where: { email: { endsWith: `@${userDomain}` } },
           select: { id: true },
         });
-        where.registeredById = { in: usersInDomain.map(u => u.id) };
+        andConditions.push({
+          OR: [
+            { registeredById: { in: usersInDomain.map(u => u.id) } },
+            { registeredById: null },
+          ],
+        });
       }
     }
 
     if (params.search) {
-      where.OR = [
-        { assetId: { contains: params.search, mode: 'insensitive' } },
-        { serialNumber: { contains: params.search, mode: 'insensitive' } },
-        { type: { contains: params.search, mode: 'insensitive' } },
-        { model: { contains: params.search, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { assetId: { contains: params.search, mode: 'insensitive' } },
+          { serialNumber: { contains: params.search, mode: 'insensitive' } },
+          { type: { contains: params.search, mode: 'insensitive' } },
+          { model: { contains: params.search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     if (params.lifecycle) {
@@ -248,14 +268,20 @@ export class AssetsService {
         certStatus: { not: 'CONFIRMED' }, // not already certified
       };
 
-      if (params.user && !params.user.roles.includes('SYSTEM_ADMIN') && !params.user.roles.includes('AUDITOR') && !params.user.roles.includes('QUALITY_INSPECTOR')) {
+      const internalRoles = ['SYSTEM_ADMIN', 'AUDITOR', 'QUALITY_INSPECTOR', 'PROCUREMENT_SUPPLY_CHAIN_OFFICER'];
+      const isInternalUser = params.user?.roles?.some((r: string) => internalRoles.includes(r));
+
+      if (params.user && !isInternalUser) {
         const userDomain = this.getSupplierDomain(params.user.email);
         if (userDomain) {
           const usersInDomain = await this.prisma.user.findMany({
             where: { email: { endsWith: `@${userDomain}` } },
             select: { id: true },
           });
-          where.registeredById = { in: usersInDomain.map(u => u.id) };
+          where.OR = [
+            { registeredById: { in: usersInDomain.map(u => u.id) } },
+            { registeredById: null },
+          ];
         }
       }
 

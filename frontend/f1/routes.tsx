@@ -93,10 +93,10 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // Quality Inspector & System Admin
+      // Quality Inspector, Procurement Officer & System Admin
       {
         path: "",
-        Component: () => <RoleGuard allowedRoles={["system-admin", "quality-inspector"]} />,
+        Component: () => <RoleGuard allowedRoles={["system-admin", "quality-inspector", "procurement-supply-chain-officer"]} />,
         children: [
           { path: "register", Component: RegisterAssetPage },
           { path: "inspections", Component: InspectionsPage },

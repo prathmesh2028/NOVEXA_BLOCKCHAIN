@@ -8,7 +8,6 @@ import "./LoginPage.css";
 
 // Photorealistic 3D Earth Globe Asset (India Centered with Night Lights)
 import earthGlobeImg from "./assets/earth_globe.jpg";
-import earthPanoramicImg from "./assets/earth_panoramic.jpg";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -202,12 +201,13 @@ export default function LoginPage() {
 
               {/* 3D Earth Globe Sphere */}
               <div className="earth-globe">
-                {/* Continuous Rotating World Map with India Night City Lights */}
+                {/* Photorealistic 3D Earth Globe with India Night City Lights */}
                 <img
-                  className="earth-texture-rotating"
-                  src={earthPanoramicImg}
-                  alt=""
+                  className="earth-globe-image"
+                  src={earthGlobeImg}
+                  alt="BEL Defence Trust 3D Earth Globe"
                   aria-hidden="true"
+                  loading="eager"
                 />
 
                 {/* 3D Spherical Light & Deep Shadow Overlay */}

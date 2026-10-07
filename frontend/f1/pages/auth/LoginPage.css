@@ -409,7 +409,27 @@
   100% { opacity: 1; transform: scale(1.02); }
 }
 
-/* Continuous Rotating World Map - India Centered */
+/* Photorealistic 3D Earth Globe Asset — India Centered with Golden Night Lights */
+.earth-globe-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  animation: earthGlobeFloat 14s ease-in-out infinite alternate;
+  filter: saturate(1.15) contrast(1.08) brightness(1.04);
+  will-change: transform;
+}
+
+@keyframes earthGlobeFloat {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.025) rotate(1.2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Continuous Rotating World Map - Fallback / Legacy */
 .earth-texture-rotating {
   position: absolute;
   top: 0;
@@ -436,15 +456,15 @@
   border-radius: 50%;
   background: radial-gradient(
     circle at 35% 30%,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(0, 229, 255, 0.08) 28%,
-    rgba(2, 16, 50, 0.45) 60%,
-    rgba(1, 5, 18, 0.88) 82%,
-    rgba(0, 2, 8, 0.98) 100%
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(0, 229, 255, 0.08) 25%,
+    transparent 60%,
+    rgba(2, 16, 50, 0.35) 80%,
+    rgba(0, 4, 14, 0.65) 100%
   );
   box-shadow:
-    inset 22px 16px 34px rgba(0, 229, 255, 0.45),
-    inset -36px -28px 65px rgba(0, 0, 0, 0.96);
+    inset 18px 14px 28px rgba(0, 229, 255, 0.35),
+    inset -24px -20px 48px rgba(0, 0, 0, 0.75);
   pointer-events: none;
 }
 

@@ -185,12 +185,24 @@ async function main() {
 
   const assets: any[] = [];
   for (const a of assetData) {
+    const isPriyaAsset = a.assetId === 'PT-2026-00105' || a.assetId === 'IG-2026-00210';
+    const creatorId = isPriyaAsset ? nftCreator.id : technician.id;
+    const creatorName = isPriyaAsset ? 'Priya Sharma' : a.registeredByName;
+
     const asset = await prisma.asset.upsert({
       where: { assetId: a.assetId },
-      update: a.assetId === 'PT-2026-00105'
-        ? { certId: 'CERT-2026-24767', certStatus: 'CONFIRMED' }
-        : {},
-      create: a,
+      update: {
+        registeredById: creatorId,
+        registeredByName: creatorName,
+        ...(a.assetId === 'PT-2026-00105'
+          ? { certId: 'CERT-2026-24767', certStatus: 'CONFIRMED' }
+          : {}),
+      },
+      create: {
+        ...a,
+        registeredById: creatorId,
+        registeredByName: creatorName,
+      },
     });
     assets.push(asset);
   }
