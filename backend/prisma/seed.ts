@@ -5,13 +5,20 @@
  * Matches frontend mockData.ts IDs and semantics for compatibility.
  */
 
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  },
+});
 
 async function main() {
-  console.log('🌱 Seeding KavachTrust Backend V2...');
+  console.log('🌱 Seeding KavachTrust Backend V2 on Neon...');
 
   // ── Users ──
   const passwordHash = await bcrypt.hash('password', 10);
