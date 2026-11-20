@@ -48,6 +48,7 @@ async function bootstrap() {
     };
     expressApp.get('/', sendHealth);
     expressApp.get('/health', sendHealth);
+    expressApp.get(config.apiPrefix, sendHealth);
   }
 
   // Global prefix — root path and health excluded so Render health-check returns 200 immediately
