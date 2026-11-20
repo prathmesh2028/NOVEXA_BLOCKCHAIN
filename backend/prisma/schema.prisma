@@ -8,8 +8,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ═══════════════════════════════════════════════════════
@@ -746,4 +747,3 @@ model SupplyChainEvent {
   @@index([entityType, entityId])
   @@map("supply_chain_events")
 }
-
